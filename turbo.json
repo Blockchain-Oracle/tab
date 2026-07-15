@@ -7,7 +7,8 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": ["DATABASE_URL", "PAYMENT_INTENT_SIGNING_SECRET", "SESSION_SECRET"]
     },
     "lint": {
       "outputs": []
@@ -18,7 +19,7 @@
     "test": {
       "cache": false,
       "outputs": ["coverage/**"],
-      "passThroughEnv": ["DATABASE_URL", "SESSION_SECRET"]
+      "passThroughEnv": ["DATABASE_URL", "PAYMENT_INTENT_SIGNING_SECRET", "SESSION_SECRET"]
     },
     "format": {
       "outputs": []

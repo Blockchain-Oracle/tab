@@ -84,6 +84,21 @@ describe("API key database invariants", () => {
       `,
     ).rejects.toMatchObject({ code: "23514" });
   });
+
+  it("rejects publishable material that disagrees with stored environment metadata", async () => {
+    const identity = await merchant("api-key-material-constraint");
+
+    await expect(
+      connection.client`
+        insert into api_keys (
+          merchant_id, name, type, env, prefix, last4, public_key
+        ) values (
+          ${identity.merchantId}, 'Mismatched material', 'publishable', 'live',
+          'pk_live_', 'abcd', 'pk_test_materialabcd'
+        )
+      `,
+    ).rejects.toMatchObject({ code: "23514" });
+  });
 });
 
 describe("publishable-key authentication with real PostgreSQL", () => {
@@ -119,9 +134,9 @@ describe("publishable-key authentication with real PostgreSQL", () => {
 });
 
 describe("secret-key authentication with real PostgreSQL", () => {
-  it("hashes the bearer key, trusts the row environment, and atomically stamps usage", async () => {
+  it("hashes the bearer key, binds its prefix to row environment, and atomically stamps usage", async () => {
     const identity = await merchant("sk-active");
-    const rawKey = `sk_test_${randomUUID().replaceAll("-", "")}`;
+    const rawKey = `sk_live_${randomUUID().replaceAll("-", "")}`;
     const key = await insertSecretKey(identity.merchantId, rawKey, {
       env: "live",
       permissions: "full",
@@ -138,6 +153,21 @@ describe("secret-key authentication with real PostgreSQL", () => {
       .from(apiKeys)
       .where(eq(apiKeys.id, key.id));
     expect(stored?.lastUsedAt).toBeInstanceOf(Date);
+  });
+
+  it("rejects visibly test-scoped secret material stored against live metadata", async () => {
+    const identity = await merchant("sk-prefix-mismatch");
+    const rawKey = `sk_test_${randomUUID().replaceAll("-", "")}`;
+    const key = await insertSecretKey(identity.merchantId, rawKey, { env: "live" });
+
+    await expect(authenticateSecretKey(connection.db, `Bearer ${rawKey}`)).rejects.toBeInstanceOf(
+      InvalidApiKeyError,
+    );
+    const [stored] = await connection.db
+      .select({ lastUsedAt: apiKeys.lastUsedAt })
+      .from(apiKeys)
+      .where(eq(apiKeys.id, key.id));
+    expect(stored?.lastUsedAt).toBeNull();
   });
 
   it("rejects revoked keys without stamping usage", async () => {

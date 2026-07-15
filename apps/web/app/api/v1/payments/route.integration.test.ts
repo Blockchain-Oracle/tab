@@ -44,18 +44,23 @@ async function secretKey(merchantId: string, env: "live" | "test" = "test") {
 }
 
 async function payment(merchantId: string, env: "live" | "test") {
-  await connection.db.insert(payments).values({
-    amountUsd: "5.250000",
-    currency: "USD",
-    env,
-    intentUrl: "https://merchant.example.test/intent",
-    livemode: env === "live",
-    merchantId,
-    refCode: `TAB-${randomUUID().slice(0, 8).toUpperCase()}`,
-    receiver: "0x1111111111111111111111111111111111111111",
-    tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-    tokenChainId: 42161,
-  });
+  const [created] = await connection.db
+    .insert(payments)
+    .values({
+      amountUsd: "5.250000",
+      currency: "USD",
+      env,
+      intentUrl: "https://merchant.example.test/intent",
+      livemode: env === "live",
+      merchantId,
+      refCode: `TAB-${randomUUID().slice(0, 8).toUpperCase()}`,
+      receiver: "0x1111111111111111111111111111111111111111",
+      tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      tokenChainId: 42161,
+    })
+    .returning({ id: payments.id });
+  if (!created) throw new Error("Expected a payment row");
+  return created;
 }
 
 function request(rawKey?: string, env?: string) {
@@ -80,7 +85,16 @@ describe("GET /api/v1/payments with real PostgreSQL", () => {
     const first = await merchant("list-first");
     const second = await merchant("list-second");
     const key = await secretKey(first.merchantId);
-    await payment(first.merchantId, "test");
+    const candidate = await payment(first.merchantId, "test");
+    await connection.db
+      .update(payments)
+      .set({
+        payerEmail: "buyer@example.test",
+        reportedAt: new Date(),
+        reportedTokenChanges: [],
+        reportedTransactionId: "unverified-candidate",
+      })
+      .where(eq(payments.id, candidate.id));
     await payment(first.merchantId, "live");
     await payment(second.merchantId, "test");
 
@@ -90,7 +104,13 @@ describe("GET /api/v1/payments with real PostgreSQL", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toContain("no-store");
     expect(body.payments).toHaveLength(1);
-    expect(body.payments[0]).toMatchObject({ amount: "5.250000", env: "test" });
+    expect(body.payments[0]).toMatchObject({
+      amount: "5.250000",
+      env: "test",
+      reportedTransactionId: "unverified-candidate",
+    });
+    expect(body.payments[0]).not.toHaveProperty("transactionId");
+    expect(body.payments[0]).not.toHaveProperty("payerEmail");
 
     const [stored] = await connection.db
       .select({ lastUsedAt: apiKeys.lastUsedAt })

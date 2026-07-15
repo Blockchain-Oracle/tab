@@ -25,31 +25,52 @@ function hasOnlyKeys(value: Record<string, unknown>, expected: string[]) {
   return keys.length === expected.length && keys.every((key, index) => key === expected[index]);
 }
 
-function validAmount(value: unknown): value is string {
-  if (typeof value !== "string" || !AMOUNT_PATTERN.test(value)) return false;
-  return /[1-9]/.test(value);
+export function parseUsdAmount(value: unknown) {
+  if (typeof value !== "string" || !AMOUNT_PATTERN.test(value) || !/[1-9]/.test(value)) {
+    throw new InvalidPaymentIntentError();
+  }
+
+  return value;
 }
 
-function normalizedAddress(value: unknown) {
+export function parsePaymentAddress(value: unknown) {
   if (typeof value !== "string" || !isAddress(value)) return undefined;
   const address = getAddress(value);
   return address === zeroAddress ? undefined : address;
+}
+
+export function parseIntentAuditUrl(value: unknown) {
+  if (typeof value !== "string" || value.length > 2_048) {
+    throw new InvalidPaymentIntentError();
+  }
+
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" || url.username || url.password || url.hash) {
+      throw new InvalidPaymentIntentError();
+    }
+    return url.toString();
+  } catch (error) {
+    if (error instanceof InvalidPaymentIntentError) throw error;
+    throw new InvalidPaymentIntentError();
+  }
 }
 
 export function parsePaymentIntent(value: unknown) {
   if (!isRecord(value) || !hasOnlyKeys(value, INTENT_KEYS)) {
     throw new InvalidPaymentIntentError();
   }
-  if (!validAmount(value.amount) || value.currency !== "USD") {
+  if (value.currency !== "USD") {
     throw new InvalidPaymentIntentError();
   }
+  const amount = parseUsdAmount(value.amount);
 
-  const receiver = normalizedAddress(value.receiver);
+  const receiver = parsePaymentAddress(value.receiver);
   if (!receiver || !isRecord(value.token) || !hasOnlyKeys(value.token, TOKEN_KEYS)) {
     throw new InvalidPaymentIntentError();
   }
 
-  const tokenAddress = normalizedAddress(value.token.address);
+  const tokenAddress = parsePaymentAddress(value.token.address);
   if (
     value.token.chainId !== ARBITRUM_CHAIN_ID ||
     !tokenAddress ||
@@ -59,7 +80,7 @@ export function parsePaymentIntent(value: unknown) {
   }
 
   return {
-    amount: value.amount,
+    amount,
     currency: "USD" as const,
     receiver,
     token: {

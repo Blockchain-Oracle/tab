@@ -13,7 +13,6 @@ export function paymentResponse(payment: Payment) {
     intentUrl: payment.intentUrl,
     livemode: payment.livemode,
     payerAddress: payment.payerAddress,
-    payerEmail: payment.payerEmail,
     payerType: payment.payerType,
     refCode: payment.refCode,
     reportedAt: payment.reportedAt?.toISOString() ?? null,
@@ -23,6 +22,6 @@ export function paymentResponse(payment: Payment) {
       address: payment.tokenAddress,
       chainId: payment.tokenChainId,
     },
-    transactionId: payment.reportedTransactionId,
+    reportedTransactionId: payment.reportedTransactionId,
   };
 }

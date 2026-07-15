@@ -121,6 +121,13 @@ export const apiKeys = pgTable(
           or (${table.env} = 'live' and ${table.prefix} = 'sk_live_')
         ))`,
     ),
+    check(
+      "api_keys_public_key_prefix_check",
+      sql`${table.type} = 'secret' or (
+        left(${table.publicKey}, length(${table.prefix})) = ${table.prefix}
+        and ${table.publicKey} ~ '^pk_(test|live)_[A-Za-z0-9_-]+$'
+      )`,
+    ),
   ],
 );
 

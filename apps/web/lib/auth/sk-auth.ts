@@ -13,8 +13,9 @@ export async function authenticateSecretKey(
   db: Database,
   authorizationHeader: string | null,
 ): Promise<SecretApiKeyPrincipal> {
-  const rawKey = readBearerApiKey(authorizationHeader);
-  const secretHash = hashApiKey(rawKey);
+  const presented = readBearerApiKey(authorizationHeader);
+  if (presented.type !== "secret") throw new InvalidApiKeyError();
+  const secretHash = hashApiKey(presented.rawKey);
   const [principal] = await db
     .update(apiKeys)
     .set({ lastUsedAt: sql`clock_timestamp()` })
@@ -22,6 +23,8 @@ export async function authenticateSecretKey(
       and(
         eq(apiKeys.type, "secret"),
         eq(apiKeys.secretHash, secretHash),
+        eq(apiKeys.env, presented.env),
+        eq(apiKeys.prefix, presented.prefix),
         isNotNull(apiKeys.permissions),
         isNull(apiKeys.revokedAt),
       ),

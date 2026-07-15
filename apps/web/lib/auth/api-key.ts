@@ -14,6 +14,13 @@ export interface SecretApiKeyPrincipal extends ApiKeyPrincipal {
   permissions: ApiKeyPermissions;
 }
 
+export interface PresentedApiKey {
+  env: ApiEnvironment;
+  prefix: "pk_live_" | "pk_test_" | "sk_live_" | "sk_test_";
+  rawKey: string;
+  type: "publishable" | "secret";
+}
+
 export class InvalidApiKeyError extends Error {
   readonly code = "INVALID_API_KEY";
 
@@ -34,13 +41,18 @@ export class ApiKeyPermissionError extends Error {
 
 export function readBearerApiKey(authorizationHeader: string | null) {
   const match = authorizationHeader?.match(/^Bearer ([A-Za-z0-9_-]{1,256})$/i);
-  const key = match?.[1];
+  const rawKey = match?.[1];
+  const material = rawKey?.match(/^(pk|sk)_(test|live)_([A-Za-z0-9_-]+)$/);
 
-  if (!key) {
+  if (!rawKey || !material) {
     throw new InvalidApiKeyError();
   }
 
-  return key;
+  const env = material[2];
+  if (env !== "test" && env !== "live") throw new InvalidApiKeyError();
+  const type = material[1] === "pk" ? "publishable" : "secret";
+  const prefix = `${material[1]}_${env}_` as PresentedApiKey["prefix"];
+  return { env, prefix, rawKey, type } satisfies PresentedApiKey;
 }
 
 export function hashApiKey(rawKey: string) {

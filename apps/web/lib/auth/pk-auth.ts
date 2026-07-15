@@ -8,7 +8,8 @@ export async function authenticatePublishableKey(
   db: Database,
   authorizationHeader: string | null,
 ): Promise<ApiKeyPrincipal> {
-  const rawKey = readBearerApiKey(authorizationHeader);
+  const presented = readBearerApiKey(authorizationHeader);
+  if (presented.type !== "publishable") throw new InvalidApiKeyError();
   const [principal] = await db
     .select({
       apiKeyId: apiKeys.id,
@@ -19,7 +20,9 @@ export async function authenticatePublishableKey(
     .where(
       and(
         eq(apiKeys.type, "publishable"),
-        eq(apiKeys.publicKey, rawKey),
+        eq(apiKeys.publicKey, presented.rawKey),
+        eq(apiKeys.env, presented.env),
+        eq(apiKeys.prefix, presented.prefix),
         isNull(apiKeys.revokedAt),
       ),
     )

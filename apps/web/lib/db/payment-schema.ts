@@ -64,6 +64,7 @@ export const payments = pgTable(
   },
   (table) => [
     unique("payments_id_merchant_env_unique").on(table.id, table.merchantId, table.env),
+    unique("payments_ref_merchant_env_unique").on(table.refCode, table.merchantId, table.env),
     uniqueIndex("payments_ref_code_unique").on(table.refCode),
     uniqueIndex("payments_settlement_evidence_unique").on(
       table.id,

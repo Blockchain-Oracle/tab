@@ -71,6 +71,13 @@
       "when": 1784137641216,
       "tag": "0009_furry_stark_industries",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784144522009,
+      "tag": "0010_clammy_blue_shield",
+      "breakpoints": true
     }
   ]
 }

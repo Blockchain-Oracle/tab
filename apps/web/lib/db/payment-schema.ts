@@ -11,6 +11,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
   varchar,
@@ -59,6 +60,7 @@ export const payments = pgTable(
     settledAt: timestamp("settled_at", { withTimezone: true }),
   },
   (table) => [
+    unique("payments_id_merchant_env_unique").on(table.id, table.merchantId, table.env),
     uniqueIndex("payments_ref_code_unique").on(table.refCode),
     uniqueIndex("payments_settlement_evidence_unique").on(
       table.id,
@@ -134,6 +136,7 @@ export const settlements = pgTable(
     verifiedAt: timestamp("verified_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
+    unique("settlements_id_payment_unique").on(table.id, table.paymentId),
     uniqueIndex("settlements_payment_id_unique").on(table.paymentId),
     uniqueIndex("settlements_particle_transaction_id_unique").on(table.particleTransactionId),
     foreignKey({

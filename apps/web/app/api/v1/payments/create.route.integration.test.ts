@@ -25,13 +25,18 @@ async function merchant(label: string, receiver: string) {
   });
 }
 
-function request(publishableKey: string, body: unknown) {
+function request(
+  publishableKey: string,
+  body: unknown,
+  additionalHeaders: Record<string, string> = {},
+) {
   return new NextRequest("http://localhost/api/v1/payments", {
     body: JSON.stringify(body),
     headers: {
       authorization: `Bearer ${publishableKey}`,
       "content-type": "application/json",
       origin: "https://merchant.example.test",
+      ...additionalHeaders,
     },
     method: "POST",
   });
@@ -196,5 +201,25 @@ describe("POST /api/v1/payments create-at-open with real PostgreSQL", () => {
     expect(response.headers.get("access-control-allow-origin")).toBe("*");
     expect(response.headers.get("access-control-allow-credentials")).toBeNull();
     expect(response.headers.get("access-control-allow-methods")).toContain("POST");
+  });
+
+  it("rejects oversized bodies and preserves CORS on authentication errors", async () => {
+    const receiver = "0x6666666666666666666666666666666666666666";
+    const identity = await merchant("create-limits", receiver);
+
+    const oversized = await POST(
+      request(
+        identity.publishableKeys.test,
+        { intentToken: "not-read" },
+        { "content-length": "10001" },
+      ),
+    );
+    expect(oversized.status).toBe(413);
+    expect(oversized.headers.get("access-control-allow-origin")).toBe("*");
+
+    const unauthenticated = await POST(request("pk_test_missing", { intentToken: "not-read" }));
+    expect(unauthenticated.status).toBe(401);
+    expect(unauthenticated.headers.get("access-control-allow-origin")).toBe("*");
+    expect(await connection.db.select().from(payments)).toHaveLength(0);
   });
 });

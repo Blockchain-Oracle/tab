@@ -25,6 +25,7 @@ const CHECKOUT_CORS_HEADERS = {
   "access-control-allow-origin": "*",
   "access-control-max-age": "86400",
 };
+const MAX_CREATE_PAYMENT_BODY_BYTES = 10_000;
 
 function withCheckoutCors(response: NextResponse) {
   for (const [name, value] of Object.entries(CHECKOUT_CORS_HEADERS)) {
@@ -35,6 +36,13 @@ function withCheckoutCors(response: NextResponse) {
 
 function checkoutError(code: string, message: string, status: number) {
   return withCheckoutCors(apiError(code, message, status));
+}
+
+function claimedBodyIsTooLarge(request: NextRequest) {
+  const header = request.headers.get("content-length");
+  if (!header || !/^\d+$/.test(header)) return false;
+  const length = Number(header);
+  return !Number.isSafeInteger(length) || length > MAX_CREATE_PAYMENT_BODY_BYTES;
 }
 
 export function OPTIONS() {
@@ -49,9 +57,18 @@ export async function POST(request: NextRequest) {
       request.headers.get("authorization"),
     );
 
+    if (claimedBodyIsTooLarge(request)) {
+      return checkoutError("PAYMENT_REQUEST_TOO_LARGE", "The payment request is too large.", 413);
+    }
+
+    const text = await request.text();
+    if (new TextEncoder().encode(text).byteLength > MAX_CREATE_PAYMENT_BODY_BYTES) {
+      return checkoutError("PAYMENT_REQUEST_TOO_LARGE", "The payment request is too large.", 413);
+    }
+
     let body: unknown;
     try {
-      body = await request.json();
+      body = JSON.parse(text) as unknown;
     } catch {
       return checkoutError(
         "INVALID_PAYMENT_INTENT_TOKEN",

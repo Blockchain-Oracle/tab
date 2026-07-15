@@ -1,19 +1,20 @@
 import { randomUUID } from "node:crypto";
-
+import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { hashApiKey } from "../../../../../lib/auth/api-key";
 import { createDatabase } from "../../../../../lib/db/client";
 import { provisionMerchant } from "../../../../../lib/db/provision-merchant";
-import { apiKeys, payments } from "../../../../../lib/db/schema";
+import { apiKeys, payments, settlements } from "../../../../../lib/db/schema";
 import { closeServerDatabase } from "../../../../../lib/db/server";
-import { GET } from "./route";
+import { GET, OPTIONS, PATCH } from "./route";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required for payment detail tests");
 
 const connection = createDatabase(databaseUrl, 1);
+const originalMagicSecret = process.env.MAGIC_SECRET_KEY;
 
 async function merchant(label: string) {
   return provisionMerchant(connection.db, {
@@ -64,16 +65,41 @@ function request(rawKey?: string) {
   });
 }
 
+function reportRequest(rawKey: string, body: unknown, headers: Record<string, string> = {}) {
+  return new NextRequest("http://localhost/api/v1/payments/detail", {
+    body: JSON.stringify(body),
+    headers: {
+      authorization: `Bearer ${rawKey}`,
+      "content-type": "application/json",
+      origin: "https://merchant.example.test",
+      ...headers,
+    },
+    method: "PATCH",
+  });
+}
+
+function reportBody(overrides: Record<string, unknown> = {}) {
+  return {
+    buyerDidToken: "buyer.magic.did.token",
+    tokenChanges: [{ amount: "7.000000" }],
+    transactionId: `test_${randomUUID()}`,
+    ...overrides,
+  };
+}
+
 function context(id: string) {
   return { params: Promise.resolve({ id }) };
 }
 
-describe("GET /api/v1/payments/:id with real PostgreSQL", () => {
+describe("GET and PATCH /api/v1/payments/:id with real PostgreSQL", () => {
   beforeEach(async () => {
+    delete process.env.MAGIC_SECRET_KEY;
     await connection.client`truncate table users cascade`;
   });
 
   afterAll(async () => {
+    if (originalMagicSecret === undefined) delete process.env.MAGIC_SECRET_KEY;
+    else process.env.MAGIC_SECRET_KEY = originalMagicSecret;
     await closeServerDatabase();
     await connection.client.end();
   });
@@ -111,5 +137,77 @@ describe("GET /api/v1/payments/:id with real PostgreSQL", () => {
     expect((await GET(request(), context(randomUUID()))).status).toBe(401);
     const malformed = await GET(request(rawKey), context("not-a-uuid"));
     expect(malformed.status).toBe(400);
+  });
+
+  it("returns an honest configuration error without mutating a valid report", async () => {
+    const identity = await merchant("report-config");
+    const paymentId = await payment(identity.merchantId);
+
+    const response = await PATCH(
+      reportRequest(identity.publishableKeys.test, reportBody()),
+      context(paymentId),
+    );
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("access-control-allow-origin")).toBe("*");
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "MAGIC_NOT_CONFIGURED" },
+    });
+    const [stored] = await connection.db.select().from(payments).where(eq(payments.id, paymentId));
+    expect(stored).toMatchObject({
+      payerAddress: null,
+      reportedAt: null,
+      reportedTokenChanges: null,
+      reportedTransactionId: null,
+      status: "pending",
+    });
+    expect(await connection.db.select().from(settlements)).toHaveLength(0);
+  });
+
+  it("rejects malformed, oversized, and cross-scope reports before Magic", async () => {
+    const first = await merchant("report-first");
+    const second = await merchant("report-second");
+    const ownPaymentId = await payment(first.merchantId);
+    const foreignPaymentId = await payment(second.merchantId);
+
+    const malformed = await PATCH(
+      reportRequest(first.publishableKeys.test, reportBody({ receiver: "caller-authority" })),
+      context(ownPaymentId),
+    );
+    expect(malformed.status).toBe(400);
+
+    const controlCharacter = await PATCH(
+      reportRequest(first.publishableKeys.test, reportBody({ transactionId: "candidate\u0000id" })),
+      context(ownPaymentId),
+    );
+    expect(controlCharacter.status).toBe(400);
+
+    const oversized = await PATCH(
+      reportRequest(first.publishableKeys.test, reportBody(), { "content-length": "120001" }),
+      context(ownPaymentId),
+    );
+    expect(oversized.status).toBe(413);
+
+    const foreign = await PATCH(
+      reportRequest(first.publishableKeys.test, reportBody()),
+      context(foreignPaymentId),
+    );
+    expect(foreign.status).toBe(404);
+    expect(await connection.db.select().from(settlements)).toHaveLength(0);
+  });
+
+  it("returns CORS headers for unauthenticated reports and browser preflight", async () => {
+    const unauthenticated = await PATCH(
+      reportRequest("pk_test_missing", reportBody()),
+      context(randomUUID()),
+    );
+    expect(unauthenticated.status).toBe(401);
+    expect(unauthenticated.headers.get("access-control-allow-origin")).toBe("*");
+
+    const preflight = OPTIONS();
+    expect(preflight.status).toBe(204);
+    expect(preflight.headers.get("access-control-allow-origin")).toBe("*");
+    expect(preflight.headers.get("access-control-allow-credentials")).toBeNull();
+    expect(preflight.headers.get("access-control-allow-methods")).toContain("PATCH");
   });
 });

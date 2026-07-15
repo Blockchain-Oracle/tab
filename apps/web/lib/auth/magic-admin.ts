@@ -16,7 +16,7 @@ export class MagicNotConfiguredError extends Error {
 
 export class InvalidMagicIdentityError extends Error {
   constructor() {
-    super("Magic did not return a complete merchant identity");
+    super("Magic did not return a complete identity");
     this.name = "InvalidMagicIdentityError";
   }
 }
@@ -65,7 +65,7 @@ async function adminClient(secret: string) {
   }
 }
 
-export async function verifyMerchantDidToken(didToken: string) {
+async function verifiedMetadata(didToken: string) {
   const secret = process.env.MAGIC_SECRET_KEY;
 
   if (!secret?.trim()) {
@@ -88,6 +88,12 @@ export async function verifyMerchantDidToken(didToken: string) {
     throw new MagicServiceUnavailableError({ cause: error });
   }
 
+  return metadata;
+}
+
+function completeIdentity(
+  metadata: Awaited<ReturnType<AdminClient["users"]["getMetadataByToken"]>>,
+) {
   if (
     !metadata.email ||
     !emailAddress.test(metadata.email) ||
@@ -100,7 +106,27 @@ export async function verifyMerchantDidToken(didToken: string) {
 
   return {
     email: metadata.email.trim().toLowerCase(),
-    magicIssuer: metadata.issuer,
-    receivingAddress: metadata.publicAddress,
+    issuer: metadata.issuer,
+    publicAddress: metadata.publicAddress,
+  };
+}
+
+export async function verifyMerchantDidToken(didToken: string) {
+  const identity = completeIdentity(await verifiedMetadata(didToken));
+
+  return {
+    email: identity.email,
+    magicIssuer: identity.issuer,
+    receivingAddress: identity.publicAddress,
+  };
+}
+
+export async function verifyBuyerDidToken(didToken: string) {
+  const identity = completeIdentity(await verifiedMetadata(didToken));
+
+  return {
+    email: identity.email,
+    magicIssuer: identity.issuer,
+    payerAddress: identity.publicAddress,
   };
 }

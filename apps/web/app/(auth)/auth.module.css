@@ -1,0 +1,182 @@
+.title {
+  margin: 0;
+  color: #1c1b18;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  color: #5f5d55;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.subtitle strong {
+  color: #1c1b18;
+  font-weight: 550;
+}
+
+.configBanner,
+.errorBanner,
+.noticeBanner {
+  margin-top: 20px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.configBanner,
+.noticeBanner {
+  background: #fbf1dc;
+  color: #7a5410;
+}
+
+.errorBanner {
+  border: 1px solid #f0d7d7;
+  background: #faecec;
+  color: #8e2f34;
+}
+
+.form {
+  display: grid;
+  margin-top: 24px;
+}
+
+.label {
+  margin-bottom: 7px;
+  color: #5f5d55;
+  font-size: 13px;
+  font-weight: 550;
+}
+
+.emailInput {
+  width: 100%;
+  height: 42px;
+  padding: 0 13px;
+  border: 1px solid #dbd9d0;
+  border-radius: 9px;
+  outline: none;
+  background: #fff;
+  color: #1c1b18;
+  font-size: 14px;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.emailInput::placeholder {
+  color: #b4b2a8;
+}
+
+.emailInput:focus {
+  border-color: #3b5bd9;
+  box-shadow: 0 0 0 3px rgba(59, 91, 217, 0.13);
+}
+
+.emailInput[aria-invalid="true"] {
+  border-color: #c13a40;
+}
+
+.emailInput:disabled {
+  background: #f5f4f0;
+  color: #8c8a80;
+}
+
+.inlineError {
+  margin: 7px 0 0;
+  color: #8e2f34;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.inlineError a,
+.alternate a,
+.textButton {
+  color: #3b5bd9;
+  font-weight: 550;
+}
+
+.inlineError a:hover,
+.alternate a:hover,
+.textButton:hover {
+  color: #2e48b8;
+}
+
+.primaryButton,
+.secondaryButton {
+  width: 100%;
+  height: 42px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.primaryButton {
+  margin-top: 18px;
+  border: 0;
+  background: #3b5bd9;
+  color: #fff;
+  transition: background 120ms ease;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: #2e48b8;
+}
+
+.primaryButton:disabled {
+  background: #ebe9e3;
+  color: #8c8a80;
+}
+
+.secondaryButton {
+  margin-top: 24px;
+  border: 1px solid #dbd9d0;
+  background: #fff;
+  color: #1c1b18;
+}
+
+.alternate {
+  margin: 22px 0 0;
+  color: #8c8a80;
+  font-size: 13px;
+  text-align: center;
+}
+
+.alternate a {
+  text-decoration: none;
+}
+
+.statusPanel {
+  padding-top: 20px;
+  text-align: center;
+}
+
+.statusIcon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 18px;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 23px;
+  font-weight: 650;
+}
+
+.success {
+  background: #e8f3ec;
+  color: #257a46;
+}
+
+.error {
+  background: #faecec;
+  color: #8e2f34;
+}
+
+.device {
+  background: #f5f4f0;
+  color: #3b5bd9;
+}

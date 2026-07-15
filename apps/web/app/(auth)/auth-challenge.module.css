@@ -1,0 +1,147 @@
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #5f5d55;
+  font-size: 13px;
+}
+
+.backButton:disabled {
+  color: #b4b2a8;
+}
+
+.challengeHeading {
+  margin-top: 18px;
+  text-align: center;
+}
+
+.mailIcon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 14px;
+  place-items: center;
+  border-radius: 11px;
+  background: #f5f4f0;
+  color: #3b5bd9;
+}
+
+.otpGroup {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 44px));
+  min-width: 0;
+  margin: 24px 0 0;
+  padding: 0;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.otpInput {
+  width: 100%;
+  height: 52px;
+  padding: 0;
+  border: 1px solid #dbd9d0;
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+  color: #1c1b18;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.otpInput:focus {
+  border-color: #3b5bd9;
+  box-shadow: 0 0 0 3px rgba(59, 91, 217, 0.13);
+}
+
+.otpInput[aria-invalid="true"] {
+  border-color: #c13a40;
+  background: #fdf4f4;
+}
+
+.otpInput:disabled {
+  background: #f5f4f0;
+  color: #8c8a80;
+}
+
+.challengeAction {
+  min-height: 20px;
+  margin-top: 18px;
+  color: #8c8a80;
+  font-size: 13px;
+  text-align: center;
+}
+
+.textButton {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #3b5bd9;
+  font-size: inherit;
+  font-weight: 550;
+}
+
+.textButton:hover {
+  color: #2e48b8;
+}
+
+.verifying {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #5f5d55;
+}
+
+.smallSpinner {
+  width: 13px;
+  height: 13px;
+  border: 1.5px solid #d4d2ca;
+  border-top-color: #3b5bd9;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.otpHelp {
+  margin: 9px 0 0;
+  color: #b4b2a8;
+  font-size: 11px;
+  text-align: center;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 520px) {
+  .otpGroup {
+    gap: min(2vw, 8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smallSpinner {
+    animation-duration: 1.6s;
+  }
+}

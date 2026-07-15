@@ -14,6 +14,13 @@ export interface MerchantSession {
   userId: string;
 }
 
+export class InvalidSessionTokenError extends Error {
+  constructor(message = "The merchant session token is invalid", options?: ErrorOptions) {
+    super(message, options);
+    this.name = "InvalidSessionTokenError";
+  }
+}
+
 function sessionKey(secret: string) {
   const key = new TextEncoder().encode(secret);
 
@@ -73,15 +80,23 @@ export async function createSessionToken(claims: MerchantSession, secret = confi
 }
 
 export async function readSessionToken(token: string, secret = configuredSecret()) {
-  const { payload } = await jwtVerify(token, sessionKey(secret), {
-    algorithms: ["HS256"],
-    audience: sessionAudience,
-    issuer: sessionIssuer,
-    maxTokenAge: SESSION_TTL_SECONDS,
-    requiredClaims: ["exp", "iat", "sub"],
-  });
+  const key = sessionKey(secret);
 
-  return validatedClaims(payload);
+  try {
+    const { payload } = await jwtVerify(token, key, {
+      algorithms: ["HS256"],
+      audience: sessionAudience,
+      issuer: sessionIssuer,
+      maxTokenAge: SESSION_TTL_SECONDS,
+      requiredClaims: ["exp", "iat", "sub"],
+    });
+
+    return validatedClaims(payload);
+  } catch (error) {
+    throw new InvalidSessionTokenError(error instanceof Error ? error.message : undefined, {
+      cause: error,
+    });
+  }
 }
 
 export function sessionCookieOptions(isProduction = process.env.NODE_ENV === "production") {

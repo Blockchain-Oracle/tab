@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
+import { getCurrentMerchant } from "../../lib/auth/current-merchant";
 import type { AuthFlow } from "./auth-copy";
 import styles from "./auth-page.module.css";
 import { MerchantAuthCard } from "./merchant-auth-card";
@@ -26,6 +28,8 @@ function authConfiguration() {
 
 export async function MerchantAuthPage({ flow }: { flow: AuthFlow }) {
   await connection();
+  const merchant = await getCurrentMerchant();
+  if (merchant) redirect("/dashboard/transactions");
   const configuration = authConfiguration();
 
   return (

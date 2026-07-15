@@ -3,6 +3,7 @@ import {
   type AnyPgColumn,
   check,
   customType,
+  integer,
   pgEnum,
   pgTable,
   primaryKey,
@@ -50,7 +51,12 @@ export const merchants = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     businessName: text("business_name"),
+    logoEtag: text("logo_etag"),
     logoUrl: text("logo_url"),
+    logoUploadCount: integer("logo_upload_count").default(0).notNull(),
+    logoUploadWindowStartedAt: timestamp("logo_upload_window_started_at", {
+      withTimezone: true,
+    }),
     receivingAddress: varchar("receiving_address", { length: 42 }).notNull(),
     receivingAddressSource: receivingAddressSource("receiving_address_source")
       .default("magic_default")
@@ -62,7 +68,8 @@ export const merchants = pgTable(
     uniqueIndex("merchants_user_id_unique").on(table.userId),
     check(
       "merchants_receiving_address_check",
-      sql`${table.receivingAddress} ~ '^0x[0-9a-fA-F]{40}$'`,
+      sql`${table.receivingAddress} ~ '^0x[0-9a-fA-F]{40}$'
+        and lower(${table.receivingAddress}) <> '0x0000000000000000000000000000000000000000'`,
     ),
   ],
 );

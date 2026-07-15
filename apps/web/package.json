@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@magic-sdk/admin": "latest",
+    "@vercel/blob": "2.6.1",
     "@x402/fetch": "~2.17.0",
     "@x402/next": "~2.17.0",
     "@x402/paywall": "~2.17.0",

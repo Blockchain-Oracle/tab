@@ -1,7 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Phase 1 scaffold — no runtime config yet.
+  images: {
+    remotePatterns: [
+      {
+        hostname: "**.public.blob.vercel-storage.com",
+        pathname: "/merchant-logos/**",
+        port: "",
+        protocol: "https",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

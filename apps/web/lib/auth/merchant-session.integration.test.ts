@@ -5,7 +5,11 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createDatabase } from "../db/client";
 import { provisionMerchant } from "../db/provision-merchant";
 import { createSessionToken } from "./session";
-import { InactiveMerchantSessionError, loadMerchantSession } from "./session-principal";
+import {
+  InactiveMerchantSessionError,
+  InvalidMerchantSessionError,
+  loadMerchantSession,
+} from "./session-principal";
 
 const databaseUrl = process.env.DATABASE_URL;
 
@@ -48,11 +52,23 @@ describe("protected merchant session lookup with real PostgreSQL", () => {
     );
 
     await expect(loadMerchantSession(connection.db, token, secret)).resolves.toEqual({
+      businessName: null,
       email: "owner@example.test",
+      liveActivatedAt: null,
+      logoEtag: null,
+      logoUrl: null,
       merchantId: provisioned.merchantId,
       mode: "test",
+      receivingAddress: "0x1111111111111111111111111111111111111111",
+      receivingAddressSource: "magic_default",
       userId: provisioned.userId,
     });
+  });
+
+  it("classifies an invalid signed cookie without touching tenant data", async () => {
+    await expect(loadMerchantSession(connection.db, "not-a-jwt", secret)).rejects.toBeInstanceOf(
+      InvalidMerchantSessionError,
+    );
   });
 
   it("rejects a signed session after its tenant is deleted", async () => {

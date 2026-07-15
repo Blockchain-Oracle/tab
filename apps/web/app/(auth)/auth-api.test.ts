@@ -28,6 +28,20 @@ describe("merchant auth API client", () => {
     );
   });
 
+  it("maps a rejected request to a truthful network error", async () => {
+    const request = vi.fn(async () => {
+      throw new TypeError("network unavailable");
+    });
+
+    await expect(precheckEmail("merchant@example.com", "login", { request })).rejects.toMatchObject(
+      {
+        code: "NETWORK_ERROR",
+        message: "Tab could not reach the authentication service.",
+        status: 0,
+      },
+    );
+  });
+
   it("accepts only a local redirect after server DID verification", async () => {
     const goodRequest = vi.fn(async () => Response.json({ redirectTo: "/dashboard/quickstart" }));
     const badRequest = vi.fn(async () => Response.json({ redirectTo: "//outside.example" }));

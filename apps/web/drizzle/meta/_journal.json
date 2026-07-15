@@ -22,6 +22,27 @@
       "when": 1784103754122,
       "tag": "0002_require_secret_hash",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784129671667,
+      "tag": "0003_nonzero_receiving_address",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784130044193,
+      "tag": "0004_logo_upload_rate_limit",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784131527706,
+      "tag": "0005_logo_etag",
+      "breakpoints": true
     }
   ]
 }

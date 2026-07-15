@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import postgres from "postgres";
 import { afterAll, describe, expect, it } from "vitest";
 
@@ -43,5 +45,23 @@ describe("Phase 2 PostgreSQL migration", () => {
     `;
 
     expect(rows).toEqual([{ extname: "citext" }]);
+  });
+
+  it("rejects the zero settlement address at the database boundary", async () => {
+    const [user] = await sql<{ id: string }[]>`
+      insert into users (email, magic_issuer)
+      values (${`constraint-${randomUUID()}@example.test`}, ${`did:ethr:${randomUUID()}`})
+      returning id
+    `;
+    if (!user) throw new Error("Expected the database to return the inserted user");
+
+    await expect(
+      sql`
+        insert into merchants (user_id, receiving_address)
+        values (${user.id}, '0x0000000000000000000000000000000000000000')
+      `,
+    ).rejects.toMatchObject({ code: "23514" });
+
+    await sql`delete from users where id = ${user.id}`;
   });
 });

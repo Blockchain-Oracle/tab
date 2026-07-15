@@ -1,11 +1,9 @@
 import { randomBytes } from "node:crypto";
 
 import { eq, or } from "drizzle-orm";
-
+import { normalizeReceivingAddress } from "../merchant/receiving-address";
 import type { Database } from "./client";
 import { apiKeys, merchants, users } from "./schema";
-
-const ethereumAddress = /^0x[0-9a-fA-F]{40}$/;
 
 export class MerchantAlreadyExistsError extends Error {
   readonly code = "EMAIL_ALREADY_REGISTERED";
@@ -60,6 +58,7 @@ function uniqueViolationConstraint(error: unknown) {
 export async function provisionMerchant(db: Database, input: ProvisionMerchantInput) {
   const email = input.email.trim().toLowerCase();
   const magicIssuer = input.magicIssuer.trim();
+  const receivingAddress = normalizeReceivingAddress(input.receivingAddress);
 
   if (!email.includes("@")) {
     throw new Error("A valid email is required");
@@ -67,7 +66,7 @@ export async function provisionMerchant(db: Database, input: ProvisionMerchantIn
   if (!magicIssuer.startsWith("did:")) {
     throw new Error("A valid Magic issuer is required");
   }
-  if (!ethereumAddress.test(input.receivingAddress)) {
+  if (!receivingAddress) {
     throw new Error("A valid EVM receiving address is required");
   }
 
@@ -95,7 +94,7 @@ export async function provisionMerchant(db: Database, input: ProvisionMerchantIn
       const [merchant] = await transaction
         .insert(merchants)
         .values({
-          receivingAddress: input.receivingAddress,
+          receivingAddress,
           userId: user.id,
         })
         .returning({ id: merchants.id });

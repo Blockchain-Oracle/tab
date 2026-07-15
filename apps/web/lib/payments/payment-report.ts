@@ -10,8 +10,6 @@ import {
   usdcAtomicAmount,
 } from "./payment-report-values";
 
-type VerificationTrigger = "cron_sweep" | "inline";
-
 export interface PaymentReportEvidence {
   tokenChanges: unknown[];
   transactionId: string;
@@ -63,7 +61,6 @@ export async function reportPayment(
   paymentId: string,
   evidence: PaymentReportEvidence,
   buyer: ValidatedBuyerIdentity,
-  trigger: VerificationTrigger,
 ) {
   try {
     return await db.transaction(async (transaction) => {
@@ -141,7 +138,7 @@ export async function reportPayment(
           paymentId: payment.id,
           tokenChangesJson: simulatedSettlementTokenChanges(settledPayment, amountAtomic),
           verificationMethod: "simulated_test",
-          verificationTrigger: trigger,
+          verificationTrigger: "inline",
           verifiedAt: settledPayment.settledAt,
         })
         .returning();

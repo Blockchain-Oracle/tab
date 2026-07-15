@@ -56,6 +56,9 @@ export const payments = pgTable(
     reportedTransactionId: text("reported_transaction_id"),
     reportedTokenChanges: jsonb("reported_token_changes").$type<unknown[]>(),
     reportedAt: timestamp("reported_at", { withTimezone: true }),
+    verificationNextAttemptAt: timestamp("verification_next_attempt_at", { withTimezone: true }),
+    verificationLeaseToken: uuid("verification_lease_token"),
+    verificationLeaseExpiresAt: timestamp("verification_lease_expires_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     settledAt: timestamp("settled_at", { withTimezone: true }),
   },
@@ -74,6 +77,12 @@ export const payments = pgTable(
       table.createdAt.desc(),
     ),
     index("payments_pending_sweep_idx").on(table.status, table.createdAt),
+    index("payments_verification_sweep_idx").on(
+      table.env,
+      table.status,
+      table.reportedAt,
+      table.verificationNextAttemptAt,
+    ),
     check("payments_ref_code_check", sql`${table.refCode} ~ '^TAB-[A-Z0-9]+$'`),
     check(
       "payments_amount_check",
@@ -112,6 +121,19 @@ export const payments = pgTable(
       "payments_settled_at_check",
       sql`(${table.status} = 'settled' and ${table.settledAt} is not null)
         or (${table.status} <> 'settled' and ${table.settledAt} is null)`,
+    ),
+    check(
+      "payments_verification_lease_check",
+      sql`(${table.verificationLeaseToken} is null and ${table.verificationLeaseExpiresAt} is null)
+        or (${table.verificationLeaseToken} is not null
+          and ${table.verificationLeaseExpiresAt} is not null and ${table.env} = 'live'
+          and ${table.status} = 'pending' and ${table.reportedAt} is not null
+          and ${table.reportedTransactionId} is not null and ${table.payerAddress} is not null)`,
+    ),
+    check(
+      "payments_verification_schedule_check",
+      sql`${table.verificationNextAttemptAt} is null
+        or (${table.env} = 'live' and ${table.reportedAt} is not null)`,
     ),
     check(
       "payments_failure_reason_check",

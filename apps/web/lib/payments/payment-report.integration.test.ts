@@ -65,8 +65,8 @@ describe("payment reporting with real PostgreSQL", () => {
     const principal = { env: "test" as const, merchantId: identity.merchantId };
 
     const results = await Promise.all([
-      reportPayment(connection.db, principal, paymentId, report, { payerAddress }, "inline"),
-      reportPayment(connection.db, principal, paymentId, report, { payerAddress }, "inline"),
+      reportPayment(connection.db, principal, paymentId, report, { payerAddress }),
+      reportPayment(connection.db, principal, paymentId, report, { payerAddress }),
     ]);
     expect(results).toEqual([
       expect.objectContaining({ status: "settled", verificationMethod: "simulated_test" }),
@@ -120,7 +120,6 @@ describe("payment reporting with real PostgreSQL", () => {
         paymentId,
         report,
         { payerAddress },
-        "inline",
       ),
     ).resolves.toMatchObject({ status: "pending", verificationMethod: null });
 
@@ -149,23 +148,15 @@ describe("payment reporting with real PostgreSQL", () => {
         paymentId,
         candidates[0],
         { payerAddress },
-        "inline",
       ),
     ).rejects.toMatchObject({ code: "PAYMENT_NOT_FOUND" });
     await expect(
-      reportPayment(
-        connection.db,
-        principal,
-        livePaymentId,
-        candidates[0],
-        { payerAddress },
-        "inline",
-      ),
+      reportPayment(connection.db, principal, livePaymentId, candidates[0], { payerAddress }),
     ).rejects.toMatchObject({ code: "PAYMENT_NOT_FOUND" });
 
     const results = await Promise.allSettled(
       candidates.map((candidate) =>
-        reportPayment(connection.db, principal, paymentId, candidate, { payerAddress }, "inline"),
+        reportPayment(connection.db, principal, paymentId, candidate, { payerAddress }),
       ),
     );
     const fulfilled = results.filter((result) => result.status === "fulfilled");

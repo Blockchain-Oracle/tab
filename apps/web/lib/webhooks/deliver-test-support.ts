@@ -78,7 +78,6 @@ export async function createPendingWebhookDelivery(endpointUrl: string) {
     paymentId,
     { tokenChanges: [], transactionId: `test_${randomUUID()}` },
     { payerAddress: "0x9999999999999999999999999999999999999999" },
-    "inline",
   );
   if (!result.webhookDeliveryId) throw new Error("Expected a delivery id");
   const [delivery] = await deliveryTestConnection.db

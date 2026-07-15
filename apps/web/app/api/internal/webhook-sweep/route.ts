@@ -1,22 +1,12 @@
-import { timingSafeEqual } from "node:crypto";
-
 import { type NextRequest, NextResponse } from "next/server";
 
 import { NO_STORE_HEADERS } from "../../../../lib/auth/api-key-http";
+import { cronAuthorizationIsValid } from "../../../../lib/auth/cron-auth";
 import { getServerDatabase } from "../../../../lib/db/server";
 import { drainWebhookDeliveryQueue } from "../../../../lib/webhooks/worker";
 
-function authorized(request: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  const authorization = request.headers.get("authorization");
-  if (!secret || !authorization) return false;
-  const expected = Buffer.from(`Bearer ${secret}`, "utf8");
-  const received = Buffer.from(authorization, "utf8");
-  return received.length === expected.length && timingSafeEqual(received, expected);
-}
-
 export async function GET(request: NextRequest) {
-  if (!authorized(request)) {
+  if (!cronAuthorizationIsValid(request.headers.get("authorization"))) {
     return NextResponse.json(
       { error: { code: "UNAUTHORIZED", message: "Unauthorized." } },
       { headers: NO_STORE_HEADERS, status: 401 },

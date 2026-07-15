@@ -86,8 +86,8 @@ describe("transactional webhook enqueue with real PostgreSQL", () => {
     const principal = { env: "test" as const, merchantId: identity.merchantId };
 
     const results = await Promise.all([
-      reportPayment(connection.db, principal, paymentId, report, { payerAddress }, "inline"),
-      reportPayment(connection.db, principal, paymentId, report, { payerAddress }, "inline"),
+      reportPayment(connection.db, principal, paymentId, report, { payerAddress }),
+      reportPayment(connection.db, principal, paymentId, report, { payerAddress }),
     ]);
     const deliveries = await connection.db
       .select()
@@ -126,23 +126,13 @@ describe("transactional webhook enqueue with real PostgreSQL", () => {
     const report = evidence();
     const principal = { env: "test" as const, merchantId: identity.merchantId };
 
-    const first = await reportPayment(
-      connection.db,
-      principal,
-      paymentId,
-      report,
-      { payerAddress },
-      "inline",
-    );
+    const first = await reportPayment(connection.db, principal, paymentId, report, {
+      payerAddress,
+    });
     await endpoint(identity.merchantId);
-    const replay = await reportPayment(
-      connection.db,
-      principal,
-      paymentId,
-      report,
-      { payerAddress },
-      "inline",
-    );
+    const replay = await reportPayment(connection.db, principal, paymentId, report, {
+      payerAddress,
+    });
 
     expect(first.webhookDeliveryId).toBeNull();
     expect(replay.webhookDeliveryId).toBeNull();

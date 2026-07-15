@@ -1,0 +1,24 @@
+{
+  "name": "uxmax",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "biome check .",
+    "check:showcase": "sh scripts/check-showcase-constants.sh",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "biome format --write .",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.2",
+    "husky": "9.1.7",
+    "turbo": "^2.10.3",
+    "typescript": "^5.8"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

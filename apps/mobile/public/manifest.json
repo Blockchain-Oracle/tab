@@ -1,0 +1,17 @@
+{
+  "name": "Leash Monitor",
+  "short_name": "Leash",
+  "description": "Read-only monitoring and controls for Leash payments.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f4f0",
+  "theme_color": "#1c1b18",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

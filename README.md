@@ -34,16 +34,20 @@ targeting the Arbitrum and Magic Labs bonuses.
   monitoring).
 - A **hosted signer** (Magic Server Wallets, TEE) holds the key and enforces the spend cap
   *outside* the agent — so a runaway agent can't overspend.
-- **Multi-chain floats** (Base primary, plus Arbitrum/Polygon) are pre-positioned and
+- **Multi-chain floats** (Base primary, plus Arbitrum) are pre-positioned and
   **rebalanced in the background** from the one Universal Account treasury — that cross-chain
   rebalance is a genuine UA cross-chain move.
 
 ## Status
 
-**Research + product design complete; implementation is the next phase.** This repository is
-the full context-engineering groundwork behind Tab — every requirement is grounded in real,
-cited research (including cloned/read source from `coinbase/x402` and prior-art proxies), and
-cross-checked for consistency. No fabricated capabilities.
+**Phase 1 foundation is scaffolded and locally verified.** The pnpm/Turborepo workspace, app
+shells, shared SDK package, CI workflow, linting, typechecking, tests, builds, pre-commit hook,
+and mobile PWA shell are in place. Product behavior begins in Phase 2.
+
+The funded live spike in Phase 0 is not complete, so every money-moving path remains visibly
+blocked: buyer settlement, agent mainnet payment, float movement, and automatic rebalance are
+not simulated as real behavior. Particle and x402 integration work is grounded in installed
+package types and the canonical `x402-foundation/x402` source clone.
 
 ## Repository map
 
@@ -56,6 +60,12 @@ cross-checked for consistency. No fabricated capabilities.
   design/        product surface map + designer brief (screens, states, data)
   decisions/     DECISIONS.md — the durable decision log
   brand-and-vision.md
+apps/
+  web/           Next.js checkout, backend, merchant dashboard, and Leash dashboard
+  agent/         Leash MCP proxy, x402 wrapper, cap engine, and receipt ledger
+  mobile/        monitor-only PWA shell; no on-device signing
+packages/
+  sdk/           drop-in PayButton and Tab client package
 instuctions.md   the original hackathon brief
 PITCH-DECK-PROMPT.md   5-slide pitch-deck generation prompt
 ```

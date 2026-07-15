@@ -12,6 +12,7 @@ dist/
 build/
 .next/
 .turbo/
+coverage/
 *.tsbuildinfo
 
 # OS / editor

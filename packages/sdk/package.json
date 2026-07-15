@@ -1,0 +1,39 @@
+{
+  "name": "@tab/sdk",
+  "version": "0.0.1",
+  "private": false,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "lint": "biome check ."
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "dependencies": {
+    "@particle-network/universal-account-sdk": "2.0.3",
+    "magic-sdk": "33.9.0",
+    "viem": "^2.48.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.8",
+    "vitest": "^4.1.10"
+  }
+}

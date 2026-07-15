@@ -6,8 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "db:check": "node --env-file-if-exists=.env.local ./node_modules/drizzle-kit/bin.cjs check",
+    "db:generate": "node --env-file-if-exists=.env.local ./node_modules/drizzle-kit/bin.cjs generate",
+    "db:migrate": "node --env-file-if-exists=.env.local ./node_modules/drizzle-kit/bin.cjs migrate",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
+    "test": "node --env-file-if-exists=.env.test.local ./node_modules/vitest/vitest.mjs run --passWithNoTests",
     "lint": "biome check ."
   },
   "dependencies": {

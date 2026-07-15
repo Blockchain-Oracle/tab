@@ -4,6 +4,9 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "db:check": "pnpm --filter @tab/web db:check",
+    "db:generate": "pnpm --filter @tab/web db:generate",
+    "db:migrate": "pnpm --filter @tab/web db:migrate",
     "lint": "biome check .",
     "check:showcase": "sh scripts/check-showcase-constants.sh",
     "typecheck": "turbo run typecheck",

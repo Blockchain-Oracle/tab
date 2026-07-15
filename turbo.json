@@ -16,7 +16,9 @@
       "outputs": []
     },
     "test": {
-      "outputs": ["coverage/**"]
+      "cache": false,
+      "outputs": ["coverage/**"],
+      "passThroughEnv": ["DATABASE_URL"]
     },
     "format": {
       "outputs": []

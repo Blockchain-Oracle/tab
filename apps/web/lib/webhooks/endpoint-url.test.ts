@@ -9,10 +9,13 @@ describe("webhook endpoint URL policy", () => {
     );
   });
 
-  it("allows explicit HTTP loopback only for test-mode integration", () => {
-    expect(parseWebhookEndpointUrl("http://127.0.0.1:3000/hooks/tab", "test")).toBe(
-      "http://127.0.0.1:3000/hooks/tab",
-    );
+  it("requires an explicit process-controlled seam for local HTTP integration", () => {
+    expect(() => parseWebhookEndpointUrl("http://127.0.0.1:3000/hooks/tab", "test")).toThrow();
+    expect(
+      parseWebhookEndpointUrl("http://127.0.0.1:3000/hooks/tab", "test", {
+        allowLocalHttp: true,
+      }),
+    ).toBe("http://127.0.0.1:3000/hooks/tab");
     expect(() => parseWebhookEndpointUrl("http://127.0.0.1:3000/hooks/tab", "live")).toThrow();
   });
 

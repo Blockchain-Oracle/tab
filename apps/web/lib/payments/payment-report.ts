@@ -3,6 +3,12 @@ import { and, eq, sql } from "drizzle-orm";
 import type { ApiEnvironment } from "../auth/api-key";
 import type { Database } from "../db/client";
 import { payments, settlements } from "../db/schema";
+import { enqueuePaymentSettledWebhook, findPaymentWebhookDeliveryId } from "../webhooks/enqueue";
+import {
+  samePaymentReportEvidence,
+  simulatedSettlementTokenChanges,
+  usdcAtomicAmount,
+} from "./payment-report-values";
 
 type VerificationTrigger = "cron_sweep" | "inline";
 
@@ -38,51 +44,6 @@ class PaymentReportStateError extends Error {
     super("Payment report state is inconsistent");
     this.name = "PaymentReportStateError";
   }
-}
-
-function canonicalJson(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
-  if (typeof value === "object" && value !== null) {
-    const record = value as Record<string, unknown>;
-    return `{${Object.keys(record)
-      .sort()
-      .map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`)
-      .join(",")}}`;
-  }
-  return JSON.stringify(value);
-}
-
-function sameAddress(left: string | null, right: string) {
-  return left?.toLowerCase() === right.toLowerCase();
-}
-
-function sameEvidence(
-  payment: typeof payments.$inferSelect,
-  evidence: PaymentReportEvidence,
-  buyer: ValidatedBuyerIdentity,
-) {
-  return (
-    payment.reportedTransactionId === evidence.transactionId &&
-    canonicalJson(payment.reportedTokenChanges) === canonicalJson(evidence.tokenChanges) &&
-    sameAddress(payment.payerAddress, buyer.payerAddress)
-  );
-}
-
-function usdcAtomic(amountUsd: string) {
-  const [whole, fraction = ""] = amountUsd.split(".");
-  return `${whole}${fraction.padEnd(6, "0")}`.replace(/^0+(?=\d)/, "");
-}
-
-function simulatedTokenChanges(payment: typeof payments.$inferSelect, amountAtomic: string) {
-  return [
-    {
-      amountAtomic,
-      chainId: payment.tokenChainId,
-      receiver: payment.receiver,
-      simulation: "simulated_test",
-      tokenAddress: payment.tokenAddress,
-    },
-  ];
 }
 
 function uniqueConstraint(error: unknown) {
@@ -121,7 +82,7 @@ export async function reportPayment(
       if (payment.status === "failed") throw new PaymentReportConflictError();
 
       const hasReport = payment.reportedTransactionId !== null;
-      if (hasReport && !sameEvidence(payment, evidence, buyer)) {
+      if (hasReport && !samePaymentReportEvidence(payment, evidence, buyer)) {
         throw new PaymentReportConflictError();
       }
 
@@ -137,6 +98,7 @@ export async function reportPayment(
           status: "settled" as const,
           verificationMethod: existingSettlement.verificationMethod,
           verifiedAt: existingSettlement.verifiedAt,
+          webhookDeliveryId: await findPaymentWebhookDeliveryId(transaction, existingSettlement.id),
         };
       }
 
@@ -154,6 +116,7 @@ export async function reportPayment(
           status: "pending" as const,
           verificationMethod: null,
           verifiedAt: null,
+          webhookDeliveryId: null,
         };
       }
 
@@ -168,7 +131,7 @@ export async function reportPayment(
         .returning();
       if (!settledPayment?.settledAt) throw new PaymentReportStateError();
 
-      const amountAtomic = usdcAtomic(settledPayment.amountUsd);
+      const amountAtomic = usdcAtomicAmount(settledPayment.amountUsd);
       const [settlement] = await transaction
         .insert(settlements)
         .values({
@@ -176,19 +139,25 @@ export async function reportPayment(
           livemode: false,
           particleTransactionId: evidence.transactionId,
           paymentId: payment.id,
-          tokenChangesJson: simulatedTokenChanges(settledPayment, amountAtomic),
+          tokenChangesJson: simulatedSettlementTokenChanges(settledPayment, amountAtomic),
           verificationMethod: "simulated_test",
           verificationTrigger: trigger,
           verifiedAt: settledPayment.settledAt,
         })
         .returning();
       if (!settlement) throw new PaymentReportStateError();
+      const webhookDeliveryId = await enqueuePaymentSettledWebhook(
+        transaction,
+        settledPayment,
+        settlement,
+      );
 
       return {
         reportedTransactionId: evidence.transactionId,
         status: "settled" as const,
         verificationMethod: settlement.verificationMethod,
         verifiedAt: settlement.verifiedAt,
+        webhookDeliveryId,
       };
     });
   } catch (error) {

@@ -25,9 +25,9 @@ import {
 } from "../../../../../lib/payments/payment-report-request";
 import { paymentResponse } from "../../../../../lib/payments/payment-response";
 import { retrievePayment } from "../../../../../lib/payments/read-payments";
+import { dispatchWebhookAfterSettlement } from "../../../../../lib/webhooks/deliver";
 
 type RouteContext = { params: Promise<{ id: string }> };
-
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TEST_MODE_MESSAGE = "Test payments are simulated and do not move real funds.";
 const REPORT_CORS_HEADERS = {
@@ -129,6 +129,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       { payerAddress: buyer.payerAddress },
       "inline",
     );
+    await dispatchWebhookAfterSettlement(database, result.webhookDeliveryId);
 
     if (result.status === "settled") {
       return withReportCors(

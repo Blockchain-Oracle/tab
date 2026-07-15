@@ -186,7 +186,7 @@ export const webhookDeliveries = pg.pgTable(
     pg.uniqueIndex("webhook_deliveries_chain_attempt_unique").on(table.retryChainId, table.attempt),
     pg
       .uniqueIndex("webhook_deliveries_automatic_settlement_root_unique")
-      .on(table.endpointId, table.settlementId)
+      .on(table.settlementId)
       .where(sql`${table.trigger} = 'auto' and ${table.type} = 'payment' and ${table.attempt} = 1`),
     pg.index("webhook_deliveries_due_idx").on(table.result, table.nextRetryAt, table.createdAt),
     pg.index("webhook_deliveries_event_idx").on(table.eventId),

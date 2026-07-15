@@ -1,0 +1,2 @@
+DROP INDEX "webhook_deliveries_automatic_settlement_root_unique";--> statement-breakpoint
+CREATE UNIQUE INDEX "webhook_deliveries_automatic_settlement_root_unique" ON "webhook_deliveries" USING btree ("settlement_id") WHERE "webhook_deliveries"."trigger" = 'auto' and "webhook_deliveries"."type" = 'payment' and "webhook_deliveries"."attempt" = 1;

@@ -27,7 +27,11 @@ function publicHostname(hostname: string) {
   );
 }
 
-export function parseWebhookEndpointUrl(value: string, env: WebhookEnvironment = "live") {
+export function parseWebhookEndpointUrl(
+  value: string,
+  env: WebhookEnvironment = "live",
+  options: { allowLocalHttp?: boolean } = {},
+) {
   if (value.length === 0 || value.length > 2048 || value.trim() !== value) {
     throw new InvalidWebhookEndpointUrlError();
   }
@@ -40,7 +44,11 @@ export function parseWebhookEndpointUrl(value: string, env: WebhookEnvironment =
   }
   const hostname = hostnameWithoutBrackets(url);
   const localTestEndpoint =
-    env === "test" && url.protocol === "http:" && loopbackHostname(hostname);
+    options.allowLocalHttp === true &&
+    process.env.NODE_ENV === "test" &&
+    env === "test" &&
+    url.protocol === "http:" &&
+    loopbackHostname(hostname);
   const publicHttpsEndpoint = url.protocol === "https:" && publicHostname(hostname);
 
   if (

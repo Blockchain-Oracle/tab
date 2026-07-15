@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/tab_test
+      SESSION_SECRET: ci-only-session-secret-at-least-32-bytes
     services:
       postgres:
         image: postgres:16

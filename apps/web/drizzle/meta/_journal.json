@@ -99,6 +99,13 @@
       "when": 1784152198435,
       "tag": "0013_spotty_argent",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1784155282767,
+      "tag": "0014_glossy_madripoor",
+      "breakpoints": true
     }
   ]
 }

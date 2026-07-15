@@ -1,0 +1,198 @@
+.card {
+  margin-top: 16px;
+  overflow: hidden;
+  border: 1px solid #e8e6df;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.scrollArea {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 870px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.table caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.table th {
+  padding: 10px 18px;
+  border-bottom: 1px solid #f0eee8;
+  color: #5f5d55;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.table th:nth-child(1) {
+  width: 23%;
+}
+
+.table th:nth-child(2),
+.table th:nth-child(3) {
+  width: 12%;
+}
+
+.table th:nth-child(4) {
+  width: 22%;
+}
+
+.table th:nth-child(5) {
+  width: 18%;
+}
+
+.table th:nth-child(6) {
+  width: 13%;
+}
+
+.table td {
+  padding: 12px 18px;
+  border-bottom: 1px solid #f5f4f0;
+  vertical-align: middle;
+}
+
+.table tbody tr:hover {
+  background: #fbfaf7;
+}
+
+.amountCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.amountCell strong,
+.amountCell span,
+.transactionCell span,
+.transactionCell small {
+  display: block;
+}
+
+.amountCell strong {
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.amountCell div > span,
+.transactionCell small {
+  margin-top: 2px;
+  color: #5f5d55;
+  font-size: 10.5px;
+  line-height: 1.3;
+}
+
+.testBadge {
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: #fbf1dc;
+  color: #7a5410;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.status,
+.payer {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.settled {
+  background: #e8f3ec;
+  color: #257a46;
+}
+
+.pending {
+  background: #fbf1dc;
+  color: #7a5410;
+}
+
+.failed {
+  background: #faecec;
+  color: #b4383d;
+}
+
+.human {
+  border: 1px solid #e8e6df;
+  color: #5f5d55;
+  font-weight: 500;
+}
+
+.agent {
+  background: #e8f2ec;
+  color: #17503a;
+}
+
+.agent span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #206b4e;
+}
+
+.transactionCell span {
+  overflow: hidden;
+  color: #3b5bd9;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.webhook {
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.delivered {
+  color: #257a46;
+}
+
+.webhookPending {
+  color: #96650f;
+}
+
+.webhookFailed {
+  color: #b4383d;
+}
+
+.neutral,
+.dateCell {
+  color: #5f5d55;
+}
+
+.dateHeading,
+.dateCell {
+  text-align: right;
+}
+
+.dateCell {
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.footer {
+  padding: 11px 18px;
+  color: #5f5d55;
+  font-size: 11.5px;
+}

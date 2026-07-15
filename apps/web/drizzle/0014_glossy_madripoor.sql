@@ -1,0 +1,2 @@
+CREATE INDEX "webhook_deliveries_dashboard_head_idx" ON "webhook_deliveries" USING btree ("settlement_id") WHERE "webhook_deliveries"."trigger" = 'auto' and "webhook_deliveries"."type" = 'payment'
+          and "webhook_deliveries"."superseded_by_id" is null;

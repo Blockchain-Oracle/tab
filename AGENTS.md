@@ -38,6 +38,20 @@ generated and dependency directories so build caches cannot create binary false 
 
 ## Context Workflow
 
+- **Use the domain wiki first.** For hackathon, sponsor, SDK, ecosystem, or product-domain
+  questions, start at `.thoughts/wiki/index.md` and read the relevant wiki pages before broad
+  repository searches, external browsing, or low-level source inspection. Follow their citations
+  to `.thoughts/raw/sources.md` only when provenance or conflict resolution is needed.
+- Avoid broad re-research unless the wiki marks a specific gap stale, missing, or `(unverified)`,
+  or newer authoritative evidence conflicts with it. For that gap, use this order: wiki →
+  DECISIONS/spec/plan → installed code and package types → pinned `Reference/` sources →
+  Context7/current official source.
+- Wiki-first does not replace mandatory task-specific verification: concrete implementation still
+  requires installed package types, and explicit library/framework/SDK/API/CLI/cloud-service
+  questions still require the Context7 workflow. Use the wiki to scope those checks, not skip them.
+- When newer evidence changes a wiki claim, report the discrepancy and propose a targeted wiki
+  update; never silently override the persistent context.
+
 Before touching code, read the relevant `.thoughts/`: `plans/2026-07-06-tab-build-plan.md`,
 `specs/2026-07-02-tab-leash.md`, `prototype-reintegration/2026-07-06-tab-v1.md` (the screen-to-reality
 matrix + no-shipping-mock labels), `decisions/DECISIONS.md`, and `quality/2026-07-02-project-quality-profile.md`

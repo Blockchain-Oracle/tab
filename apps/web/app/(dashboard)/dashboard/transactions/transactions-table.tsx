@@ -1,39 +1,16 @@
+import Link from "next/link";
+
 import type { DashboardTransaction } from "../../../../lib/payments/dashboard-transactions";
+import {
+  type DashboardTransactionSearch,
+  transactionsHref,
+} from "../../../../lib/payments/dashboard-transactions-search";
+import { compact, formatDate, formatTokenAmount, formatUsd } from "./transaction-format";
 import styles from "./transactions-page.module.css";
 
 interface TransactionsTableProps {
-  hasMore: boolean;
   rows: DashboardTransaction[];
-}
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  month: "short",
-  timeZone: "UTC",
-  timeZoneName: "short",
-  year: "numeric",
-});
-
-function usd(value: string) {
-  const [whole = "0", fraction = ""] = value.split(".");
-  const micros = BigInt(whole) * BigInt(1_000_000) + BigInt(fraction.padEnd(6, "0").slice(0, 6));
-  const cents = (micros + BigInt(5_000)) / BigInt(10_000);
-  return `$${(cents / BigInt(100)).toLocaleString("en-US")}.${(cents % BigInt(100))
-    .toString()
-    .padStart(2, "0")}`;
-}
-
-function tokenAmount(value: string) {
-  const [whole, fraction = ""] = value.split(".");
-  const significant = fraction.replace(/0+$/, "");
-  return significant ? `${whole}.${significant}` : `${whole}.00`;
-}
-
-function compact(value: string) {
-  if (value.length <= 22) return value;
-  return `${value.slice(0, 10)}…${value.slice(-6)}`;
+  search: DashboardTransactionSearch;
 }
 
 function transactionEvidence(row: DashboardTransaction) {
@@ -65,7 +42,7 @@ function webhookState(row: DashboardTransaction) {
   return states[row.webhook.result];
 }
 
-export function TransactionsTable({ hasMore, rows }: TransactionsTableProps) {
+export function TransactionsTable({ rows, search }: TransactionsTableProps) {
   return (
     <section className={styles.card} aria-label="Payment ledger">
       <div className={styles.scrollArea}>
@@ -93,8 +70,8 @@ export function TransactionsTable({ hasMore, rows }: TransactionsTableProps) {
                   <td>
                     <div className={styles.amountCell}>
                       <div>
-                        <strong>{usd(row.amountUsd)}</strong>
-                        <span>{tokenAmount(row.amountUsd)} USDC · Arbitrum One</span>
+                        <strong>{formatUsd(row.amountUsd)}</strong>
+                        <span>{formatTokenAmount(row.amountUsd)} USDC · Arbitrum One</span>
                       </div>
                       {row.env === "test" ? <span className={styles.testBadge}>TEST</span> : null}
                     </div>
@@ -113,7 +90,12 @@ export function TransactionsTable({ hasMore, rows }: TransactionsTableProps) {
                   </td>
                   <td>
                     <div className={styles.transactionCell}>
-                      <span>{evidence.value}</span>
+                      <Link
+                        aria-label={`View details for ${row.refCode}`}
+                        href={transactionsHref(search, { detail: row.paymentId })}
+                      >
+                        {evidence.value}
+                      </Link>
                       <small>
                         {evidence.label} · {row.refCode}
                       </small>
@@ -126,7 +108,7 @@ export function TransactionsTable({ hasMore, rows }: TransactionsTableProps) {
                   </td>
                   <td className={styles.dateCell}>
                     <time dateTime={isoDate} title={isoDate}>
-                      {dateFormatter.format(row.createdAt)}
+                      {formatDate(row.createdAt)}
                     </time>
                   </td>
                 </tr>
@@ -135,11 +117,6 @@ export function TransactionsTable({ hasMore, rows }: TransactionsTableProps) {
           </tbody>
         </table>
       </div>
-      <footer className={styles.footer}>
-        {hasMore
-          ? "Showing latest 20 payments"
-          : `${rows.length} ${rows.length === 1 ? "payment" : "payments"}`}
-      </footer>
     </section>
   );
 }

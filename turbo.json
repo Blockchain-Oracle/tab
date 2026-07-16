@@ -7,6 +7,7 @@
     },
     "dev": {
       "cache": false,
+      "dependsOn": ["^build"],
       "persistent": true,
       "passThroughEnv": ["DATABASE_URL", "PAYMENT_INTENT_SIGNING_SECRET", "SESSION_SECRET"]
     },
@@ -14,6 +15,7 @@
       "outputs": []
     },
     "typecheck": {
+      "dependsOn": ["^build"],
       "outputs": []
     },
     "test": {

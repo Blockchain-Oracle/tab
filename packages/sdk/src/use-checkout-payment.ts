@@ -64,7 +64,37 @@ export function useCheckoutPayment(options: Options) {
     const activeRun = runtime.run.current;
     dispatch({ type: "confirmation-started" });
     try {
-      if (!context.capabilities.livePaymentExecution || context.mode !== "live") {
+      if (context.mode === "test") {
+        const result = options.services.createTestPayment({
+          intent: intentResponse.intent,
+          paymentId: opened.paymentId,
+        });
+        const report = await options.services.reportPayment({
+          apiBaseUrl: options.apiBaseUrl,
+          buyerDidToken: buyer.didToken,
+          intent: intentResponse.intent,
+          paymentId: opened.paymentId,
+          publishableKey: options.publishableKey,
+          tokenChanges: result.tokenChanges,
+          transactionId: result.transactionId,
+        });
+        if (
+          activeRun !== runtime.run.current ||
+          report.payment.status !== "settled" ||
+          !("testMode" in report) ||
+          report.testMode.simulated !== true
+        ) {
+          throw new Error("Test settlement was not committed");
+        }
+        dispatch({ type: "payment-succeeded" });
+        try {
+          options.onSuccess(report.payment.reportedTransactionId, report.payment.tokenChanges);
+        } catch {
+          // Merchant callbacks do not change a completed test payment's state.
+        }
+        return;
+      }
+      if (!context.capabilities.livePaymentExecution) {
         throw new PaymentExecutionBlockedError();
       }
       const result = await options.services.executePayment({
@@ -83,6 +113,7 @@ export function useCheckoutPayment(options: Options) {
         await options.services.reportPayment({
           apiBaseUrl: options.apiBaseUrl,
           buyerDidToken: buyer.didToken,
+          intent: intentResponse.intent,
           paymentId: opened.paymentId,
           publishableKey: options.publishableKey,
           tokenChanges: result.tokenChanges,

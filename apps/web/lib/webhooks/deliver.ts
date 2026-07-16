@@ -66,6 +66,49 @@ async function configurationFailure(db: Database, delivery: ClaimedDelivery, lea
   });
 }
 
+async function verifyCurrentTestEndpoint(
+  db: Database,
+  delivery: ClaimedDelivery,
+  endpoint: NonNullable<Awaited<ReturnType<typeof activeEndpoint>>>,
+  outcome: WebhookDeliveryOutcome,
+  finalized: boolean,
+) {
+  if (
+    !finalized ||
+    delivery.type !== "test" ||
+    outcome.result !== "delivered" ||
+    outcome.statusCode < 200 ||
+    outcome.statusCode > 299
+  ) {
+    return;
+  }
+  const { secretAuthTag, secretCiphertext, secretKeyVersion, secretNonce } = endpoint;
+  if (
+    secretAuthTag === null ||
+    secretCiphertext === null ||
+    secretKeyVersion === null ||
+    secretNonce === null
+  ) {
+    return;
+  }
+  await db
+    .update(webhookEndpoints)
+    .set({ verifiedAt: outcome.completedAt })
+    .where(
+      and(
+        eq(webhookEndpoints.id, endpoint.id),
+        eq(webhookEndpoints.merchantId, endpoint.merchantId),
+        eq(webhookEndpoints.env, endpoint.env),
+        eq(webhookEndpoints.url, endpoint.url),
+        eq(webhookEndpoints.secretAuthTag, secretAuthTag),
+        eq(webhookEndpoints.secretCiphertext, secretCiphertext),
+        eq(webhookEndpoints.secretKeyVersion, secretKeyVersion),
+        eq(webhookEndpoints.secretNonce, secretNonce),
+        isNull(webhookEndpoints.deletedAt),
+      ),
+    );
+}
+
 function endpointSecret(endpoint: NonNullable<Awaited<ReturnType<typeof activeEndpoint>>>) {
   if (
     endpoint.secretAuthTag === null ||
@@ -162,16 +205,19 @@ export async function dispatchWebhookDeliveryById(
       null,
     );
   }
-  return {
-    claimed: true,
-    finalized: await finalizeWebhookDelivery(db, delivery.id, leaseToken, outcome),
-  };
+  const finalized = await finalizeWebhookDelivery(db, delivery.id, leaseToken, outcome);
+  await verifyCurrentTestEndpoint(db, delivery, endpoint, outcome, finalized);
+  return { claimed: true, finalized };
 }
 
 export async function dispatchWebhookAfterSettlement(db: Database, deliveryId: string | null) {
   if (!deliveryId) return;
   try {
-    await dispatchWebhookDeliveryById(db, deliveryId);
+    await dispatchWebhookDeliveryById(
+      db,
+      deliveryId,
+      process.env.NODE_ENV === "test" ? { allowLocalHttp: true } : {},
+    );
   } catch {
     console.error("Webhook dispatch failed after settlement", { deliveryId });
   }

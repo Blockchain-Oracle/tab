@@ -1,37 +1,26 @@
 import type { Metadata } from "next";
 
+import { requireCurrentMerchant } from "../../../../lib/auth/current-merchant";
+import { readQuickstart } from "../../../../lib/dashboard/quickstart";
+import { getServerDatabase } from "../../../../lib/db/server";
 import styles from "../dashboard-page.module.css";
+import { QuickstartList } from "./quickstart-list";
 
 export const metadata: Metadata = {
   title: "Quickstart · Tab",
 };
 
-export default function QuickstartPage() {
+export default async function QuickstartPage() {
+  const merchant = await requireCurrentMerchant();
+  const state = await readQuickstart(getServerDatabase().db, merchant.merchantId);
+
   return (
     <div className={styles.page}>
       <section className={styles.narrowContent}>
-        <header>
-          <h1>Quickstart</h1>
-          <p className={styles.subtitle}>
-            From install to your first settled payment. One action per step.
-          </p>
-        </header>
-
-        <div className={styles.developmentCard}>
-          <div className={styles.developmentIcon} aria-hidden="true">
-            &lt;/&gt;
-          </div>
-          <div>
-            <span className={styles.developmentLabel}>DEVELOPMENT STATE</span>
-            <h2>Integration workflow not connected yet</h2>
-            <p>
-              Your merchant account and signed dashboard session are real. Setup progress will
-              appear only after the API-key, SDK, webhook, and payment checkpoints have real backing
-              services.
-            </p>
-            <p className={styles.integrityNote}>No completion progress is being inferred.</p>
-          </div>
-        </div>
+        <QuickstartList
+          appUrl={process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://your-tab-domain.example"}
+          state={state}
+        />
       </section>
     </div>
   );

@@ -3,7 +3,11 @@ import type { AddressInfo } from "node:net";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { sendWebhookHttpRequest, WebhookHttpClientError } from "./http-client";
+import {
+  MAX_WEBHOOK_RESPONSE_BYTES,
+  sendWebhookHttpRequest,
+  WebhookHttpClientError,
+} from "./http-client";
 
 const servers: ReturnType<typeof createServer>[] = [];
 const localTestRequest = { allowLocalHttp: true, environment: "test" as const };
@@ -64,7 +68,7 @@ describe("real outbound webhook HTTP", () => {
     expect(result.durationMs).toBeGreaterThanOrEqual(0);
   });
 
-  it("returns only the first 500 response characters while draining a 500 response", async () => {
+  it("returns only the first 500 response characters", async () => {
     const endpoint = await localServer((_request, response) => {
       response.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
       response.end(`reason:\0${"🙂".repeat(10_000)}`);
@@ -81,6 +85,36 @@ describe("real outbound webhook HTTP", () => {
     expect(Array.from(result.responseSnippet)).toHaveLength(500);
     expect(result.responseSnippet.startsWith("reason:�")).toBe(true);
     expect(result.responseSnippet).not.toContain("\0");
+  });
+
+  it("closes oversized response bodies after the bounded read budget", async () => {
+    let sent = 0;
+    let closed!: (bytes: number) => void;
+    const connectionClosed = new Promise<number>((resolve) => {
+      closed = resolve;
+    });
+    const chunk = Buffer.alloc(4 * 1024, "x");
+    const endpoint = await localServer((_request, response) => {
+      response.writeHead(200, { "content-type": "text/plain" });
+      const timer = setInterval(() => {
+        sent += chunk.byteLength;
+        response.write(chunk);
+      }, 1);
+      response.on("close", () => {
+        clearInterval(timer);
+        closed(sent);
+      });
+    });
+
+    const result = await sendWebhookHttpRequest({
+      ...localTestRequest,
+      body: "{}",
+      endpointUrl: `${endpoint}/oversized`,
+      headers: {},
+    });
+
+    expect(result.statusCode).toBe(200);
+    expect(await connectionClosed).toBeLessThan(MAX_WEBHOOK_RESPONSE_BYTES * 2);
   });
 
   it("returns a redirect response without requesting its Location", async () => {

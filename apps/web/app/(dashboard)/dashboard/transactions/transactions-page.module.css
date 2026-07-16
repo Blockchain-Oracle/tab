@@ -76,7 +76,7 @@
 
 .amountCell strong,
 .amountCell span,
-.transactionCell span,
+.transactionCell a,
 .transactionCell small {
   display: block;
 }
@@ -149,11 +149,12 @@
   background: #206b4e;
 }
 
-.transactionCell span {
+.transactionCell a {
   overflow: hidden;
   color: #3b5bd9;
   font-family: var(--font-geist-mono), monospace;
   font-size: 11.5px;
+  text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -189,10 +190,4 @@
 .dateCell {
   font-size: 10.5px;
   font-variant-numeric: tabular-nums;
-}
-
-.footer {
-  padding: 11px 18px;
-  color: #5f5d55;
-  font-size: 11.5px;
 }

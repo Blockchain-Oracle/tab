@@ -155,6 +155,7 @@ describe("checkout API client", () => {
   });
 
   it("reports a real execution with the buyer DID and one normalized change record", async () => {
+    const liveIntent = { ...intentResponse.intent, mode: "live" as const };
     const responseBody = {
       payment: {
         id: "1d15cc1f-30a7-4f28-9d33-b93f4fd806aa",
@@ -174,6 +175,7 @@ describe("checkout API client", () => {
         {
           apiBaseUrl: "https://tab.example.test",
           buyerDidToken: "buyer.did.token",
+          intent: liveIntent,
           paymentId: "1d15cc1f-30a7-4f28-9d33-b93f4fd806aa",
           publishableKey: "pk_live_browser_key",
           tokenChanges: { totalPaidAmountInUSD: "12.00" },
@@ -193,5 +195,79 @@ describe("checkout API client", () => {
       tokenChanges: [{ totalPaidAmountInUSD: "12.00" }],
       transactionId: "particle-transaction-id",
     });
+  });
+
+  it("returns only canonical server settlement changes for a settled test report", async () => {
+    const tokenChanges = [
+      {
+        amountAtomic: "12000000",
+        chainId: 42161,
+        receiver: "0x1111111111111111111111111111111111111111",
+        simulation: "simulated_test",
+        tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      },
+    ];
+    const responseBody = {
+      payment: {
+        id: "1d15cc1f-30a7-4f28-9d33-b93f4fd806aa",
+        reportedTransactionId: "test_server_authority",
+        status: "settled",
+        tokenChanges,
+        verification: { method: "simulated_test", verifiedAt: "2026-07-16T12:00:00.000Z" },
+      },
+      testMode: {
+        message: "Test payments are simulated and do not move real funds.",
+        simulated: true,
+      },
+    };
+    const request = vi.fn().mockResolvedValue(jsonResponse(responseBody));
+
+    await expect(
+      reportPayment(
+        {
+          apiBaseUrl: "https://tab.example.test",
+          buyerDidToken: "buyer.did.token",
+          intent: intentResponse.intent,
+          paymentId: responseBody.payment.id,
+          publishableKey: "pk_test_browser_key",
+          tokenChanges: { caller: "candidate-only" },
+          transactionId: "test_server_authority",
+        },
+        { request },
+      ),
+    ).resolves.toEqual(responseBody);
+  });
+
+  it("rejects settled reports without canonical server settlement changes", async () => {
+    const paymentId = "1d15cc1f-30a7-4f28-9d33-b93f4fd806aa";
+    const request = vi.fn().mockResolvedValue(
+      jsonResponse({
+        payment: {
+          id: paymentId,
+          reportedTransactionId: "test_missing_authority",
+          status: "settled",
+          verification: { method: "simulated_test", verifiedAt: "2026-07-16T12:00:00.000Z" },
+        },
+        testMode: {
+          message: "Test payments are simulated and do not move real funds.",
+          simulated: true,
+        },
+      }),
+    );
+
+    await expect(
+      reportPayment(
+        {
+          apiBaseUrl: "https://tab.example.test",
+          buyerDidToken: "buyer.did.token",
+          intent: intentResponse.intent,
+          paymentId,
+          publishableKey: "pk_test_browser_key",
+          tokenChanges: { caller: "candidate-only" },
+          transactionId: "test_missing_authority",
+        },
+        { request },
+      ),
+    ).rejects.toMatchObject({ code: "INVALID_PAYMENT_REPORT" });
   });
 });

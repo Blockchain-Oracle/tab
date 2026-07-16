@@ -1,3 +1,4 @@
+import { normalizeApiBaseUrl } from "./api-base-url";
 import {
   parseCheckoutContext,
   parseMerchantIntent,
@@ -5,10 +6,11 @@ import {
   parsePaymentReport,
   record,
 } from "./checkout-parsers";
-import { CheckoutApiError } from "./checkout-types";
+import { CheckoutApiError, type PaymentIntent } from "./checkout-types";
 
 export { assertOpenedPaymentMatchesIntent } from "./checkout-parsers";
 export type {
+  CanonicalTestTokenChange,
   CheckoutContext,
   CheckoutMode,
   MerchantIntentResponse,
@@ -59,7 +61,7 @@ export async function loadCheckoutContext(
   input: { apiBaseUrl: string; publishableKey: string },
   options: RequestOptions = {},
 ) {
-  const url = new URL("/api/v1/checkout-context", input.apiBaseUrl).toString();
+  const url = new URL("/api/v1/checkout-context", normalizeApiBaseUrl(input.apiBaseUrl)).toString();
   const response = await (options.request ?? fetch)(url, {
     headers: authHeaders(input.publishableKey),
     method: "GET",
@@ -72,7 +74,7 @@ export async function openPayment(
   input: { apiBaseUrl: string; intentToken: string; publishableKey: string },
   options: RequestOptions = {},
 ) {
-  const url = new URL("/api/v1/payments", input.apiBaseUrl).toString();
+  const url = new URL("/api/v1/payments", normalizeApiBaseUrl(input.apiBaseUrl)).toString();
   const response = await (options.request ?? fetch)(url, {
     body: JSON.stringify({ intentToken: input.intentToken }),
     headers: { ...authHeaders(input.publishableKey), "content-type": "application/json" },
@@ -88,12 +90,16 @@ export async function reportPayment(
     buyerDidToken: string;
     paymentId: string;
     publishableKey: string;
+    intent: PaymentIntent;
     tokenChanges: object;
     transactionId: string;
   },
   options: RequestOptions = {},
 ) {
-  const url = new URL(`/api/v1/payments/${input.paymentId}`, input.apiBaseUrl).toString();
+  const url = new URL(
+    `/api/v1/payments/${input.paymentId}`,
+    normalizeApiBaseUrl(input.apiBaseUrl),
+  ).toString();
   const response = await (options.request ?? fetch)(url, {
     body: JSON.stringify({
       buyerDidToken: input.buyerDidToken,
@@ -106,5 +112,5 @@ export async function reportPayment(
     ...(options.signal ? { signal: options.signal } : {}),
   });
   const body = await responseJson(response);
-  return parsePaymentReport(body, input.paymentId, input.transactionId);
+  return parsePaymentReport(body, input.paymentId, input.transactionId, input.intent);
 }

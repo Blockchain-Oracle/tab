@@ -73,6 +73,7 @@ describe("PayButton success boundary", () => {
     expect(services.reportPayment).toHaveBeenCalledWith({
       apiBaseUrl: "https://tab.example.test",
       buyerDidToken: buyer.didToken,
+      intent: liveIntent,
       paymentId: openedPayment.paymentId,
       publishableKey: "pk_live_browser_key",
       tokenChanges,
@@ -84,6 +85,10 @@ describe("PayButton success boundary", () => {
         reportedTransactionId: "particle-transaction-id",
         status: "pending",
         verification: { method: null, verifiedAt: null },
+      },
+      verification: {
+        code: "LIVE_SETTLEMENT_VERIFICATION_BLOCKED",
+        message: "Live payment evidence was recorded.",
       },
     });
   });

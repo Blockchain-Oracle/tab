@@ -1,0 +1,160 @@
+.controls {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.filterDisclosure {
+  position: relative;
+  margin-left: auto;
+}
+
+.filterDisclosure summary,
+.filterActions button,
+.filterActions a,
+.pagination a,
+.pagination nav > span {
+  display: inline-flex;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 1px solid #dbd9d0;
+  border-radius: 8px;
+  background: #fff;
+  color: #5f5d55;
+  cursor: pointer;
+  font:
+    500 12px var(--font-geist-sans),
+    sans-serif;
+  text-decoration: none;
+}
+
+.filterDisclosure summary {
+  padding: 0 12px;
+  list-style: none;
+}
+
+.filterDisclosure summary::-webkit-details-marker {
+  display: none;
+}
+
+.filterForm {
+  position: absolute;
+  z-index: 5;
+  top: 42px;
+  right: 0;
+  width: 280px;
+  padding: 14px;
+  border: 1px solid #e2e0d8;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 16px 36px rgba(28, 27, 24, 0.14);
+}
+
+.filterForm label {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 11px;
+  color: #5f5d55;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.filterForm select {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #dbd9d0;
+  border-radius: 8px;
+  background: #fff;
+  color: #1c1b18;
+  font:
+    12px var(--font-geist-sans),
+    sans-serif;
+}
+
+.filterActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.filterActions a,
+.filterActions button {
+  height: 32px;
+  padding: 0 12px;
+}
+
+.filterActions button {
+  border-color: #3b5bd9;
+  background: #3b5bd9;
+  color: #fff;
+}
+
+.activeFilters {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.activeFilters a {
+  padding: 4px 10px;
+  border: 1px solid #c9d5f4;
+  border-radius: 999px;
+  background: #edf1fc;
+  color: #2e48b8;
+  font-size: 11.5px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 18px;
+  border: 1px solid #e8e6df;
+  border-top: 0;
+  border-radius: 0 0 12px 12px;
+  background: #fff;
+  color: #5f5d55;
+  font-size: 11.5px;
+}
+
+.pagination nav {
+  display: flex;
+  gap: 8px;
+}
+
+.pagination a,
+.pagination nav > span {
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 7px;
+  font-size: 11.5px;
+}
+
+.pagination nav > span {
+  border-color: #e8e6df;
+  color: #b4b2a8;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .controls {
+    flex-direction: column-reverse;
+  }
+
+  .filterDisclosure {
+    margin-left: 0;
+  }
+
+  .filterForm {
+    right: auto;
+    left: 0;
+  }
+}

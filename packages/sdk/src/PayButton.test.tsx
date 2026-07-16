@@ -2,10 +2,10 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { PaymentExecutionBlockedError } from "./execute";
+import type { CanonicalTestTokenChange } from "./checkout-api";
 import type { OtpCallbacks } from "./magic";
 import { PayButtonCore } from "./PayButton";
-import { baseServices, buyer, universalAccount } from "./paybutton-test-fixtures";
+import { baseServices, buyer, openedPayment, universalAccount } from "./paybutton-test-fixtures";
 
 describe("PayButton", () => {
   it("reads amount from the intent, reuses Magic, and exposes the real Add Funds address", async () => {
@@ -74,7 +74,7 @@ describe("PayButton", () => {
     expect(restoredButton).toHaveFocus();
   });
 
-  it("runs headless OTP, reaches the real balance, and keeps blocked execution fail-closed", async () => {
+  it("runs headless OTP and commits an explicitly simulated test payment without broadcasting", async () => {
     const user = userEvent.setup();
     const services = baseServices();
     services.restoreBuyer.mockResolvedValue(undefined);
@@ -83,7 +83,32 @@ describe("PayButton", () => {
       depositAddress: buyer.ownerAddress,
       universalAccount,
     });
-    services.executePayment.mockRejectedValue(new PaymentExecutionBlockedError());
+    services.createTestPayment.mockReturnValue({
+      tokenChanges: { simulation: "simulated_test" },
+      transactionId: "test_checkout_transaction",
+    });
+    const canonicalTokenChanges = [
+      {
+        amountAtomic: "12000000",
+        chainId: 42161,
+        receiver: "0x1111111111111111111111111111111111111111",
+        simulation: "simulated_test",
+        tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      },
+    ] satisfies [CanonicalTestTokenChange];
+    services.reportPayment.mockResolvedValue({
+      payment: {
+        id: openedPayment.paymentId,
+        reportedTransactionId: "test_checkout_transaction",
+        status: "settled",
+        tokenChanges: canonicalTokenChanges,
+        verification: { method: "simulated_test", verifiedAt: new Date().toISOString() },
+      },
+      testMode: {
+        message: "Test payments are simulated and do not move real funds.",
+        simulated: true,
+      },
+    });
     let resolveBuyer!: (value: typeof buyer) => void;
     const result = new Promise<typeof buyer>((resolve) => {
       resolveBuyer = resolve;
@@ -121,10 +146,17 @@ describe("PayButton", () => {
     await within(dialog).findByText("$20.00 available");
 
     await user.click(within(dialog).getByRole("button", { name: "Pay $12.00" }));
-    expect(await within(dialog).findByText("Payment is not available")).toBeInTheDocument();
-    expect(within(dialog).getByText(/not been charged/)).toBeInTheDocument();
+    expect(await within(dialog).findByText("Payment complete")).toBeInTheDocument();
     expect(services.executePayment).not.toHaveBeenCalled();
-    expect(services.reportPayment).not.toHaveBeenCalled();
-    expect(onSuccess).not.toHaveBeenCalled();
+    expect(services.reportPayment).toHaveBeenCalledWith({
+      apiBaseUrl: "https://tab.example.test",
+      buyerDidToken: buyer.didToken,
+      intent: expect.objectContaining({ amount: "12.00", mode: "test" }),
+      paymentId: openedPayment.paymentId,
+      publishableKey: "pk_test_browser_key",
+      tokenChanges: { simulation: "simulated_test" },
+      transactionId: "test_checkout_transaction",
+    });
+    expect(onSuccess).toHaveBeenCalledWith("test_checkout_transaction", canonicalTokenChanges);
   });
 });

@@ -4,6 +4,7 @@ import { and, eq, isNull } from "drizzle-orm";
 
 import type { Database } from "../db/client";
 import { type payments, type settlements, webhookDeliveries, webhookEndpoints } from "../db/schema";
+import { webhookRootAdmissionAllowed } from "./egress-limit";
 import { createWebhookEventId, serializePaymentSettledPayload } from "./payload";
 
 type DatabaseTransaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
@@ -56,6 +57,8 @@ export async function enqueuePaymentSettledWebhook(
   if (existingId) return existingId;
   const endpoint = await lockActiveWebhookEndpoint(transaction, payment.merchantId, payment.env);
   if (!endpoint) return null;
+  const principal = { env: payment.env, merchantId: payment.merchantId };
+  if (!(await webhookRootAdmissionAllowed(transaction, principal, "auto"))) return null;
 
   const id = randomUUID();
   const eventId = createWebhookEventId();

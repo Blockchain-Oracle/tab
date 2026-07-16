@@ -26,6 +26,11 @@ function requiredString(value: unknown) {
   return typeof value === "string" && value.trim() ? value : undefined;
 }
 
+function exactKeys(value: Record<string, unknown>, expected: string[]) {
+  const actual = Object.keys(value).sort();
+  return actual.length === expected.length && actual.every((key, index) => key === expected[index]);
+}
+
 function paymentIntent(value: unknown): PaymentIntent {
   const input = record(value);
   const token = record(input?.token);
@@ -159,18 +164,78 @@ export function parsePaymentReport(
   value: unknown,
   expectedId: string,
   expectedTransactionId: string,
+  expectedIntent: PaymentIntent,
 ): PaymentReportResponse {
   const body = record(value);
   const payment = record(body?.payment);
   const verification = record(payment?.verification);
   if (
+    !body ||
     payment?.id !== expectedId ||
     !UUID.test(expectedId) ||
     payment.reportedTransactionId !== expectedTransactionId ||
     (payment.status !== "pending" && payment.status !== "settled") ||
-    !verification ||
-    (verification.method !== null && typeof verification.method !== "string") ||
-    (verification.verifiedAt !== null && typeof verification.verifiedAt !== "string")
+    !verification
+  ) {
+    throw new CheckoutApiError("INVALID_PAYMENT_REPORT", "Tab returned an invalid payment report.");
+  }
+
+  if (payment.status === "pending") {
+    const pending = record(body?.verification);
+    if (
+      expectedIntent.mode !== "live" ||
+      !exactKeys(body, ["payment", "verification"]) ||
+      !exactKeys(payment, ["id", "reportedTransactionId", "status", "verification"]) ||
+      !exactKeys(verification, ["method", "verifiedAt"]) ||
+      verification.method !== null ||
+      verification.verifiedAt !== null ||
+      !pending ||
+      !exactKeys(pending, ["code", "message"]) ||
+      pending.code !== "LIVE_SETTLEMENT_VERIFICATION_BLOCKED" ||
+      !requiredString(pending.message)
+    ) {
+      throw new CheckoutApiError(
+        "INVALID_PAYMENT_REPORT",
+        "Tab returned an invalid payment report.",
+      );
+    }
+    return value as PaymentReportResponse;
+  }
+
+  const testMode = record(body?.testMode);
+  const changes = payment.tokenChanges;
+  const change = Array.isArray(changes) && changes.length === 1 ? record(changes[0]) : undefined;
+  const receiver = address(change?.receiver);
+  const tokenAddress = address(change?.tokenAddress);
+  const verifiedAt = verification.verifiedAt;
+  if (
+    expectedIntent.mode !== "test" ||
+    !exactKeys(body, ["payment", "testMode"]) ||
+    !exactKeys(payment, [
+      "id",
+      "reportedTransactionId",
+      "status",
+      "tokenChanges",
+      "verification",
+    ]) ||
+    !exactKeys(verification, ["method", "verifiedAt"]) ||
+    verification.method !== "simulated_test" ||
+    typeof verifiedAt !== "string" ||
+    Number.isNaN(Date.parse(verifiedAt)) ||
+    new Date(verifiedAt).toISOString() !== verifiedAt ||
+    !testMode ||
+    !exactKeys(testMode, ["message", "simulated"]) ||
+    testMode.simulated !== true ||
+    !requiredString(testMode.message) ||
+    !change ||
+    !exactKeys(change, ["amountAtomic", "chainId", "receiver", "simulation", "tokenAddress"]) ||
+    change.amountAtomic !== amountUnits(expectedIntent.amount).toString() ||
+    change.chainId !== expectedIntent.token.chainId ||
+    change.simulation !== "simulated_test" ||
+    !receiver ||
+    getAddress(receiver) !== getAddress(expectedIntent.receiver) ||
+    !tokenAddress ||
+    getAddress(tokenAddress) !== getAddress(expectedIntent.token.address)
   ) {
     throw new CheckoutApiError("INVALID_PAYMENT_REPORT", "Tab returned an invalid payment report.");
   }

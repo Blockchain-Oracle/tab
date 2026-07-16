@@ -39,6 +39,10 @@ export type BuyerAuthAttempt = {
 type SignalOptions = { signal?: AbortSignal };
 
 export type CheckoutServices = {
+  createTestPayment(input: { intent: PaymentIntent; paymentId: string }): {
+    tokenChanges: object;
+    transactionId: string;
+  };
   executePayment(input: {
     account: AccountRuntime;
     buyer: BuyerRuntime;
@@ -59,6 +63,7 @@ export type CheckoutServices = {
     buyerDidToken: string;
     paymentId: string;
     publishableKey: string;
+    intent: PaymentIntent;
     tokenChanges: object;
     transactionId: string;
   }): Promise<PaymentReportResponse>;
@@ -81,6 +86,17 @@ async function withSigner(
 }
 
 export const defaultCheckoutServices: CheckoutServices = {
+  createTestPayment(input) {
+    const id = globalThis.crypto.randomUUID();
+    return {
+      tokenChanges: {
+        amount: input.intent.amount,
+        paymentId: input.paymentId,
+        simulation: "simulated_test",
+      },
+      transactionId: `test_${id}`,
+    };
+  },
   async executePayment(input) {
     return executePayment({
       amount: input.intent.amount,

@@ -47,6 +47,8 @@ export interface WebhookHttpResult {
   statusCode: number;
 }
 
+export const MAX_WEBHOOK_RESPONSE_BYTES = 64 * 1024;
+
 const forbiddenHeaders = new Set([
   "connection",
   "content-length",
@@ -142,12 +144,11 @@ async function post(
     const outgoing = requester(options, (response) => {
       const decoder = new StringDecoder("utf8");
       let state = { characters: 0, snippet: "" };
-      response.on("data", (chunk: Buffer) => {
-        state = appendWebhookResponseSnippet(state, decoder.write(chunk));
-      });
-      response.on("aborted", () => reject(new Error("Response aborted")));
-      response.on("error", reject);
-      response.on("end", () => {
+      let bytes = 0;
+      let finished = false;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
         state = appendWebhookResponseSnippet(state, decoder.end());
         const statusCode = response.statusCode;
         if (statusCode === undefined || statusCode < 100 || statusCode > 599) {
@@ -159,7 +160,23 @@ async function post(
           responseSnippet: state.snippet,
           statusCode,
         });
+      };
+      response.on("data", (chunk: Buffer) => {
+        if (finished) return;
+        bytes += chunk.byteLength;
+        state = appendWebhookResponseSnippet(state, decoder.write(chunk));
+        if (bytes >= MAX_WEBHOOK_RESPONSE_BYTES) {
+          finish();
+          response.destroy();
+        }
       });
+      response.on("aborted", () => {
+        if (!finished) reject(new Error("Response aborted"));
+      });
+      response.on("error", (error) => {
+        if (!finished) reject(error);
+      });
+      response.on("end", finish);
     });
     outgoing.on("error", reject);
     outgoing.end(body);

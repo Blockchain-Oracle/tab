@@ -41,16 +41,35 @@ export type OpenedPayment = {
   refCode: string;
 };
 
-export type PaymentReportResponse = {
-  payment: {
-    id: string;
-    reportedTransactionId: string;
-    status: "pending" | "settled";
-    verification: { method: string | null; verifiedAt: string | null };
-  };
-  testMode?: { message: string; simulated: true };
-  verification?: { code: string; message: string };
+export type CanonicalTestTokenChange = {
+  amountAtomic: string;
+  chainId: 42161;
+  receiver: string;
+  simulation: "simulated_test";
+  tokenAddress: string;
 };
+
+type PaymentReportBase = {
+  id: string;
+  reportedTransactionId: string;
+};
+
+export type PaymentReportResponse =
+  | {
+      payment: PaymentReportBase & {
+        status: "settled";
+        tokenChanges: [CanonicalTestTokenChange];
+        verification: { method: "simulated_test"; verifiedAt: string };
+      };
+      testMode: { message: string; simulated: true };
+    }
+  | {
+      payment: PaymentReportBase & {
+        status: "pending";
+        verification: { method: null; verifiedAt: null };
+      };
+      verification: { code: "LIVE_SETTLEMENT_VERIFICATION_BLOCKED"; message: string };
+    };
 
 export class CheckoutApiError extends Error {
   constructor(

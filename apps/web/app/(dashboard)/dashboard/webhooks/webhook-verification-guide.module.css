@@ -1,0 +1,58 @@
+.guide {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 22px;
+}
+
+.guide h2,
+.guide h3,
+.guide p {
+  margin-top: 0;
+}
+
+.guide h2 {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.guide h3 {
+  font-size: 15px;
+  margin-bottom: 8px;
+  margin-top: 20px;
+}
+
+.guide p {
+  color: #5f6876;
+  font-size: 13px;
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+
+.guide pre {
+  background: #111827;
+  border-radius: 10px;
+  color: #e5e7eb;
+  font-size: 12px;
+  line-height: 1.55;
+  margin: 12px 0 0;
+  overflow-x: auto;
+  padding: 16px;
+  white-space: pre;
+}
+
+.contract {
+  background: #f4f6f8;
+  border-radius: 6px;
+  display: block;
+  font-size: 12px;
+  overflow-x: auto;
+  padding: 10px;
+  white-space: nowrap;
+}
+
+@media (max-width: 680px) {
+  .guide {
+    padding: 17px;
+  }
+}

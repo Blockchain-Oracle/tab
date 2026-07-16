@@ -75,6 +75,9 @@ importers:
       '@magic-sdk/admin':
         specifier: latest
         version: 2.8.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tab/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
       '@vercel/blob':
         specifier: 2.6.1
         version: 2.6.1

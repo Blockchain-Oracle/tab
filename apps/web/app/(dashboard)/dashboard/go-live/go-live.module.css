@@ -1,0 +1,212 @@
+.card,
+.success {
+  max-width: 640px;
+  margin: 32px auto;
+  border: 1px solid #e8e6df;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 16px 50px rgba(28, 27, 24, 0.06);
+}
+
+.card header {
+  padding: 26px 28px 22px;
+  border-bottom: 1px solid #f0eee8;
+}
+
+.eyebrow {
+  color: #3b5bd9;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.card h1,
+.success h1 {
+  margin: 7px 0 0;
+  font-size: 21px;
+  letter-spacing: -0.02em;
+}
+
+.success p {
+  margin: 7px 0 0;
+  color: #5f5d55;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.card header p {
+  margin: 7px 0 0;
+  color: #5f5d55;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.checklist {
+  padding: 0 28px;
+}
+
+.complete,
+.incomplete {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f5f4f0;
+  font-size: 13px;
+}
+
+.complete > span,
+.incomplete > span {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.complete > span {
+  background: #e8f3ec;
+  color: #257a46;
+}
+
+.incomplete > span {
+  background: #fbf1dc;
+  color: #96650f;
+}
+
+.complete small {
+  color: #257a46;
+  font-weight: 600;
+}
+
+.incomplete a {
+  color: #3b5bd9;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.acknowledgement {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 20px 28px 0;
+  padding: 12px;
+  border-radius: 9px;
+  background: #fbf1dc;
+  color: #7a5410;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.acknowledgement input {
+  margin-top: 2px;
+}
+
+.error {
+  margin: 14px 28px 0;
+  color: #b4383d;
+  font-size: 12px;
+}
+
+.card footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 22px 28px 26px;
+}
+
+.card footer a,
+.success a {
+  color: #5f5d55;
+  font-size: 12.5px;
+  text-decoration: none;
+}
+
+.card footer button,
+.success a {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 9px;
+  background: #257a46;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.card footer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.success {
+  padding: 52px 34px;
+  text-align: center;
+}
+
+.success > span {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: #e8f3ec;
+  color: #257a46;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.success a {
+  display: inline-block;
+  margin-top: 20px;
+}
+
+.activatedChecklist {
+  display: grid;
+  gap: 8px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.activatedChecklist li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #fbf1dc;
+  color: #7a5410;
+  font-size: 12px;
+}
+
+.activatedChecklist a {
+  margin-top: 0;
+  padding: 0;
+  background: transparent;
+  color: #3b5bd9;
+}
+
+@media (max-width: 600px) {
+  .card,
+  .success {
+    margin: 8px auto;
+  }
+
+  .complete,
+  .incomplete {
+    grid-template-columns: 24px 1fr;
+  }
+
+  .complete small,
+  .incomplete a {
+    grid-column: 2;
+  }
+}

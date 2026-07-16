@@ -11,4 +11,10 @@ for (const candidate of [commonJs, modules]) {
   if (typeof candidate.CheckoutApiError !== "function") {
     throw new Error("The packaged CheckoutApiError export is unavailable");
   }
+  if (typeof candidate.Tab !== "function") {
+    throw new Error("The packaged Tab export is unavailable");
+  }
+  if (typeof candidate.TabApiError !== "function") {
+    throw new Error("The packaged TabApiError export is unavailable");
+  }
 }

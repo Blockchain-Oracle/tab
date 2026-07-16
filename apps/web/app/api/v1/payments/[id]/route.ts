@@ -24,12 +24,12 @@ import {
   MAX_PAYMENT_REPORT_BODY_BYTES,
   parsePaymentReportRequest,
 } from "../../../../../lib/payments/payment-report-request";
+import { paymentReportResponseBody } from "../../../../../lib/payments/payment-report-response";
 import { paymentResponse } from "../../../../../lib/payments/payment-response";
 import { retrievePayment } from "../../../../../lib/payments/read-payments";
 
 type RouteContext = { params: Promise<{ id: string }> };
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const TEST_MODE_MESSAGE = "Test payments are simulated and do not move real funds.";
 const REPORT_CORS_HEADERS = {
   "access-control-allow-headers": "Authorization, Content-Type",
   "access-control-allow-methods": "PATCH, OPTIONS",
@@ -130,43 +130,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     );
     await processPaymentReportAfterCommit(database, id, result);
 
-    if (result.status === "settled") {
-      return withReportCors(
-        NextResponse.json(
-          {
-            payment: {
-              id,
-              reportedTransactionId: result.reportedTransactionId,
-              status: result.status,
-              verification: {
-                method: result.verificationMethod,
-                verifiedAt: result.verifiedAt?.toISOString() ?? null,
-              },
-            },
-            testMode: { message: TEST_MODE_MESSAGE, simulated: true },
-          },
-          { headers: NO_STORE_HEADERS, status: 200 },
-        ),
-      );
-    }
-
     return withReportCors(
-      NextResponse.json(
-        {
-          payment: {
-            id,
-            reportedTransactionId: result.reportedTransactionId,
-            status: result.status,
-            verification: { method: null, verifiedAt: null },
-          },
-          verification: {
-            code: "LIVE_SETTLEMENT_VERIFICATION_BLOCKED",
-            message:
-              "Live payment evidence was recorded, but settlement remains pending until live verification is available.",
-          },
-        },
-        { headers: NO_STORE_HEADERS, status: 202 },
-      ),
+      NextResponse.json(paymentReportResponseBody(id, result), {
+        headers: NO_STORE_HEADERS,
+        status: result.status === "settled" ? 200 : 202,
+      }),
     );
   } catch (error) {
     if (error instanceof PaymentReportBodyTooLargeError) {

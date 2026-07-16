@@ -45,6 +45,7 @@ export function DashboardModeControl({ liveActivated, mode }: DashboardModeContr
     if (nextMode === mode || switching) return;
     if (nextMode === "live") {
       if (liveActivated) setConfirmLive(true);
+      else router.push("/dashboard/go-live");
       return;
     }
     void persistMode(nextMode);
@@ -67,7 +68,7 @@ export function DashboardModeControl({ liveActivated, mode }: DashboardModeContr
           aria-describedby={!liveActivated ? "live-mode-note" : undefined}
           aria-pressed={mode === "live"}
           className={mode === "live" ? styles.selectedLive : styles.modeButton}
-          disabled={switching || !liveActivated}
+          disabled={switching}
           onClick={() => changeMode("live")}
           type="button"
         >
@@ -76,7 +77,7 @@ export function DashboardModeControl({ liveActivated, mode }: DashboardModeContr
       </div>
       {!liveActivated ? (
         <p className={styles.modeNote} id="live-mode-note">
-          Live mode is unavailable until Go Live is connected.
+          Complete Go Live setup before selecting production data.
         </p>
       ) : null}
       {error && !confirmLive ? (

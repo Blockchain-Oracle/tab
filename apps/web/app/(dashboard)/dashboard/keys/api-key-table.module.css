@@ -1,0 +1,161 @@
+.tableCard,
+.emptyCard {
+  margin-top: 18px;
+  border: 1px solid #e8e6df;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.tableCard {
+  overflow: hidden;
+}
+
+.scrollArea {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 1050px;
+  border-collapse: collapse;
+}
+
+.table caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.table th,
+.table td {
+  padding: 11px 16px;
+  border-bottom: 1px solid #f0eee8;
+  text-align: left;
+}
+
+.table th {
+  color: #8c8a80;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.table td {
+  color: #5f5d55;
+  font-size: 11.5px;
+}
+
+.table th:first-child {
+  width: 15%;
+}
+
+.table th:nth-child(2) {
+  width: 18%;
+}
+
+.table th:nth-child(4) {
+  width: 19%;
+}
+
+.table th:nth-child(5),
+.table th:nth-child(6) {
+  width: 15%;
+}
+
+.table th:last-child {
+  width: 118px;
+}
+
+.table .nameCell {
+  color: #1c1b18;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.tokenCell {
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.rowActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.rowActions button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #5f5d55;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.rowActions .dangerAction {
+  color: #b4383d;
+}
+
+.rowActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.tableFooter {
+  padding: 10px 16px;
+  color: #8c8a80;
+  font-size: 11px;
+}
+
+.emptyCard {
+  display: grid;
+  min-height: 330px;
+  place-items: center;
+  align-content: center;
+  text-align: center;
+}
+
+.emptyCard h2 {
+  margin: 14px 0 0;
+  color: #1c1b18;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.emptyCard p {
+  margin: 4px 0 0;
+  color: #5f5d55;
+  font-size: 12.5px;
+}
+
+.keyIcon {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f5f4f0;
+}
+
+.keyIcon::before {
+  position: absolute;
+  top: 15px;
+  left: 10px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #8c8a80;
+  border-radius: 50%;
+  content: "";
+}
+
+.keyIcon span {
+  position: absolute;
+  top: 20px;
+  left: 23px;
+  width: 12px;
+  border-top: 2px solid #8c8a80;
+}

@@ -1,0 +1,190 @@
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.header p,
+.milestone p,
+.stepBody p {
+  margin: 4px 0 0;
+  color: #5f5d55;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.header > span {
+  color: #8c8a80;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.milestone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid #cbe5d4;
+  border-radius: 11px;
+  background: #e8f3ec;
+  color: #1d6237;
+}
+
+.milestoneCheck {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  font-weight: 700;
+}
+
+.milestone div {
+  flex: 1;
+  font-size: 13.5px;
+}
+
+.milestone a,
+.stepHeading a,
+.stepHeading button {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #3b5bd9;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.milestone a {
+  background: #257a46;
+}
+
+.error {
+  margin: 16px 0 0;
+  color: #b4383d;
+  font-size: 12.5px;
+}
+
+.steps {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step,
+.activeStep {
+  display: flex;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid #e8e6df;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.activeStep {
+  border-color: #c9d5f4;
+  box-shadow: 0 4px 18px rgba(59, 91, 217, 0.06);
+}
+
+.stepMark,
+.doneMark {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  place-items: center;
+  border: 1.5px solid #dbd9d0;
+  border-radius: 50%;
+  color: #8c8a80;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.activeStep .stepMark {
+  border-color: #3b5bd9;
+  background: #3b5bd9;
+  color: #fff;
+}
+
+.doneMark {
+  border-color: transparent;
+  background: #e8f3ec;
+  color: #257a46;
+}
+
+.stepBody {
+  min-width: 0;
+  flex: 1;
+}
+
+.stepHeading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepHeading strong {
+  flex: 1;
+  font-size: 14px;
+}
+
+.stepHeading button:disabled {
+  opacity: 0.65;
+}
+
+.doneLabel {
+  color: #257a46;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.stepBody pre {
+  overflow-x: auto;
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  border-radius: 9px;
+  background: #26251f;
+  color: #e4e2d8;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11.5px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.stepBody small {
+  display: inline-block;
+  margin-top: 9px;
+  padding: 7px 10px;
+  border-radius: 7px;
+  background: #fbf1dc;
+  color: #7a5410;
+  font-size: 11.5px;
+}
+
+@media (max-width: 640px) {
+  .header,
+  .milestone {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .stepHeading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}

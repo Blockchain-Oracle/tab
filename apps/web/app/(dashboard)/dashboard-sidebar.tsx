@@ -17,9 +17,9 @@ type DashboardSidebarProps = {
 const navigation = [
   { href: "/dashboard/quickstart", label: "Quickstart" },
   { href: "/dashboard/transactions", label: "Transactions" },
+  { href: "/dashboard/keys", label: "API keys" },
+  { href: "/dashboard/webhooks", label: "Webhooks" },
 ] as const;
-
-const pendingNavigation = ["API keys", "Webhooks"] as const;
 
 export function DashboardSidebar({
   businessName,
@@ -48,16 +48,6 @@ export function DashboardSidebar({
           >
             {item.label}
           </Link>
-        ))}
-        {pendingNavigation.map((label) => (
-          <span
-            aria-disabled="true"
-            className={styles.pendingNavItem}
-            key={label}
-            title="Available when the real integration is connected"
-          >
-            {label}
-          </span>
         ))}
         <Link
           aria-current={pathname === "/dashboard/settings" ? "page" : undefined}

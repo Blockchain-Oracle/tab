@@ -93,6 +93,7 @@ export async function reportPayment(
         return {
           reportedTransactionId: payment.reportedTransactionId,
           status: "settled" as const,
+          tokenChanges: existingSettlement.tokenChangesJson,
           verificationMethod: existingSettlement.verificationMethod,
           verifiedAt: existingSettlement.verifiedAt,
           webhookDeliveryId: await findPaymentWebhookDeliveryId(transaction, existingSettlement.id),
@@ -152,6 +153,7 @@ export async function reportPayment(
       return {
         reportedTransactionId: evidence.transactionId,
         status: "settled" as const,
+        tokenChanges: settlement.tokenChangesJson,
         verificationMethod: settlement.verificationMethod,
         verifiedAt: settlement.verifiedAt,
         webhookDeliveryId,

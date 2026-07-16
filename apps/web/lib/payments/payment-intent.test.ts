@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { InvalidPaymentIntentError, parsePaymentIntent } from "./payment-intent";
+import {
+  InvalidPaymentIntentError,
+  parseIntentAuditUrl,
+  parsePaymentIntent,
+} from "./payment-intent";
 
 const receiver = "0x1111111111111111111111111111111111111111";
 const tokenAddress = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
@@ -59,5 +63,23 @@ describe("parsePaymentIntent", () => {
     expect(() => parsePaymentIntent(intent({ merchantId: "attacker-controlled" }))).toThrow(
       InvalidPaymentIntentError,
     );
+  });
+});
+
+describe("parseIntentAuditUrl", () => {
+  it.each([
+    "http://localhost:3000/api/demo/intent",
+    "http://127.0.0.1:3000/api/demo/intent",
+    "http://[::1]:3000/api/demo/intent",
+  ])("permits loopback HTTP for a real local checkout: %s", (url) => {
+    expect(parseIntentAuditUrl(url)).toBe(url);
+  });
+
+  it.each([
+    "http://tab.example.test/api/demo/intent",
+    "http://localhost.example.test/api/demo/intent",
+    "http://0.0.0.0:3000/api/demo/intent",
+  ])("still rejects non-loopback HTTP: %s", (url) => {
+    expect(() => parseIntentAuditUrl(url)).toThrow(InvalidPaymentIntentError);
   });
 });

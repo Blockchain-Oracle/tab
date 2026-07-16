@@ -2,7 +2,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import type { DashboardTransaction } from "../../../../lib/payments/dashboard-transactions";
+import { TransactionDetail } from "./transaction-detail";
 import { TransactionsEmptyState } from "./transactions-empty-state";
+import { TransactionsFilters } from "./transactions-filters";
 import { TransactionsTable } from "./transactions-table";
 
 const createdAt = new Date("2026-07-15T12:00:00Z");
@@ -15,19 +17,38 @@ function transaction(
     createdAt,
     currency: "USD",
     env: "test",
+    failureReason: null,
+    intentUrl: "https://merchant.example.test/api/tab/intent",
+    payerAddress: "0x2222222222222222222222222222222222222222",
     payerEmail: "private-payer@example.test",
     payerType: "human",
     paymentId: "payment-test",
+    receiver: "0x1111111111111111111111111111111111111111",
     refCode: "TAB-TEST",
+    reportedAt: createdAt,
+    reportedTokenChanges: [{ source: "buyer-report" }],
     reportedTransactionId: "test_transaction",
+    settledAt: createdAt,
     settlement: {
+      amountAtomic: "7250000",
       id: "settlement-test",
       particleTransactionId: "test_transaction",
+      tokenChanges: [
+        {
+          amountAtomic: "7250000",
+          chainId: 42161,
+          receiver: "0x1111111111111111111111111111111111111111",
+          tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        },
+      ],
       txHash: null,
       verificationMethod: "simulated_test",
+      verificationTrigger: "inline",
       verifiedAt: createdAt,
     },
     status: "settled",
+    tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+    tokenChainId: 42161,
     webhook: null,
     ...overrides,
   };
@@ -45,7 +66,7 @@ describe("dashboard transaction reality labels", () => {
   });
 
   it("labels simulated test evidence without exposing payer email", () => {
-    const html = renderToStaticMarkup(<TransactionsTable hasMore={false} rows={[transaction()]} />);
+    const html = renderToStaticMarkup(<TransactionsTable rows={[transaction()]} search={{}} />);
 
     expect(html).toContain("TEST");
     expect(html).toContain("Simulated test");
@@ -56,7 +77,6 @@ describe("dashboard transaction reality labels", () => {
   it("keeps a reported live candidate pending and unverified", () => {
     const html = renderToStaticMarkup(
       <TransactionsTable
-        hasMore={false}
         rows={[
           transaction({
             env: "live",
@@ -67,6 +87,7 @@ describe("dashboard transaction reality labels", () => {
             status: "pending",
           }),
         ]}
+        search={{}}
       />,
     );
 
@@ -74,5 +95,54 @@ describe("dashboard transaction reality labels", () => {
     expect(html).toContain("Unverified");
     expect(html).not.toContain("Simulated test");
     expect(html).not.toContain("TEST");
+  });
+
+  it("renders URL-backed filter controls and active values", () => {
+    const html = renderToStaticMarkup(
+      <TransactionsFilters
+        search={{ payerType: "agent", status: "settled", webhookResult: "delivered" }}
+      />,
+    );
+
+    expect(html).toContain('name="status"');
+    expect(html).toContain('name="payer"');
+    expect(html).toContain('name="webhook"');
+    expect(html).toContain("Status: Settled");
+    expect(html).toContain("Payer: Agent");
+    expect(html).toContain("Webhook: Delivered");
+  });
+
+  it("renders real detail evidence but no email or Arbiscan link for simulated test data", () => {
+    const html = renderToStaticMarkup(<TransactionDetail row={transaction()} search={{}} />);
+
+    expect(html).toContain("Simulated test — no funds moved");
+    expect(html).toContain("0x2222222222222222222222222222222222222222");
+    expect(html).toContain("https://merchant.example.test/api/tab/intent");
+    expect(html).toContain("amountAtomic");
+    expect(html).toContain("View raw JSON");
+    expect(html).not.toContain("private-payer@example.test");
+    expect(html).not.toContain("View on Arbiscan");
+  });
+
+  it("links to Arbiscan only for a stored canonical transaction hash", () => {
+    const txHash = `0x${"a".repeat(64)}`;
+    const settlement = transaction().settlement;
+    if (!settlement) throw new Error("Expected settlement evidence");
+    const html = renderToStaticMarkup(
+      <TransactionDetail
+        row={transaction({
+          env: "live",
+          settlement: {
+            ...settlement,
+            txHash,
+            verificationMethod: "rpc",
+          },
+        })}
+        search={{}}
+      />,
+    );
+
+    expect(html).toContain(`href="https://arbiscan.io/tx/${txHash}"`);
+    expect(html).toContain("View on Arbiscan");
   });
 });

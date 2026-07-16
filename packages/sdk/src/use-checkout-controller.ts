@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 
+import { normalizeApiBaseUrl } from "./api-base-url";
 import { assertOpenedPaymentMatchesIntent, type CheckoutContext } from "./checkout-api";
 import {
   type CheckoutModel,
@@ -37,9 +38,10 @@ export function useCheckoutController(options: ControllerOptions) {
   const bootstrap = useCallback(
     async (signal?: AbortSignal) => {
       try {
+        const safeApiBaseUrl = normalizeApiBaseUrl(apiBaseUrl);
         const [context, intentResponse] = await Promise.all([
           services.loadCheckoutContext(
-            { apiBaseUrl, publishableKey },
+            { apiBaseUrl: safeApiBaseUrl, publishableKey },
             signal ? { signal } : undefined,
           ),
           services.loadMerchantIntent(intentUrl, signal ? { signal } : undefined),
@@ -98,11 +100,12 @@ export function useCheckoutController(options: ControllerOptions) {
     const activeRun = ++runtime.run.current;
     dispatch({ type: "pay-started" });
     try {
+      const safeApiBaseUrl = normalizeApiBaseUrl(apiBaseUrl);
       const intentResponse = await services.loadMerchantIntent(intentUrl);
       if (intentResponse.intent.mode !== model.context.mode)
         throw new Error("Checkout mode mismatch");
       const opened = await services.openPayment({
-        apiBaseUrl,
+        apiBaseUrl: safeApiBaseUrl,
         intentToken: intentResponse.intentToken,
         publishableKey,
       });

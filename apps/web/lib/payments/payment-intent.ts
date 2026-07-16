@@ -6,6 +6,7 @@ export const ARBITRUM_USDC_ADDRESS = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831
 const INTENT_KEYS = ["amount", "currency", "receiver", "token"];
 const TOKEN_KEYS = ["address", "chainId"];
 const AMOUNT_PATTERN = /^(?:0\.\d{1,6}|[1-9]\d{0,13}(?:\.\d{1,6})?)$/;
+const LOOPBACK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "[::1]"]);
 
 export class InvalidPaymentIntentError extends Error {
   readonly code = "INVALID_PAYMENT_INTENT";
@@ -46,7 +47,8 @@ export function parseIntentAuditUrl(value: unknown) {
 
   try {
     const url = new URL(value);
-    if (url.protocol !== "https:" || url.username || url.password || url.hash) {
+    const isLocalHttp = url.protocol === "http:" && LOOPBACK_HOSTNAMES.has(url.hostname);
+    if ((url.protocol !== "https:" && !isLocalHttp) || url.username || url.password || url.hash) {
       throw new InvalidPaymentIntentError();
     }
     return url.toString();

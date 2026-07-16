@@ -1,0 +1,288 @@
+.page {
+  min-height: 100%;
+  padding: 24px 32px;
+}
+
+.breadcrumb {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: #8c8a80;
+  font-size: 12px;
+}
+
+.breadcrumb a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.breadcrumb span:last-child {
+  color: #1c1b18;
+  font-weight: 500;
+}
+
+.page h1 {
+  margin: 4px 0 0;
+  color: #1c1b18;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.log,
+.empty {
+  margin-top: 18px;
+  border: 1px solid #e8e6df;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.empty {
+  display: flex;
+  min-height: 350px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+}
+
+.empty > span {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f5f4f0;
+  color: #b4b2a8;
+  font-size: 20px;
+  place-items: center;
+}
+
+.empty h2 {
+  margin: 14px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.empty p {
+  margin: 4px 0 0;
+  color: #5f5d55;
+  font-size: 12.5px;
+}
+
+.log {
+  overflow: hidden;
+}
+
+.heading,
+.row {
+  display: grid;
+  grid-template-columns: 100px 1.1fr 1.4fr 1.2fr 170px;
+  gap: 12px;
+  align-items: center;
+}
+
+.heading {
+  padding: 10px 18px;
+  border-bottom: 1px solid #f0eee8;
+  color: #8c8a80;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.heading span:last-child {
+  text-align: right;
+}
+
+.delivery {
+  border-bottom: 1px solid #f5f4f0;
+}
+
+.row {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 18px;
+  border: 0;
+  background: #fff;
+  color: #8c8a80;
+  font: inherit;
+  font-size: 11.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.row:hover,
+.row[aria-expanded="true"] {
+  background: #fbfaf7;
+}
+
+.row code,
+.evidence code,
+.evidence pre {
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.row > code:first-child {
+  color: #1c1b18;
+  font-weight: 600;
+}
+
+.row > code:nth-child(3) {
+  overflow: hidden;
+  color: #3b5bd9;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row time {
+  text-align: right;
+}
+
+.success {
+  color: #257a46;
+  font-weight: 500;
+}
+
+.warning {
+  color: #96650f;
+  font-weight: 500;
+}
+
+.danger {
+  color: #b4383d;
+  font-weight: 500;
+}
+
+.neutral {
+  color: #5f5d55;
+  font-weight: 500;
+}
+
+.evidence {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px 18px;
+  border-top: 1px solid #f0eee8;
+  background: #fbfaf7;
+}
+
+.evidence h3 {
+  margin: 0;
+  color: #8c8a80;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.evidence h3 small {
+  font-weight: 400;
+  text-transform: none;
+}
+
+.evidence pre {
+  overflow-x: auto;
+  margin: 7px 0 0;
+  padding: 12px 14px;
+  border-radius: 9px;
+  background: #26251f;
+  color: #e4e2d8;
+  font-size: 11px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.responseEvidence {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.responseEvidence > div:first-child pre,
+.responseEvidence > div:nth-child(2) pre {
+  border: 1px solid #efede7;
+  background: #fff;
+  color: #5f5d55;
+}
+
+.responseEvidence footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #8c8a80;
+  font-size: 11.5px;
+}
+
+.responseEvidence footer code {
+  color: #1c1b18;
+}
+
+.responseEvidence button {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid #dbd9d0;
+  border-radius: 7px;
+  background: #fff;
+  color: #5f5d55;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.responseEvidence button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.evidence .responseEvidence > small {
+  color: #8c8a80;
+  font-size: 10.5px;
+  overflow-wrap: anywhere;
+}
+
+.footer {
+  padding: 11px 18px;
+  color: #8c8a80;
+  font-size: 11.5px;
+}
+
+.error {
+  margin: 0;
+  padding: 10px 18px;
+  border-bottom: 1px solid #f0d5d6;
+  background: #faecec;
+  color: #8e2f34;
+  font-size: 12px;
+}
+
+@media (max-width: 800px) {
+  .page {
+    padding: 20px 18px;
+  }
+
+  .heading {
+    display: none;
+  }
+
+  .row {
+    grid-template-columns: 80px 1fr;
+  }
+
+  .row > *:nth-child(n + 3) {
+    grid-column: 1 / -1;
+  }
+
+  .row time {
+    text-align: left;
+  }
+
+  .evidence {
+    grid-template-columns: 1fr;
+  }
+}

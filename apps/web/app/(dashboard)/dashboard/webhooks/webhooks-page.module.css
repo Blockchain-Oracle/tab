@@ -1,0 +1,263 @@
+.page {
+  min-height: 100%;
+  padding: 24px 32px;
+}
+
+.header h1,
+.card h2,
+.recentCard h2 {
+  margin: 0;
+  color: #1c1b18;
+  font-weight: 600;
+}
+
+.header h1 {
+  font-size: 19px;
+  letter-spacing: -0.01em;
+}
+
+.header p,
+.card p {
+  color: #5f5d55;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.header p {
+  margin: 3px 0 0;
+}
+
+.header code,
+.card code,
+.recentCard code {
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.content {
+  max-width: 860px;
+  margin-top: 18px;
+}
+
+.successNotice,
+.errorNotice {
+  margin: 0 0 12px;
+  padding: 10px 13px;
+  border-radius: 9px;
+  font-size: 12.5px;
+}
+
+.successNotice {
+  background: #e8f3ec;
+  color: #1d6237;
+}
+
+.errorNotice {
+  background: #faecec;
+  color: #8e2f34;
+}
+
+.card,
+.recentCard {
+  border: 1px solid #e8e6df;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.card {
+  padding: 22px;
+}
+
+.card h2,
+.recentCard h2 {
+  font-size: 13px;
+}
+
+.card > form > h2 {
+  font-size: 14px;
+}
+
+.card > form > p {
+  margin: 4px 0 0;
+}
+
+.urlRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.urlRow input {
+  min-width: 0;
+  height: 42px;
+  flex: 1;
+  padding: 0 13px;
+  border: 1px solid #dbd9d0;
+  border-radius: 9px;
+  background: #fff;
+  color: #1c1b18;
+  font:
+    12.5px var(--font-geist-mono),
+    monospace;
+  outline: none;
+}
+
+.urlRow input:focus {
+  border-color: #3b5bd9;
+  box-shadow: 0 0 0 3px rgb(59 91 217 / 12%);
+}
+
+.card button {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #dbd9d0;
+  border-radius: 8px;
+  background: #fff;
+  color: #5f5d55;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.card button:disabled,
+.dialog button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.card .primaryButton {
+  height: 42px;
+  border-color: #3b5bd9;
+  border-radius: 9px;
+  background: #3b5bd9;
+  color: #fff;
+}
+
+.cardHeading,
+.secretRow,
+.recentCard header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.card .dangerButton {
+  border-color: #f0d5d6;
+  color: #b4383d;
+}
+
+.endpointField {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 10px;
+  padding: 8px 13px;
+  border: 1px solid #e8e6df;
+  border-radius: 9px;
+  background: #f8f7f4;
+}
+
+.endpointField code {
+  overflow: hidden;
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listening,
+.failing,
+.awaiting {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.listening {
+  color: #257a46;
+}
+
+.awaiting {
+  color: #96650f;
+}
+
+.failing {
+  color: #b4383d;
+}
+
+.listening i,
+.failing i,
+.awaiting i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentcolor;
+}
+
+.secretRow {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0eee8;
+}
+
+.secretRow p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 0;
+}
+
+.secretRow span,
+.retryNote {
+  color: #8c8a80;
+  font-size: 11.5px;
+}
+
+.card .retryNote {
+  margin: 14px 0 0;
+}
+
+.recentCard {
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.recentCard header {
+  padding: 14px 18px;
+  border-bottom: 1px solid #f0eee8;
+}
+
+.recentCard a {
+  color: #3b5bd9;
+  font-size: 11.5px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 20px 18px;
+  }
+
+  .urlRow,
+  .cardHeading,
+  .secretRow {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .endpointField {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

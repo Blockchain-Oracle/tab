@@ -80,7 +80,12 @@ describe("merchant dashboard transaction reads with real PostgreSQL", () => {
         env: "test",
         merchantId: identity.merchantId,
       }),
-    ).resolves.toEqual({ hasMore: false, rows: [] });
+    ).resolves.toEqual({
+      hasMore: false,
+      nextCursor: null,
+      previousCursor: null,
+      rows: [],
+    });
   });
 
   it("isolates merchant and mode while bounding newest-first results", async () => {

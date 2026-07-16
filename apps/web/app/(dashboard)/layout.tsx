@@ -12,7 +12,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       email={merchant.email}
       liveActivated={Boolean(merchant.liveActivatedAt)}
       mode={merchant.mode}
-      publishableKey={process.env.NEXT_PUBLIC_MAGIC_PUBLISHABLE_KEY?.trim() ?? ""}
     >
       {children}
     </DashboardShell>

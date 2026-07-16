@@ -19,6 +19,9 @@ TypeScript monorepo (pnpm + Turborepo):
 - **This is a product, not a demo.** No demo accounts, no seeded tenants, no hardcoded showcase data. Every number on a screen must have a real source or be a labeled BLOCKED/dev state.
 - **Realness over speed. The deadline is NOT a factor** — never scope-cut for time.
 - **Ground everything; never invent an SDK capability.** Trust the *installed* package types over docs (Particle/x402 docs lag the shipped SDKs — see DECISIONS + `.thoughts/quality/`). Mark unverified things `(unverified)`.
+- **Magic login persists by design.** Ordinary Tab sign-out clears only `tab_session`; never call
+  `magic.user.logout()`. Login must try `isLoggedIn()` + `getIdToken()` before email OTP. Reserve
+  Magic logout for a separate, explicit future "forget this device" action.
 
 ## Commands
 

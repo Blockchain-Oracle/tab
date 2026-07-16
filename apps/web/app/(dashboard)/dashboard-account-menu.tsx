@@ -2,35 +2,15 @@
 
 import { useState } from "react";
 
-import { getMagicClient } from "../../lib/auth/magic-client";
 import styles from "./dashboard-controls.module.css";
+import { signOutOfTab } from "./tab-sign-out";
 
 type DashboardAccountMenuProps = {
   businessName: string | null;
   email: string;
-  publishableKey: string;
 };
 
-const MAGIC_LOGOUT_TIMEOUT_MS = 2_000;
-
-async function bestEffortMagicLogout(publishableKey: string) {
-  if (!publishableKey) return;
-
-  const cleanup = (async () => {
-    const magic = getMagicClient(publishableKey);
-    if (await magic.user.isLoggedIn()) await magic.user.logout();
-  })();
-  await Promise.race([
-    cleanup.catch(() => undefined),
-    new Promise<void>((resolve) => setTimeout(resolve, MAGIC_LOGOUT_TIMEOUT_MS)),
-  ]);
-}
-
-export function DashboardAccountMenu({
-  businessName,
-  email,
-  publishableKey,
-}: DashboardAccountMenuProps) {
+export function DashboardAccountMenu({ businessName, email }: DashboardAccountMenuProps) {
   const [error, setError] = useState<string>();
   const [signingOut, setSigningOut] = useState(false);
   const accountName = businessName?.trim() || "Business name not set";
@@ -42,11 +22,10 @@ export function DashboardAccountMenu({
     setError(undefined);
 
     try {
-      const response = await fetch("/api/auth/logout", { method: "POST" });
-      if (!response.ok) throw new Error("Server logout failed");
-
-      await bestEffortMagicLogout(publishableKey);
-      window.location.assign("/login");
+      await signOutOfTab(
+        () => fetch("/api/auth/logout", { method: "POST" }),
+        (path) => window.location.assign(path),
+      );
     } catch {
       setError("Couldn’t sign out. Try again.");
       setSigningOut(false);

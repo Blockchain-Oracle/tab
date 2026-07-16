@@ -12,7 +12,6 @@ type DashboardSidebarProps = {
   email: string;
   liveActivated: boolean;
   mode: "live" | "test";
-  publishableKey: string;
 };
 
 const navigation = [
@@ -27,7 +26,6 @@ export function DashboardSidebar({
   email,
   liveActivated,
   mode,
-  publishableKey,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
 
@@ -72,11 +70,7 @@ export function DashboardSidebar({
 
       <div className={styles.sidebarBottom}>
         <DashboardModeControl liveActivated={liveActivated} mode={mode} />
-        <DashboardAccountMenu
-          businessName={businessName}
-          email={email}
-          publishableKey={publishableKey}
-        />
+        <DashboardAccountMenu businessName={businessName} email={email} />
       </div>
     </aside>
   );

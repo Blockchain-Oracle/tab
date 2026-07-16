@@ -9,7 +9,7 @@ export const authCopy = {
     genericError: "Couldn’t log you in. Try again.",
     redirectBody: "Taking you to your dashboard…",
     redirectTitle: "You’re in",
-    subtitle: "We’ll email you a one-time code. No password needed.",
+    subtitle: "A trusted browser signs in instantly. Otherwise, we’ll email a one-time code.",
     title: "Log in to Tab",
   },
   signup: {

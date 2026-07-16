@@ -8,7 +8,6 @@ type DashboardShellProps = {
   email: string;
   liveActivated: boolean;
   mode: "live" | "test";
-  publishableKey: string;
 };
 
 export function DashboardShell({
@@ -17,7 +16,6 @@ export function DashboardShell({
   email,
   liveActivated,
   mode,
-  publishableKey,
 }: DashboardShellProps) {
   return (
     <div className={styles.shell}>
@@ -26,7 +24,6 @@ export function DashboardShell({
         email={email}
         liveActivated={liveActivated}
         mode={mode}
-        publishableKey={publishableKey}
       />
       <div className={styles.contentColumn}>
         {mode === "test" ? (

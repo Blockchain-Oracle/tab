@@ -46,11 +46,20 @@ describe("merchant auth API client", () => {
     const goodRequest = vi.fn(async () => Response.json({ redirectTo: "/dashboard/quickstart" }));
     const badRequest = vi.fn(async () => Response.json({ redirectTo: "//outside.example" }));
 
-    await expect(verifyDidToken("did-token", "signup", { request: goodRequest })).resolves.toBe(
-      "/dashboard/quickstart",
-    );
     await expect(
-      verifyDidToken("did-token", "signup", { request: badRequest }),
+      verifyDidToken("did-token", "merchant@example.com", "signup", { request: goodRequest }),
+    ).resolves.toBe("/dashboard/quickstart");
+    expect(goodRequest).toHaveBeenCalledWith("/api/auth/verify", {
+      body: JSON.stringify({
+        didToken: "did-token",
+        email: "merchant@example.com",
+        flow: "signup",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+    await expect(
+      verifyDidToken("did-token", "merchant@example.com", "signup", { request: badRequest }),
     ).rejects.toMatchObject({
       code: "INVALID_AUTH_RESPONSE",
     });

@@ -60,7 +60,7 @@ describe("POST /api/auth/verify without a fake identity path", () => {
     await expect(response.json()).resolves.toEqual({
       error: {
         code: "INVALID_AUTH_REQUEST",
-        message: "A DID token and valid auth flow are required.",
+        message: "A DID token, email, and valid auth flow are required.",
       },
     });
   });
@@ -81,7 +81,9 @@ describe("POST /api/auth/verify without a fake identity path", () => {
   });
 
   it("returns an honest configuration blocker and creates no tenant", async () => {
-    const response = await POST(request({ didToken: "real-token-required", flow: "signup" }));
+    const response = await POST(
+      request({ didToken: "real-token-required", email: "merchant@example.com", flow: "signup" }),
+    );
     const [counts] = await connection.client<
       { merchants_count: number; users_count: number }[]
     >`select
@@ -103,7 +105,9 @@ describe("POST /api/auth/verify without a fake identity path", () => {
     process.env.MAGIC_SECRET_KEY = "configured-for-boundary-check";
     delete process.env.SESSION_SECRET;
 
-    const response = await POST(request({ didToken: "not-contacted", flow: "signup" }));
+    const response = await POST(
+      request({ didToken: "not-contacted", email: "merchant@example.com", flow: "signup" }),
+    );
 
     expect(response.status).toBe(503);
     expect(response.headers.get("set-cookie")).toBeNull();

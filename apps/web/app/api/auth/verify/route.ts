@@ -7,6 +7,7 @@ import {
   magicAuthenticationConfigured,
   verifyMerchantDidToken,
 } from "../../../../lib/auth/magic-admin";
+import { magicEmailMatchesRequest } from "../../../../lib/auth/magic-email";
 import { requestOriginIsAllowed } from "../../../../lib/auth/request-origin";
 import {
   createSessionToken,
@@ -32,6 +33,8 @@ function error(code: string, message: string, status: number) {
   return json({ error: { code, message } }, status);
 }
 
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export async function POST(request: Request) {
   if (!requestOriginIsAllowed(request)) {
     return error("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
@@ -52,10 +55,18 @@ export async function POST(request: Request) {
     typeof body.didToken === "string"
       ? body.didToken.trim()
       : "";
+  const email =
+    typeof body === "object" && body !== null && "email" in body && typeof body.email === "string"
+      ? body.email.trim().toLowerCase()
+      : "";
   const flow = typeof body === "object" && body !== null && "flow" in body ? body.flow : undefined;
 
-  if (!didToken || (flow !== "signup" && flow !== "login")) {
-    return error("INVALID_AUTH_REQUEST", "A DID token and valid auth flow are required.", 400);
+  if (!didToken || !emailPattern.test(email) || (flow !== "signup" && flow !== "login")) {
+    return error(
+      "INVALID_AUTH_REQUEST",
+      "A DID token, email, and valid auth flow are required.",
+      400,
+    );
   }
 
   if (!magicAuthenticationConfigured()) {
@@ -81,6 +92,14 @@ export async function POST(request: Request) {
       return error("MAGIC_UNAVAILABLE", "Magic authentication is temporarily unavailable.", 502);
     }
     throw authError;
+  }
+
+  if (!magicEmailMatchesRequest(magicIdentity.email, email)) {
+    return error(
+      "MAGIC_EMAIL_MISMATCH",
+      "This browser's saved Magic session belongs to a different email.",
+      409,
+    );
   }
 
   const { db } = getServerDatabase();

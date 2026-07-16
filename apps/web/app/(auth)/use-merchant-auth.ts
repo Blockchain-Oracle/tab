@@ -7,15 +7,21 @@ import { type EmailOtpFlow, getMagicClient } from "../../lib/auth/magic-client";
 import { AuthRequestError, precheckEmail, verifyDidToken } from "./auth-api";
 import { AuthAttemptGate } from "./auth-attempt";
 import { type AuthFlow, authCopy } from "./auth-copy";
+import { runAuthEntry } from "./auth-entry";
 import { precheckFailure } from "./auth-errors";
 import { authReducer, initialAuthState } from "./auth-state";
-import { bindMagicFlowEvents } from "./magic-flow-events";
+import { type MagicEmailOtpChallenge, startMagicEmailOtpChallenge } from "./magic-challenge";
+import { getPersistedMagicDidToken } from "./magic-session";
 
 type MerchantAuthOptions = {
   configured: boolean;
   flow: AuthFlow;
   publishableKey: string;
 };
+
+function authFailureMessage(error: unknown, flow: AuthFlow) {
+  return error instanceof AuthRequestError ? error.message : authCopy[flow].genericError;
+}
 
 export function useMerchantAuth({ configured, flow, publishableKey }: MerchantAuthOptions) {
   const router = useRouter();
@@ -27,107 +33,72 @@ export function useMerchantAuth({ configured, flow, publishableKey }: MerchantAu
     "Magic needs you to approve this device. Follow the instructions in your email.",
   );
   const [notice, setNotice] = useState<string>();
-  const activeFlow = useRef<EmailOtpFlow | undefined>(undefined);
+  const activeChallenge = useRef<MagicEmailOtpChallenge | undefined>(undefined);
   const submittedOtp = useRef<{ flow: EmailOtpFlow; otp: string } | undefined>(undefined);
   const resendRequested = useRef(false);
   const attemptGate = useRef(new AuthAttemptGate());
 
   function cancelActiveFlow() {
-    const challenge = activeFlow.current;
-    activeFlow.current = undefined;
+    const active = activeChallenge.current;
+    activeChallenge.current = undefined;
     submittedOtp.current = undefined;
-    challenge?.emit("cancel");
+    active?.cancel();
   }
 
   useEffect(
     () => () => {
-      const challenge = activeFlow.current;
+      const active = activeChallenge.current;
       attemptGate.current.cancel();
-      activeFlow.current = undefined;
+      activeChallenge.current = undefined;
       submittedOtp.current = undefined;
-      challenge?.emit("cancel");
+      active?.cancel();
     },
     [],
   );
 
   function failFlow(challenge: EmailOtpFlow, message: string) {
-    if (activeFlow.current !== challenge) return;
-    activeFlow.current = undefined;
+    if (activeChallenge.current?.flow !== challenge) return;
+    const active = activeChallenge.current;
+    activeChallenge.current = undefined;
     submittedOtp.current = undefined;
-    challenge.emit("cancel");
+    active.cancel();
     setFlowError(message);
     dispatch({ type: "auth-failed" });
   }
 
   function startMagicChallenge(normalizedEmail: string) {
-    let challenge: EmailOtpFlow;
-    try {
-      challenge = getMagicClient(publishableKey).auth.loginWithEmailOTP({
-        deviceCheckUI: false,
-        email: normalizedEmail,
-        showUI: false,
-      });
-    } catch {
-      setFlowError(authCopy[flow].genericError);
-      dispatch({ type: "auth-failed" });
-      return;
-    }
-
-    activeFlow.current = challenge;
-    bindMagicFlowEvents(
-      challenge,
-      {
-        deviceApproved: () => setDeviceMessage("Device approved. Waiting for your one-time code…"),
-        deviceApprovalNeeded: () => dispatch({ type: "device-approval" }),
-        deviceEmailSent: () => {
-          setDeviceMessage(`Magic sent a device approval link to ${normalizedEmail}.`);
-          dispatch({ type: "device-approval" });
-        },
-        deviceLinkExpired: () =>
-          failFlow(challenge, "The device approval link expired. Try again."),
-        otpExpired: () => {
-          submittedOtp.current = undefined;
-          dispatch({ type: "otp-expired" });
-        },
-        otpInvalid: () => {
-          submittedOtp.current = undefined;
-          dispatch({ type: "otp-invalid" });
-        },
-        otpSent: () => {
-          setNotice(resendRequested.current ? "A new code was sent." : undefined);
-          resendRequested.current = false;
-          dispatch({ type: "otp-sent" });
-        },
-        rateLimited: () => dispatch({ type: "rate-limited" }),
-        unsupported: () =>
-          failFlow(
-            challenge,
-            "This account needs an authentication method Tab does not support yet.",
-          ),
-      },
-      () => activeFlow.current === challenge,
-    );
-
-    void challenge
-      .then(async (didToken) => {
-        if (activeFlow.current !== challenge) return;
-        if (!didToken) throw new Error("Magic did not return a DID token");
-        const redirectTo = await verifyDidToken(didToken, flow);
-        if (activeFlow.current !== challenge) return;
-
-        activeFlow.current = undefined;
+    activeChallenge.current = startMagicEmailOtpChallenge({
+      dispatch,
+      email: normalizedEmail,
+      isCurrent: (challenge) => activeChallenge.current?.flow === challenge,
+      isResend: () => resendRequested.current,
+      onAuthenticated(challenge, redirectTo) {
+        if (activeChallenge.current?.flow !== challenge) return;
+        activeChallenge.current = undefined;
         dispatch({ type: "auth-succeeded" });
         router.replace(redirectTo);
         router.refresh();
-      })
-      .catch((error: unknown) => {
-        if (activeFlow.current !== challenge) return;
-        setFlowError(
-          error instanceof AuthRequestError ? error.message : authCopy[flow].genericError,
-        );
-        activeFlow.current = undefined;
+      },
+      onFailure(challenge, error) {
+        if (challenge && activeChallenge.current?.flow !== challenge) return;
+        setFlowError(authFailureMessage(error, flow));
+        activeChallenge.current = undefined;
+        submittedOtp.current = undefined;
         dispatch({ type: "auth-failed" });
-      });
+      },
+      onFatal: failFlow,
+      publishableKey,
+      resetResend: () => {
+        resendRequested.current = false;
+      },
+      resetSubmittedOtp: () => {
+        submittedOtp.current = undefined;
+      },
+      setDeviceMessage,
+      setNotice,
+      verifyDidToken: (didToken, signal) =>
+        verifyDidToken(didToken, normalizedEmail, flow, { signal }),
+    });
   }
 
   async function beginChallenge(normalizedEmail: string, resend = false) {
@@ -140,22 +111,40 @@ export function useMerchantAuth({ configured, flow, publishableKey }: MerchantAu
     dispatch({ type: "email-submitted" });
 
     try {
-      await precheckEmail(normalizedEmail, flow, { signal: attempt.signal });
-      if (!attempt.isCurrent()) return;
-      attempt.finish();
-      startMagicChallenge(normalizedEmail);
+      await runAuthEntry({
+        isCurrent: attempt.isCurrent,
+        onAuthenticated(redirectTo) {
+          attempt.finish();
+          dispatch({ type: "auth-succeeded" });
+          router.replace(redirectTo);
+          router.refresh();
+        },
+        onChallenge() {
+          attempt.finish();
+          startMagicChallenge(normalizedEmail);
+        },
+        onPrecheckRejected(error) {
+          attempt.finish();
+          resendRequested.current = false;
+          setEmailError(precheckFailure(error, flow));
+          dispatch({ type: "return-to-email" });
+        },
+        precheck: () => precheckEmail(normalizedEmail, flow, { signal: attempt.signal }),
+        readDidToken: () => getPersistedMagicDidToken(getMagicClient(publishableKey).user),
+        verifyDidToken: (didToken) =>
+          verifyDidToken(didToken, normalizedEmail, flow, { signal: attempt.signal }),
+      });
     } catch (error) {
       if (!attempt.isCurrent()) return;
       attempt.finish();
-      resendRequested.current = false;
-      setEmailError(precheckFailure(error, flow));
-      dispatch({ type: "return-to-email" });
+      setFlowError(authFailureMessage(error, flow));
+      dispatch({ type: "auth-failed" });
     }
   }
 
   useEffect(() => {
     if (state.stage !== "otp" || state.otp.length !== 6) return;
-    const challenge = activeFlow.current;
+    const challenge = activeChallenge.current?.flow;
     if (!challenge) return;
     if (submittedOtp.current?.flow === challenge && submittedOtp.current.otp === state.otp) return;
 

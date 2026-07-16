@@ -101,12 +101,13 @@ export async function precheckEmail(
 
 export async function verifyDidToken(
   didToken: string,
+  email: string,
   flow: AuthFlow,
   options: AuthRequestOptions = {},
 ) {
   const payload = await postJson(
     "/api/auth/verify",
-    { didToken, flow },
+    { didToken, email, flow },
     options.request ?? browserRequest,
     options.signal,
   );

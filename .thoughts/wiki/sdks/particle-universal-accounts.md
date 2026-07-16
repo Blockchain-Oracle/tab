@@ -1,6 +1,6 @@
 # Particle Universal Accounts (UA) + EIP-7702 mode
 
-> Sources: docs https://developers.particle.network/universal-accounts/cha/overview · https://developers.particle.network/universal-accounts/cha/web-quickstart · https://developers.particle.network/intro/introduction · cloned docs `Reference/particle-docs-mintlify/` (HEAD `360327a`) · cloned demo `Reference/particle-universal-accounts-7702/` (HEAD `69df80e`, Privy + 7702) · Context7 `/websites/developers_particle_network`. See ../../raw/sources.md.
+> Sources: docs https://developers.particle.network/universal-accounts/cha/overview · https://developers.particle.network/universal-accounts/cha/web-quickstart · https://developers.particle.network/intro/introduction · cloned docs `Reference/particle-docs-mintlify/` (HEAD `360327a`) · cloned demo `Reference/particle-universal-accounts-7702/` (HEAD `69df80e`, Privy + 7702) · Context7 `/websites/developers_particle_network` · installed `@particle-network/universal-account-sdk@2.0.3` declarations/changelog and Phase 4 adapter/live-read evidence in `packages/sdk/src/ua.ts` + `ua.live.test.ts`. See ../../raw/sources.md.
 
 ## What it is
 Particle's **Universal Accounts (UA)** give a user **one account and one balance that works across every supported chain** (EVM + Solana). Instead of bridging tokens or worrying which chain holds what, the SDK treats the user's holdings as a single pooled balance and, when they transact, **automatically sources liquidity, bridges, and pays gas across chains** under the hood. Technically a UA is an ERC-4337 smart account, but in **EIP-7702 mode** the SDK *upgrades the user's existing EOA in place* — the same wallet address becomes the Universal Account by signing a one-time delegation (a Type-4 "authorization"), so there is **no new address, no asset migration, and no smart-account deployment**. Jargon: *EOA* = a normal private-key wallet; *EIP-7702* = a 2025 Ethereum upgrade letting an EOA temporarily delegate execution to contract code; *chain abstraction* = hiding which chain you're on.
@@ -16,20 +16,20 @@ Particle's **Universal Accounts (UA)** give a user **one account and one balance
 ## Core concepts & primitives
 - **Universal / unified balance** — `ua.getPrimaryAssets()` returns Primary Assets across all chains plus `totalAmountInUSD`. Primary Assets are the tokens (USDC/USDT/ETH/SOL/BNB etc.) the UA can spend as source liquidity.
 - **Universal Liquidity** — cross-chain routing/bridging chosen automatically; you call the *same API as a single-chain tx*. No quotes/steps to manage.
-- **Universal Gas** — gas paid automatically from the unified balance in any token; opt in with `tradeConfig.universalGas: true`.
+- **V2 trade configuration** — the pinned 2.0.3 SDK accepts routing preferences such as `tradeConfig.slippageBps`; Tab pins `slippageBps: 100`. `universalGas` was removed from `ITradeConfig` in 2.0.2 and must not be supplied.
 - **One address across EVM + Solana** — owner EOA, EVM UA, and Solana UA addresses are exposed by the SDK.
 - **Transaction builders** — `createTransferTransaction` (send/withdraw a token), `createBuyTransaction` / `createSellTransaction` (swap to/from a token using primary assets), `createConvertTransaction` (token conversion), `createUniversalTransaction` (arbitrary contract call with `expectTokens`). All return a `{ rootHash, userOps }` payload you sign, then `sendTransaction`.
 - **Account modes** — **7702 mode** (EOA *is* the UA) vs **Smart Account mode** (separate ERC-4337 account with its own address).
 
 ## How you actually integrate it (minimal happy path)
 
-**Install** (web/Node):
+**Install** (web/Node, Tab pin):
 ```bash
-npm install ethers @particle-network/universal-account-sdk dotenv
+pnpm add @particle-network/universal-account-sdk@2.0.3
 ```
-Demo uses `@particle-network/universal-account-sdk@^1.0.24`. Needs Particle Dashboard `projectId`, `clientKey`, `appId`.
+The browser client needs the Particle Dashboard `projectId`, `clientKey`, and `appId`. The old cloned demo uses a 1.x range; Tab follows the installed 2.0.3 package types instead.
 
-**Initialize in EIP-7702 mode** — the load-bearing flag is `smartAccountOptions.useEIP7702: true` (from `ua-reference/web/initialization.mdx` and the real demo `app/page.tsx:220`):
+**Initialize in EIP-7702 mode** — 2.0.3 requires the nested `smartAccountOptions` shape; the deprecated top-level `ownerAddress` was removed:
 ```ts
 import { UniversalAccount, UNIVERSAL_ACCOUNT_VERSION } from "@particle-network/universal-account-sdk";
 
@@ -43,10 +43,10 @@ const ua = new UniversalAccount({
     version: UNIVERSAL_ACCOUNT_VERSION,
     ownerAddress: owner,          // the embedded-wallet EOA address
   },
-  tradeConfig: { slippageBps: 100, universalGas: true },
+  tradeConfig: { slippageBps: 100 },
 });
 ```
-Set `useEIP7702: false` for Smart Account mode. (The 5-min Node quickstart uses a simpler *flat* config — top-level `ownerAddress`, no `smartAccountOptions` — so prefer the nested form above when you must prove 7702 mode.)
+Set `useEIP7702: false` for Smart Account mode. For Tab, `useEIP7702: true` is mandatory and the nested form is enforced by the installed 2.0.3 types; do not copy older flat quickstart examples.
 
 **Read the unified balance:**
 ```ts
@@ -78,7 +78,7 @@ const { signature } = await signMessage({ message: transaction.rootHash },
 const result = await ua.sendTransaction(transaction, signature, authorizations);
 // → https://universalx.app/activity/details?id=${result.transactionId}
 ```
-`handleEIP7702Authorizations` iterates `transaction.userOps`, and for each `userOp.eip7702Auth` that isn't yet `eip7702Delegated`, calls the provider's `signAuthorization({ contractAddress, chainId, nonce })`, serializes `{r,s,v}` via `ethers.Signature`, and de-dupes by nonce (`Reference/particle-universal-accounts-7702/lib/eip7702.ts`).
+`handleEIP7702Authorizations` iterates `transaction.userOps`, and for each `userOp.eip7702Auth` that isn't yet `eip7702Delegated`, calls the provider's `signAuthorization({ contractAddress, chainId, nonce })` and serializes `{r,s,v}` (`Reference/particle-universal-accounts-7702/lib/eip7702.ts`). Tab's adapter de-duplicates signing by the full `(chainId, nonce, authorization address)` tuple, while still attaching a signature to every required `userOpHash`; nonce alone is not a safe cross-chain identity.
 
 **Simplest value move (server/CLI, no 7702 wallet UI)** — `createTransferTransaction`, sign `rootHash`, send (`web-quickstart.mdx`):
 ```ts
@@ -110,13 +110,20 @@ The UA needs **no USDT or gas on Arbitrum** — liquidity is sourced from primar
 - **CLI / server / headless — yes.** Docs: "7702 mode is only available in server-side environments and embedded wallets that support the authorization methods." Server signs with `wallet.authorizeSync(userOp.eip7702Auth)`; see `Particle-Network/universal-account-example/examples/7702-convert-evm.ts`.
 - **AI-agent wallet — partial.** No dedicated "agent wallet" product, but the server-side pattern (a key signing `rootHash` + `authorizeSync` authorizations programmatically) maps cleanly onto an autonomous agent holding a key. Treat as a build-it-yourself fit, not a turnkey feature. **(unverified as an official use case.)**
 
+## Tab Phase 4 integration status (2026-07-16)
+- **Pinned SDK:** `@particle-network/universal-account-sdk@2.0.3`. Its shipped `CHAIN_ID` enum has exactly six members: `SOLANA_MAINNET` (101), `ETHEREUM_MAINNET` (1), `BSC_MAINNET` (56), `BASE_MAINNET` (8453), `XLAYER_MAINNET` (196), and `ARBITRUM_MAINNET_ONE` (42161). Polygon is not in V2 and is not a Tab float or settlement network.
+- **Identity invariant:** after `getPrimaryAssets()` and `getSmartAccountOptions()`, Tab rejects the snapshot unless the balance is finite and nonnegative, `useEIP7702` is true, and both returned `ownerAddress` and `smartAccountAddress` equal the authenticated Magic owner. The same address is then used as the Add Funds destination.
+- **Real network read proved:** on 2026-07-16, the keys-gated live test used real Particle credentials and an existing merchant address. `getPrimaryAssets()` returned a nonnegative balance and `getSmartAccountOptions()` returned matching owner/smart-account identity. This was a read-only checkpoint: it performed no authorization signing and no send.
+- **Error boundary:** `UniversalError` exposes a numeric `code` and opaque `data`, but the installed 2.0.3 declarations/changelog and current docs publish no Particle-specific semantic catalog. Tab handles only standard JSON-RPC integration codes conservatively, never renders opaque provider data, and defers Particle-specific buyer mappings until the B-04 live spike supplies observed evidence.
+- **Money-movement boundary:** the three-argument transaction path exists behind the B-04 runtime guard, but funded `createTransferTransaction` → Magic signatures → `sendTransaction` remains **BLOCKED** until the funded live spike.
+
 ## Gotchas / limits / open questions
-- **V2 migration in progress (live warning on docs/quickstart):** UAs are upgrading to V2; users may need to **withdraw all funds from old accounts** (withdrawals only via `createTransferTransaction`). Confirm current account version before the hackathon demo. **(time-sensitive — verify at build time.)**
+- **V2 is the installed contract:** package 2.0.3 removed legacy V1 support and the deprecated top-level `ownerAddress`. Treat 1.x examples as historical evidence only.
 - **Supported 7702 providers are a short, verified list:** **Dynamic (WaaS)**, **Magic**, **Privy** — plus raw server keys. Pick one of these; do **not** plan a MetaMask-only 7702 demo.
-- **Two different init shapes exist in the docs** — flat (`ownerAddress` top-level, Node quickstart) vs nested `smartAccountOptions.useEIP7702` (SDK reference + real demo). To *prove* 7702 mode to judges, use the nested form with `useEIP7702: true`.
+- **Docs still expose historical init drift:** some examples use flat `ownerAddress`, but the pinned 2.0.3 types accept only nested `smartAccountOptions.ownerAddress`. Installed types are authoritative.
 - **`sendTransaction` takes a 3rd `authorizations` arg in 7702 mode** — omitting it on a chain that isn't yet delegated will fail; always build the array from `transaction.userOps`.
-- **Signing is two signatures conceptually:** the 7702 *authorization(s)* (per pending nonce) AND the transaction *rootHash* (`personal_sign`). De-dupe authorizations by `nonce`.
-- **Open question:** exact CHAIN_ID coverage and which chains support inline delegation vs pre-delegation — see `universal-accounts/chains.mdx` (demo scans Ethereum, BNB, Polygon, Arbitrum, Optimism, Avalanche, Base, Linea, Berachain, Sonic, Mantle).
+- **Signing is two signatures conceptually:** the 7702 *authorization(s)* and the transaction *rootHash* (`personal_sign`). De-duplicate signing by `(chainId, nonce, authorization address)`, not nonce alone.
+- **No Polygon:** 2.0.3 trims `CHAIN_ID` to the six members listed above. Older demos that scan Polygon, Optimism, Avalanche, Linea, Berachain, Sonic, or Mantle are stale for the pinned V2 package.
 - For **Arbitrum bonus stacking**: `CHAIN_ID.ARBITRUM_MAINNET_ONE` is first-class in the quickstart/demo, so a UA-7702 app settling on Arbitrum can target both the flagship track and the $2,000 Arbitrum bounty; pairing with Magic's embedded wallet (a verified 7702 provider) also lines up the $500 Magic bonus.
 
 ## Citations
@@ -127,3 +134,4 @@ The UA needs **no USDT or gas on Arbitrum** — liquidity is sourced from primar
 - Demo repo `Reference/particle-universal-accounts-7702/` (HEAD `69df80e`): `app/page.tsx`, `lib/eip7702.ts`, `lib/buy-transaction.ts`, `lib/sell-transaction.ts`, `lib/particle-balances.ts`, `README.md`
 - Other Particle 7702 demos: `Particle-Network/ua-dynamic-7702`, `Particle-Network/ua-7702-magic-demo`, `Particle-Network/universal-account-example` (server-side `examples/7702-convert-evm.ts`)
 - Context7 library id: `/websites/developers_particle_network`
+- Installed evidence: `node_modules/@particle-network/universal-account-sdk/dist/index.d.ts` + package `CHANGELOG.md` at 2.0.3; Tab adapter/tests in `packages/sdk/src/ua.ts`, `ua.test.ts`, and `ua.live.test.ts`.

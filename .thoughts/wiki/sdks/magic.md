@@ -1,6 +1,6 @@
 # Magic (Magic Labs embedded wallets)
 
-> Sources: https://docs.magic.link/home/welcome ; https://docs.magic.link/server-wallets/introduction ; https://docs.magic.link/uoa/overview ; https://docs.magic.link/recipes/server-wallets/alchemy-smart-wallets ; https://docs.magic.link/home/ai-assisted-docs (llms.txt) ; cloned repo `Reference/magic-docs/` (github.com/magiclabs/magic-mintlify-docs @ `7b38a09`) ; Context7 `/magiclabs/magic-mintlify-docs`. See ../../raw/sources.md.
+> Sources: https://docs.magic.link/home/welcome ; https://docs.magic.link/server-wallets/introduction ; https://docs.magic.link/uoa/overview ; https://docs.magic.link/recipes/server-wallets/alchemy-smart-wallets ; https://docs.magic.link/home/ai-assisted-docs (llms.txt) ; cloned repo `Reference/magic-docs/` (github.com/magiclabs/magic-mintlify-docs @ `7b38a09`) ; Context7 `/magiclabs/magic-mintlify-docs` ; installed `magic-sdk@33.9.0` types and the Phase 4 adapters/tests in `packages/sdk/src/{magic,magic-signer}.ts`. See ../../raw/sources.md.
 
 ## What it is
 Magic (Magic Labs) is wallet-infrastructure: it spins up a real blockchain wallet for a user from an ordinary login — email one-time code, SMS, or a social account (Google/Apple/etc.) — so nobody installs MetaMask or writes down a seed phrase. There are two product families. (1) **Embedded Wallets**: a client-side SDK (`magic-sdk`) where the user's private key lives inside a Magic-hosted iframe (or secure enclave on mobile); after login you get a standard EVM/Solana provider you can hand to ethers/viem. (2) **Server Wallets**: backend wallets whose keys live in an **AWS Nitro TEE** (Trusted Execution Environment — tamper-resistant hardware enclave; the key never leaves it). You sign by sending the hash to a REST endpoint. Server Wallets are the headless / programmatic / AI-agent angle. **UOA (Unified Orchestration Accounts)** sits on top of Server Wallets to orchestrate multi-chain balances and perp-DEX deposits/withdrawals.
@@ -35,7 +35,9 @@ const magic = new Magic("PUBLISHABLE_API_KEY", {
 
 // Passwordless login — no MetaMask. `did` is a JWT you can verify server-side.
 const did = await magic.auth.loginWithEmailOTP({ email: "hello@example.com", showUI: true });
-const { email, publicAddress } = await magic.user.getInfo();
+const info = await magic.user.getInfo();
+const email = info.email;
+const publicAddress = info.wallets.ethereum?.publicAddress;
 
 // Hand the provider to viem to send transactions
 const walletClient = createWalletClient({ chain: base, transport: custom(magic.rpcProvider) });
@@ -93,6 +95,14 @@ await client.waitForCallsStatus({ id: result.id });
 ```
 Per the recipe: EIP-7702 = Type-4 tx that lets an EOA temporarily delegate to smart-contract code for one bundle — "same address, no counterfactual deployment," batched calls, optional paymaster gas sponsorship. The TEE returns `r`/`s` as **decimal strings**; convert to 0x-hex (`BigInt(dec).toString(16)`) before building the viem signature. Magic also has a Particle Network Universal Accounts recipe and legacy ZeroDev/Safe AA example repos.
 
+## Tab Phase 4 integration status (2026-07-16)
+- **Installed client shape:** Tab is pinned to `magic-sdk@33.9.0`. The EVM address is read from `getInfo().wallets.ethereum?.publicAddress`, not a top-level `publicAddress`; the email and address are validated before either becomes checkout identity.
+- **Persistent login is deliberate:** checkout first calls `isLoggedIn()`. When true, it restores the buyer with `getIdToken()` + `getInfo()` and skips OTP. Headless email OTP (`showUI: false`, `deviceCheckUI: false`) runs only when there is no valid Magic session.
+- **Retry throttling is Tab-owned:** Magic's documented headless events do not expose a retry-after value. A real `login-throttled` or `max-attempts-reached` event therefore arms Tab's existing 30-second minimum client cooldown; Start over and close/reopen resubmission remain disabled until it expires. Magic remains the authority if its server lockout lasts longer.
+- **Tab sign-out is not Magic logout:** ordinary sign-out clears only Tab's `tab_session`. It must never call `magic.user.logout()`. Magic logout is reserved for a separate, explicit future “forget this device” action.
+- **Signer boundary verified locally:** the Phase 4 adapter uses Magic's installed `wallet.sign7702Authorization(...)` surface for delegation and `personal_sign` for the Particle root hash. Local cryptographic tests recover both signatures to the authenticated Magic owner and reject mismatched response metadata or signer identity.
+- **Money-movement boundary:** this verifies the installed API shape and local signer correctness, not a funded send. Buyer `sendTransaction` remains **BLOCKED (B-04)** until the funded live spike proves the complete execution and settlement path.
+
 ## Surface support
 - **web** — **yes**. Primary surface. `magic-sdk` browser SDK, OAuth extension, Wallet Kit React widget, 30+ chains. ([welcome](https://docs.magic.link/home/welcome))
 - **browser extension** — **unknown/likely no** (unverified). Magic's client model relies on a hosted iframe + OAuth redirects; not documented for extension/service-worker contexts. No official extension guide found.
@@ -108,6 +118,7 @@ Per the recipe: EIP-7702 = Type-4 tx that lets an EOA temporarily delegate to sm
 - **Custodial vs non-custodial (Core API):** depends on how you manage `encryption_context`/key shards; docs explicitly say "consult legal professionals." (unverified for your jurisdiction)
 - **Embedded wallet types:** historically Magic distinguished "Dedicated" (per-app key) vs legacy "Universal" embedded wallets; current welcome page only surfaces Server vs Embedded. (unverified — confirm if address-portability matters)
 - **Repo caveat:** full `magic-js` clone was network-throttled and not completed; the `magic-mintlify-docs` repo was sparse-cloned (`server-wallets`, `recipes`, `uoa`, `embedded-wallets`) at `7b38a09`. SDK API surface above is corroborated by Context7 + live docs.
+- **Installed types win for Tab:** older snippets that destructure a top-level `publicAddress` from `getInfo()` are stale for the pinned client. Use the nested Ethereum wallet entry documented in the dated Phase 4 status above.
 
 ## Citations
 - https://docs.magic.link/home/welcome

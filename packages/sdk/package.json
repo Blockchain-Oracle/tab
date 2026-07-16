@@ -3,20 +3,24 @@
   "version": "0.0.1",
   "private": false,
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "build": "tsc --project tsconfig.json",
+    "build": "tsup && node scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit --project tsconfig.json",
     "test": "vitest run --passWithNoTests",
     "lint": "biome check ."
@@ -31,9 +35,16 @@
     "viem": "^2.48.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@testing-library/user-event": "14.6.1",
+    "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "jsdom": "29.1.1",
+    "tsup": "8.5.1",
     "typescript": "^5.8",
     "vitest": "^4.1.10"
-  }
+  },
+  "sideEffects": false
 }

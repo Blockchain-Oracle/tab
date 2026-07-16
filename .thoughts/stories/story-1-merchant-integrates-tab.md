@@ -26,7 +26,8 @@ so that I can accept crypto payments without writing payment logic, managing wal
 - `tokenChanges` in the webhook body reflects the credited amount at the merchant's Arbitrum One address — this is the merchant's authoritative fulfillment signal (analog of Stripe's `payment_intent.succeeded`).
 
 **From AC-TAB-4 — Webhook receipt fires:**
-- The webhook POST arrives within a defined timeout of `sendTransaction` completing.
+- After verified settlement, Tab dispatches the first webhook POST inline. Each HTTP attempt waits at most 10 seconds for a response.
+- Delivery makes exactly three total HTTP attempts: attempt 1 inline, attempt 2 after 1 minute, and attempt 3 after 4 minutes. A third failure immediately records terminal `gave_up`; no fourth request is made.
 - The `transactionId` and `tokenChanges` in the webhook body match the payment amount and the merchant's configured address on Arbitrum One (`chainId: 42161`).
 - The `onSuccess` callback in the buyer's browser fires with the same `transactionId` and `tokenChanges` values that are delivered to the merchant's webhook.
 
@@ -88,10 +89,12 @@ And the transactionId is non-empty and uniquely identifies the on-chain settleme
 
 ---
 
+## Resolved Decisions
+
+1. **Webhook timeout and retry policy (2026-07-16):** exactly three total HTTP attempts — inline, +1 minute, +4 minutes — with a 10-second response timeout per attempt and immediate terminal `gave_up` after the third failure.
+
 ## Open Questions
 
-1. What is the "defined timeout" for webhook delivery in AC-TAB-4? The spec names a timeout but does not give the value. Merchants need to know how long to keep their webhook endpoint responsive and when to consider a delivery attempt failed.
-2. Does the Tab server retry webhook delivery on network failure (e.g., the merchant's webhook URL returns 5xx or times out)? If so, what is the retry policy — max attempts and backoff interval?
-3. What is the install command / published package name for `packages/sdk`? R-TAB-1 names the monorepo package path but does not specify the npm registry name or install command a merchant uses.
-4. Where does the merchant configure the webhook URL? R-TAB-3 says the Tab server POSTs to "the merchant's configured webhook URL" but does not specify whether configuration is via env var, a Tab SDK init option, a per-intent field, or a separate dashboard. This is the first thing a merchant needs to know after installing the package.
-5. What exact USDC (or USDT) token address should the merchant specify in the intent endpoint's `token.address` field? Spec OQ-4 flags this as unresolved: the Particle quickstart uses USDT (`0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9`) but the product description says USDC. The confirmed address must be documented before any merchant can write a working intent endpoint.
+1. What is the install command / published package name for `packages/sdk`? R-TAB-1 names the monorepo package path but does not specify the npm registry name or install command a merchant uses.
+2. Where does the merchant configure the webhook URL? R-TAB-3 says the Tab server POSTs to "the merchant's configured webhook URL" but does not specify whether configuration is via env var, a Tab SDK init option, a per-intent field, or a separate dashboard. This is the first thing a merchant needs to know after installing the package.
+3. What exact USDC (or USDT) token address should the merchant specify in the intent endpoint's `token.address` field? Spec OQ-4 flags this as unresolved: the Particle quickstart uses USDT (`0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9`) but the product description says USDC. The confirmed address must be documented before any merchant can write a working intent endpoint.

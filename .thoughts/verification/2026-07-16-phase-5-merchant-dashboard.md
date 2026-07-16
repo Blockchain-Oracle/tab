@@ -2,12 +2,11 @@
 
 ## Verdict
 
-**CONDITIONAL PASS — the Phase 5 implementation and local checkpoint pass at the approved
+**PASS — the Phase 5 implementation, local checkpoint, and pull-request CI pass at the approved
 test-mode boundary.**
 
-The remaining closure item is a green Phase 5 pull-request CI run. The funded live-settlement
-spike is still blocked by B-04 and is not included in this verdict. No fake balance, transfer,
-settlement, webhook, or tenant data is accepted as evidence.
+The funded live-settlement spike is still blocked by B-04 and is not included in this verdict. No
+fake balance, transfer, settlement, webhook, or tenant data is accepted as evidence.
 
 ## Artifacts Checked
 
@@ -90,7 +89,7 @@ for this scoped Phase 5 checkpoint.
 - `git diff --check`: passed.
 - Source hard cap: no TypeScript/TSX file under `apps/` or `packages/` exceeds 300 lines.
 - Independent correctness and security re-reviews: READY with no remaining findings.
-- Pull-request CI: pending at the time this artifact was created.
+- Pull-request CI: passed on PR #2 (`Lint → Typecheck → Test → Build`).
 
 ## Deviations From Plan
 
@@ -104,10 +103,8 @@ for this scoped Phase 5 checkpoint.
 
 ## Open Blocks and Follow-ups
 
-1. Obtain the Phase 5 pull-request CI result and update this artifact before changing the verdict
-   to unconditional PASS.
-2. B-04: complete the funded external-receiver/live settlement spike, real chain evidence, and
+1. B-04: complete the funded external-receiver/live settlement spike, real chain evidence, and
    live webhook proof before enabling money movement.
-3. B-08: publish `@tab/sdk`; until then, retain the honest Quickstart workspace-package note.
-4. Run the fresh stranger-signup and funded checkout walkthrough when the funded environment is
+2. B-08: publish `@tab/sdk`; until then, retain the honest Quickstart workspace-package note.
+3. Run the fresh stranger-signup and funded checkout walkthrough when the funded environment is
    available. Persistent returning-session behavior is already proven here.

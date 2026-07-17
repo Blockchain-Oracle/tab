@@ -1,23 +1,16 @@
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomBytes } from "node:crypto";
 
 import { asc, eq } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
-import { createDatabase } from "../db/client";
-import { agents, capCycles, caps, notifications, receipts, users } from "../db/schema";
+import { capCycles, caps, notifications } from "../db/schema";
 import {
   LeashAgentNotFoundError,
   readOwnerCap,
   resetOwnerCapCycle,
   setOwnerCap,
 } from "./cap-policy";
-
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) throw new Error("DATABASE_URL is required for cap-policy integration tests");
-
-const connection = createDatabase(databaseUrl, 4);
-const baseUsdc = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
-const payTo = "0x1111111111111111111111111111111111111111";
+import { connection, insertReceipt, provision } from "./cap-policy.integration-support";
 
 beforeEach(async () => {
   await connection.client`truncate table users cascade`;
@@ -26,54 +19,6 @@ beforeEach(async () => {
 afterAll(async () => {
   await connection.client.end();
 });
-
-async function provision(label: string) {
-  const [owner] = await connection.db
-    .insert(users)
-    .values({
-      email: `${label}-${randomUUID()}@example.test`,
-      magicIssuer: `did:ethr:${randomUUID()}`,
-    })
-    .returning({ id: users.id });
-  if (!owner) throw new Error("Expected owner");
-  const [agent] = await connection.db
-    .insert(agents)
-    .values({ ownerId: owner.id, name: `${label} agent`, signerSubject: `leash:${randomUUID()}` })
-    .returning({ id: agents.id });
-  if (!agent) throw new Error("Expected agent");
-  return { agentId: agent.id, ownerId: owner.id };
-}
-
-async function insertReceipt(
-  identity: Awaited<ReturnType<typeof provision>>,
-  cycleId: string,
-  status: "pending" | "settled" | "failed" | "blocked",
-  amountAtomic: string,
-) {
-  const atomic = BigInt(amountAtomic);
-  const settled = status === "settled";
-  const blocked = status === "blocked";
-  await connection.db.insert(receipts).values({
-    agentId: identity.agentId,
-    amountAtomic,
-    amountUsd: `${atomic / BigInt(1_000_000)}.${(atomic % BigInt(1_000_000))
-      .toString()
-      .padStart(6, "0")}`,
-    asset: baseUsdc,
-    authorizationNonce: `0x${randomBytes(32).toString("hex")}`,
-    authorizationValidBefore: new Date("2030-01-01T00:00:00.000Z"),
-    cycleId,
-    intendedNetwork: blocked ? "eip155:8453" : null,
-    network: "eip155:8453",
-    payTo,
-    reason: status === "failed" ? "FLOAT_EMPTY" : blocked ? "LEASH_CAP_EXCEEDED" : null,
-    requestFingerprint: randomBytes(32).toString("hex"),
-    settledAt: settled ? new Date("2026-07-17T00:01:00.000Z") : null,
-    settlementResponse: settled ? { verified: true } : null,
-    status,
-    txHash: settled ? `0x${randomBytes(32).toString("hex")}` : null,
-  });
-}
 
 describe("owner-scoped cap policy with real PostgreSQL", () => {
   it("creates the first real cap and cycle, then reads exact zero usage", async () => {
@@ -144,6 +89,49 @@ describe("owner-scoped cap policy with real PostgreSQL", () => {
       .from(notifications)
       .where(eq(notifications.agentId, identity.agentId));
     expect(resolved?.resolvedAt).toEqual(new Date("2026-07-17T02:00:00.000Z"));
+  });
+
+  it("keeps matching reverted-call evidence committed for the cycle after validBefore", async () => {
+    const identity = await provision("reverted");
+    const now = new Date("2026-07-17T00:00:00.000Z");
+    const policy = await setOwnerCap(connection.db, {
+      ...identity,
+      amountUsdCents: "100",
+      frequency: "daily",
+      now,
+    });
+    const liveHash = `0x${randomBytes(32).toString("hex")}`;
+    const expiredHash = `0x${randomBytes(32).toString("hex")}`;
+    await insertReceipt(identity, policy.cycle.id, "failed", "700000", {
+      hash: liveHash,
+      validBefore: new Date("2026-07-17T01:00:00.000Z"),
+    });
+    await insertReceipt(identity, policy.cycle.id, "failed", "900000", {
+      hash: expiredHash,
+      validBefore: now,
+    });
+
+    await expect(readOwnerCap(connection.db, { ...identity, now })).resolves.toMatchObject({
+      spend: {
+        committedAtomic: "1600000",
+        pendingAtomic: "0",
+        revertedAtomic: "1600000",
+        settledAtomic: "0",
+      },
+    });
+    await expect(
+      readOwnerCap(connection.db, {
+        ...identity,
+        now: new Date("2026-07-17T01:00:00.000Z"),
+      }),
+    ).resolves.toMatchObject({
+      spend: {
+        committedAtomic: "1600000",
+        pendingAtomic: "0",
+        revertedAtomic: "1600000",
+        settledAtomic: "0",
+      },
+    });
   });
 
   it("starts a clean cycle on frequency change and manual reset", async () => {

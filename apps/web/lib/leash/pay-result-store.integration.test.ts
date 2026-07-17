@@ -1,20 +1,17 @@
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createDatabase, type Database } from "../db/client";
+import type { Database } from "../db/client";
 import { notifications } from "../db/schema";
 import { applySettlementObservation, SettlementResultConflictError } from "./pay-result-store";
-import { parseSettlementObservation } from "./settlement-evidence";
-
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) throw new Error("DATABASE_URL is required for pay-result tests");
-const connection = createDatabase(databaseUrl, 2);
-const agentAddress = "0x2222222222222222222222222222222222222222";
-const payTo = "0x1111111111111111111111111111111111111111";
-const baseUsdc = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
-const nonce = `0x${"12".repeat(32)}` as const;
-const transaction = `0x${"ab".repeat(32)}` as const;
+import {
+  connection,
+  failedObservation,
+  observation,
+  pendingReceipt,
+  transaction,
+} from "./pay-result-store.integration-support";
 
 beforeEach(async () => {
   await connection.client`truncate table users cascade`;
@@ -23,54 +20,6 @@ beforeEach(async () => {
 afterAll(async () => {
   await connection.client.end();
 });
-
-async function pendingReceipt(options: { amountAtomic?: string; capCents?: string } = {}) {
-  const [owner] = await connection.client<{ id: string }[]>`
-    insert into users (email, magic_issuer)
-    values (${`${randomUUID()}@example.test`}, ${`did:ethr:${randomUUID()}`}) returning id
-  `;
-  if (!owner) throw new Error("Expected owner");
-  const [agent] = await connection.client<{ id: string }[]>`
-    insert into agents (owner_id, name, signer_subject, agent_address)
-    values (${owner.id}, 'Result test', ${`leash:${randomUUID()}`}, ${agentAddress}) returning id
-  `;
-  if (!agent) throw new Error("Expected agent");
-  const [cycle] = await connection.client<{ id: string }[]>`
-    insert into cap_cycles (agent_id, started_at)
-    values (${agent.id}, now() - interval '1 minute') returning id
-  `;
-  if (!cycle) throw new Error("Expected cycle");
-  await connection.client`
-    insert into caps (agent_id, amount_usd_cents, frequency)
-    values (${agent.id}, ${options.capCents ?? "100"}, 'daily')
-  `;
-  const amountAtomic = options.amountAtomic ?? "25000";
-  const [receipt] = await connection.client<{ id: string }[]>`
-    insert into receipts (
-      agent_id, cycle_id, amount_atomic, amount_usd, asset, network, pay_to,
-      authorization_nonce, request_fingerprint, authorization_valid_before
-    ) values (
-      ${agent.id}, ${cycle.id}, ${amountAtomic}, ${amountAtomic}::numeric / 1000000,
-      ${baseUsdc}, 'eip155:8453',
-      ${payTo}, ${nonce}, ${randomBytes(32).toString("hex")}, now() + interval '5 minutes'
-    ) returning id
-  `;
-  if (!receipt) throw new Error("Expected receipt");
-  return { agentId: agent.id, cycleId: cycle.id, receiptId: receipt.id };
-}
-
-function observation(receiptId: string, txHash = transaction) {
-  return parseSettlementObservation({
-    outcome: "observed",
-    paymentResponse: {
-      network: "eip155:8453",
-      payer: agentAddress,
-      success: true,
-      transaction: txHash,
-    },
-    receiptId,
-  });
-}
 
 describe("on-chain verified receipt finalization", () => {
   it("keeps forged but shaped resource evidence pending", async () => {
@@ -117,6 +66,106 @@ describe("on-chain verified receipt finalization", () => {
     });
     expect(verify).toHaveBeenCalledOnce();
     expect(await connection.db.select().from(notifications)).toEqual([]);
+  });
+
+  it("records a verified reverted transaction as failed evidence and makes it idempotent", async () => {
+    const pending = await pendingReceipt();
+    const verify = vi.fn(async () => true);
+    const evidence = failedObservation(pending.receiptId);
+
+    await expect(
+      applySettlementObservation(connection.db, { agentId: pending.agentId, evidence, verify }),
+    ).resolves.toEqual({ kind: "failed", receiptId: pending.receiptId, verified: true });
+    await expect(
+      applySettlementObservation(connection.db, { agentId: pending.agentId, evidence, verify }),
+    ).resolves.toEqual({ kind: "failed", receiptId: pending.receiptId, verified: true });
+
+    const [stored] = await connection.client<
+      {
+        reason: string;
+        settlement_response: Record<string, unknown>;
+        settled_at: Date | null;
+        status: string;
+        tx_hash: string;
+      }[]
+    >`
+      select status, reason, tx_hash, settlement_response, settled_at
+      from receipts where id = ${pending.receiptId}
+    `;
+    expect(stored).toMatchObject({
+      reason: "invalid_exact_evm_transaction_failed",
+      settlement_response: {
+        proof: "reverted_matching_eip3009_call",
+        success: false,
+      },
+      settled_at: null,
+      status: "failed",
+      tx_hash: transaction,
+    });
+    expect(verify).toHaveBeenCalledOnce();
+    expect(await connection.db.select().from(notifications)).toEqual([]);
+  });
+
+  it("reconciles a later verified success instead of hiding it behind failed evidence", async () => {
+    const pending = await pendingReceipt();
+    const verify = vi
+      .fn<() => Promise<boolean>>()
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+    const failed = failedObservation(pending.receiptId);
+    const successfulHash = `0x${"cd".repeat(32)}` as const;
+    const success = observation(pending.receiptId, successfulHash);
+
+    await applySettlementObservation(connection.db, {
+      agentId: pending.agentId,
+      evidence: failed,
+      verify,
+    });
+    await expect(
+      applySettlementObservation(connection.db, {
+        agentId: pending.agentId,
+        evidence: success,
+        verify,
+      }),
+    ).resolves.toEqual({ kind: "pending", receiptId: pending.receiptId, verified: false });
+    await expect(
+      applySettlementObservation(connection.db, {
+        agentId: pending.agentId,
+        evidence: success,
+        verify,
+      }),
+    ).resolves.toEqual({ kind: "settled", receiptId: pending.receiptId, verified: true });
+    await expect(
+      applySettlementObservation(connection.db, {
+        agentId: pending.agentId,
+        evidence: success,
+        verify,
+      }),
+    ).resolves.toEqual({ kind: "settled", receiptId: pending.receiptId, verified: true });
+
+    const [stored] = await connection.client<
+      {
+        reason: string | null;
+        settlement_response: Record<string, unknown>;
+        status: string;
+        tx_hash: string;
+      }[]
+    >`
+      select status, reason, tx_hash, settlement_response
+      from receipts where id = ${pending.receiptId}
+    `;
+    expect(stored).toMatchObject({
+      reason: null,
+      settlement_response: {
+        priorRevertedTransaction: transaction,
+        proof: "usdc_transfer_and_authorization_used",
+        success: true,
+      },
+      status: "settled",
+      tx_hash: successfulHash,
+    });
+    expect(verify).toHaveBeenCalledTimes(3);
   });
 
   it("emits cap_75 once per cycle after concurrent verified finalization", async () => {

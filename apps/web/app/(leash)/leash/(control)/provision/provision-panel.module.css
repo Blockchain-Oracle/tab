@@ -1,0 +1,215 @@
+.page {
+  display: grid;
+  min-height: calc(100dvh - 48px);
+  place-items: center;
+  padding: 32px;
+}
+
+.card {
+  position: relative;
+  width: min(100%, 590px);
+  overflow: hidden;
+  padding: 42px;
+  border: 1px solid #e8e6df;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(28 27 24 / 6%);
+  text-align: center;
+}
+
+.keyMark {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 18px;
+  border: 1px solid #d7e6df;
+  border-radius: 50%;
+  background: #eff6f3;
+}
+
+.keyMark span:first-child {
+  position: absolute;
+  top: 17px;
+  left: 14px;
+  width: 17px;
+  height: 17px;
+  border: 3px solid #206b4e;
+  border-radius: 50%;
+}
+
+.keyMark span:last-child {
+  position: absolute;
+  top: 25px;
+  left: 30px;
+  width: 14px;
+  height: 3px;
+  background: #206b4e;
+  box-shadow: 5px 4px 0 #206b4e;
+  transform: rotate(45deg);
+}
+
+.blockedChip {
+  display: inline-flex;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #fbf1dc;
+  color: #7a5410;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.card h1 {
+  margin: 18px 0 0;
+  color: #1c1b18;
+  font-size: 24px;
+  letter-spacing: -0.025em;
+}
+
+.card > p {
+  max-width: 470px;
+  margin: 8px auto 0;
+  color: #5f5d55;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.truthNote,
+.agentContext {
+  display: grid;
+  gap: 3px;
+  margin-top: 22px;
+  padding: 13px 15px;
+  border: 1px solid #e8e6df;
+  border-radius: 9px;
+  background: #faf9f6;
+  color: #5f5d55;
+  font-size: 11.5px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.agentContext {
+  gap: 5px;
+  margin-top: 22px;
+  background: #fff;
+}
+
+.agentContext > span {
+  color: #68665f;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.agentContext > strong {
+  overflow-wrap: anywhere;
+  color: #1c1b18;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+}
+
+.agentContext > small {
+  color: #5f5d55;
+  line-height: 1.45;
+}
+
+.blockedBalance {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 5px;
+  padding-top: 8px;
+  border-top: 1px solid #e8e6df;
+}
+
+.blockedBalance strong {
+  color: #68665f;
+  font-variant-numeric: tabular-nums;
+}
+
+.blockedBalance span {
+  color: #8a5711;
+  font-size: 10.5px;
+  text-align: right;
+}
+
+.truthNote strong {
+  color: #1c1b18;
+  font-size: 12px;
+}
+
+.card form {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  text-align: left;
+}
+
+.card label {
+  display: grid;
+  gap: 6px;
+  color: #5f5d55;
+  font-size: 11.5px;
+  font-weight: 650;
+}
+
+.card input {
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid #d6d3c8;
+  border-radius: 9px;
+  background: #fff;
+  color: #1c1b18;
+  font: inherit;
+}
+
+.card button {
+  display: block;
+  width: 100%;
+  height: 38px;
+  margin-top: 2px;
+  border: 1px solid #206b4e;
+  border-radius: 9px;
+  background: #206b4e;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.card button:disabled {
+  border-color: #dbd9d0;
+  background: #f4f3ee;
+  color: #68665f;
+  cursor: wait;
+}
+
+.card > a {
+  display: inline-block;
+  margin-top: 16px;
+  color: #206b4e;
+  font-size: 11.5px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.card button:focus-visible,
+.card input:focus-visible,
+.card > a:focus-visible {
+  outline: 2px solid #206b4e;
+  outline-offset: 3px;
+}
+
+@media (max-width: 620px) {
+  .page {
+    min-height: 70dvh;
+    padding: 18px;
+  }
+
+  .card {
+    padding: 30px 20px;
+  }
+}

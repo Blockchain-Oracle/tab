@@ -1,11 +1,12 @@
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 
 import type { Database } from "../db/client";
 import { agentEvents, agents, caps, leashKeys, receipts } from "../db/schema";
 import { findActiveCapHalt } from "./cap-halt-store";
 import { ensureCurrentCapCycle } from "./cycles";
 import { emitCapBlocked, emitUnusualDomain } from "./notifier";
-import { SignGateError, statusGateError } from "./sign-gate";
+import { receiptCommitted } from "./receipt-commitment";
+import { preParseStatusGateError, SignGateError } from "./sign-gate";
 import { InvalidSignRequestError, parseSignRequest } from "./sign-request";
 
 export { SignGateError } from "./sign-gate";
@@ -79,7 +80,7 @@ export async function reserveSignRequest(
       .for("update");
     if (!agent) throw new SignGateError("INVALID_LEASH_KEY", 401);
 
-    const blockedStatus = statusGateError(agent.status);
+    const blockedStatus = preParseStatusGateError(agent.status);
     if (blockedStatus) throw blockedStatus;
     if (!agent.address) throw new SignGateError("SIGNER_NOT_CONFIGURED", 503);
 
@@ -185,15 +186,12 @@ export async function reserveSignRequest(
       })
       .from(receipts)
       .where(
-        and(
-          eq(receipts.agentId, agent.id),
-          eq(receipts.cycleId, cycle.id),
-          inArray(receipts.status, ["pending", "settled"]),
-        ),
+        and(eq(receipts.agentId, agent.id), eq(receipts.cycleId, cycle.id), receiptCommitted()),
       );
+    const capAtomicAtAttempt = (BigInt(cap.amountUsdCents) * ATOMIC_UNITS_PER_CENT).toString();
+    const committedAtomicBefore = usage?.amountAtomic ?? "0";
     const exceedsCap =
-      BigInt(usage?.amountAtomic ?? "0") + BigInt(parsed.amountAtomic) >
-      BigInt(cap.amountUsdCents) * ATOMIC_UNITS_PER_CENT;
+      BigInt(committedAtomicBefore) + BigInt(parsed.amountAtomic) > BigInt(capAtomicAtAttempt);
     const blockedByCap = activeHalt !== undefined || exceedsCap;
     const status = blockedByCap ? "blocked" : "pending";
     const receiptValues: typeof receipts.$inferInsert = {
@@ -203,6 +201,8 @@ export async function reserveSignRequest(
       asset: parsed.asset,
       authorizationNonce: parsed.authorizationNonce,
       authorizationValidBefore: parsed.authorizationValidBefore,
+      capAtomicAtAttempt,
+      committedAtomicBefore,
       cycleId: cycle.id,
       intendedNetwork: blockedByCap ? parsed.network : null,
       network: parsed.network,
@@ -240,8 +240,8 @@ export async function reserveSignRequest(
       await emitCapBlocked(transaction, {
         agentId: agent.id,
         attemptedAtomic: parsed.amountAtomic,
-        capAtomic: (BigInt(cap.amountUsdCents) * ATOMIC_UNITS_PER_CENT).toString(),
-        committedAtomic: usage?.amountAtomic ?? "0",
+        capAtomic: capAtomicAtAttempt,
+        committedAtomic: committedAtomicBefore,
         cycleId: cycle.id,
         now,
         receiptId: created.id,

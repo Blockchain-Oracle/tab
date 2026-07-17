@@ -1,0 +1,141 @@
+.backdrop {
+  align-items: center;
+  background: rgb(31 30 27 / 58%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 24px;
+  position: fixed;
+  z-index: 50;
+}
+
+.dialog {
+  background: #fffdfa;
+  border: 1px solid #ded9cf;
+  border-radius: 16px;
+  box-shadow: 0 24px 80px rgb(31 25 17 / 22%);
+  max-width: 520px;
+  padding: 28px;
+  width: 100%;
+}
+
+.dialog > h2 {
+  color: #211f1b;
+  font-size: 25px;
+  letter-spacing: -0.025em;
+  margin: 10px 0 18px;
+}
+
+.consequences {
+  color: #514d46;
+  line-height: 1.55;
+  margin: -8px 0 20px;
+}
+
+.error {
+  margin: 0 0 18px;
+  padding: 10px 12px;
+  border: 1px solid #e5b5ae;
+  border-radius: 9px;
+  background: #fbe9e6;
+  color: #8e2f34;
+  line-height: 1.45;
+}
+
+.warningMark,
+.dangerMark,
+.balanceWarning > span {
+  color: #8a5711;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.dangerMark {
+  color: #9a3025;
+}
+
+.balanceWarning {
+  background: #f8f3e9;
+  border: 1px solid #ead9b9;
+  border-radius: 11px;
+  display: grid;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 16px;
+}
+
+.balanceWarning p,
+.balanceWarning small {
+  color: #68635b;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.balanceWarning strong {
+  font-size: 26px;
+}
+
+.readHealth {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+}
+
+.withdrawButton {
+  justify-self: start;
+}
+
+.dialog label {
+  color: #514d46;
+  display: grid;
+  font-size: 13px;
+  gap: 8px;
+}
+
+.dialog input {
+  background: #fff;
+  border: 1px solid #cfc9bd;
+  border-radius: 9px;
+  font: inherit;
+  min-height: 44px;
+  padding: 9px 11px;
+}
+
+.dialogActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+.dialogButton {
+  border: 1px solid #cbc5b9;
+  border-radius: 9px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  padding: 10px 14px;
+}
+
+.dialogButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.confirmDanger {
+  background: #a33a2e;
+  border-color: #a33a2e;
+  color: #fff;
+}
+
+@media (max-width: 760px) {
+  .backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .dialog {
+    border-radius: 18px 18px 0 0;
+    max-width: none;
+  }
+}

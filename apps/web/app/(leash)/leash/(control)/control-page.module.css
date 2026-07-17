@@ -40,16 +40,24 @@
   line-height: 1.6;
 }
 
-.emptyCard button {
+.emptyCard a {
+  display: inline-flex;
+  align-items: center;
   height: 36px;
   margin-top: 18px;
   padding: 0 15px;
   border: 1px solid #dbd9d0;
   border-radius: 9px;
-  background: #f4f3ee;
-  color: #8c8a80;
+  background: #206b4e;
+  color: #fff;
   font-size: 12px;
   font-weight: 600;
+  text-decoration: none;
+}
+
+.emptyCard a:focus-visible {
+  outline: 2px solid #206b4e;
+  outline-offset: 3px;
 }
 
 .agentPicker {

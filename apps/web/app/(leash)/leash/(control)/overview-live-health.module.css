@@ -1,0 +1,24 @@
+.liveHealth {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #68665f;
+  font-size: 9.5px;
+}
+
+.liveHealth b {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #efede8;
+}
+
+.liveHealth .live {
+  background: #e7f3ef;
+  color: #17503a;
+}
+
+.liveHealth .retrying,
+.liveHealth .partial {
+  background: #fff2dc;
+  color: #8a5711;
+}

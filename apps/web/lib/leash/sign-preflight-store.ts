@@ -1,10 +1,11 @@
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 
 import type { Database } from "../db/client";
 import { agentEvents, agents, caps, leashKeys, receipts } from "../db/schema";
 import { findActiveCapHalt } from "./cap-halt-store";
 import { ensureCurrentCapCycle } from "./cycles";
 import { emitFloatEmpty } from "./notifier";
+import { floatReservationAt, receiptCommitted } from "./receipt-commitment";
 import { type SignGateCode, SignGateError, statusGateError } from "./sign-gate";
 
 const ATOMIC_UNITS_PER_CENT = BigInt(10_000);
@@ -67,6 +68,16 @@ export async function completePreSigningChecks(
       .from(agents)
       .where(eq(agents.id, options.agentId))
       .for("update");
+    if (!agent) throw new SignGateError("INVALID_LEASH_KEY", 401);
+
+    const [receipt] = await transaction
+      .select()
+      .from(receipts)
+      .where(and(eq(receipts.id, options.receiptId), eq(receipts.agentId, options.agentId)))
+      .for("update");
+    if (!receipt) throw new SignGateError("INVALID_LEASH_KEY", 401);
+    if (receipt.status !== "pending") return terminalReceipt(receipt);
+
     const [key] = await transaction
       .select({ id: leashKeys.id })
       .from(leashKeys)
@@ -77,7 +88,7 @@ export async function completePreSigningChecks(
           isNull(leashKeys.revokedAt),
         ),
       );
-    if (!agent || !key) throw new SignGateError("INVALID_LEASH_KEY", 401);
+    if (!key) return failLockedReceipt(transaction, receipt, "INVALID_LEASH_KEY");
 
     const [cap] = await transaction
       .select({ amountUsdCents: caps.amountUsdCents, frequency: caps.frequency })
@@ -91,14 +102,6 @@ export async function completePreSigningChecks(
           now: checkedAt,
         })
       : undefined;
-
-    const [receipt] = await transaction
-      .select()
-      .from(receipts)
-      .where(and(eq(receipts.id, options.receiptId), eq(receipts.agentId, options.agentId)))
-      .for("update");
-    if (!receipt) throw new SignGateError("INVALID_LEASH_KEY", 401);
-    if (receipt.status !== "pending") return terminalReceipt(receipt);
 
     let failure: PreflightFailure | undefined = statusGateError(agent.status)?.code;
     if (!failure && receipt.authorizationValidBefore <= checkedAt) {
@@ -116,11 +119,7 @@ export async function completePreSigningChecks(
         .select({ amountAtomic: sql<string>`coalesce(sum(${receipts.amountAtomic}), 0)::text` })
         .from(receipts)
         .where(
-          and(
-            eq(receipts.agentId, agent.id),
-            eq(receipts.cycleId, cycle.id),
-            inArray(receipts.status, ["pending", "settled"]),
-          ),
+          and(eq(receipts.agentId, agent.id), eq(receipts.cycleId, cycle.id), receiptCommitted()),
         );
       if (BigInt(usage?.amountAtomic ?? "0") > BigInt(cap.amountUsdCents) * ATOMIC_UNITS_PER_CENT) {
         failure = "LEASH_CAP_EXCEEDED";
@@ -136,7 +135,7 @@ export async function completePreSigningChecks(
           and(
             eq(receipts.agentId, agent.id),
             eq(receipts.network, receipt.network),
-            eq(receipts.status, "pending"),
+            floatReservationAt(checkedAt),
           ),
         );
       reservedAtomic = reserved?.amountAtomic ?? "0";

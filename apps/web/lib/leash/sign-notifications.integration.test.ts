@@ -99,6 +99,7 @@ async function insertHistorical(
 ) {
   const settled = status === "settled";
   const blocked = status === "blocked";
+  const txHash = settled ? `0x${randomBytes(32).toString("hex")}` : null;
   await connection.client`
     insert into receipts (
       agent_id, cycle_id, status, reason, amount_atomic, amount_usd, asset, network,
@@ -110,8 +111,8 @@ async function insertHistorical(
       ${blocked ? "eip155:8453" : null}, ${payTo}, ${`https://${resourceHost}/old`},
       ${resourceHost}, ${`0x${randomBytes(32).toString("hex")}`},
       ${randomBytes(32).toString("hex")}, now() + interval '5 minutes',
-      ${settled ? `0x${randomBytes(32).toString("hex")}` : null},
-      ${settled ? JSON.stringify({ verified: true }) : null}::jsonb,
+      ${txHash},
+      ${settled ? JSON.stringify({ success: true, transaction: txHash, verified: true }) : null}::jsonb,
       ${settled ? new Date().toISOString() : null}::timestamptz
     )
   `;

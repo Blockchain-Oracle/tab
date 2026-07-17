@@ -141,6 +141,34 @@
       "when": 1784284950643,
       "tag": "0019_aspiring_frightful_four",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1784289658083,
+      "tag": "0020_loose_captain_cross",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1784289989653,
+      "tag": "0021_talented_ted_forrester",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1784296693124,
+      "tag": "0022_receipt_cap_context",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1784299396701,
+      "tag": "0023_failed_transaction_evidence",
+      "breakpoints": true
     }
   ]
 }

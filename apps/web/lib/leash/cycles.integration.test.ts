@@ -102,6 +102,7 @@ async function reserveAt(
 }
 
 async function insertOldSettled(identity: Awaited<ReturnType<typeof provision>>) {
+  const txHash = `0x${randomBytes(32).toString("hex")}`;
   const [row] = await connection.db
     .insert(receipts)
     .values({
@@ -116,9 +117,9 @@ async function insertOldSettled(identity: Awaited<ReturnType<typeof provision>>)
       payTo,
       requestFingerprint: randomBytes(32).toString("hex"),
       settledAt: new Date("2026-01-01T00:01:00.000Z"),
-      settlementResponse: { verified: true },
+      settlementResponse: { success: true, transaction: txHash, verified: true },
       status: "settled",
-      txHash: `0x${randomBytes(32).toString("hex")}`,
+      txHash,
     })
     .returning({ id: receipts.id });
   if (!row) throw new Error("Expected old receipt");

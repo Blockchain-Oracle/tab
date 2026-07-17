@@ -33,14 +33,18 @@ export async function POST(request: NextRequest) {
     if (result.kind === "not_found") {
       return apiError("RECEIPT_NOT_FOUND", "The receipt was not found.", 404);
     }
-    if (result.kind === "pending" || result.kind === "settled") {
+    if (
+      result.kind === "pending" ||
+      result.kind === "settled" ||
+      (result.kind === "failed" && result.verified)
+    ) {
       return NextResponse.json(
         {
           receiptId: result.receiptId,
           status: result.kind,
           verified: result.verified,
         },
-        { headers: NO_STORE_HEADERS, status: result.kind === "settled" ? 200 : 202 },
+        { headers: NO_STORE_HEADERS, status: result.kind === "pending" ? 202 : 200 },
       );
     }
     return apiError("RECEIPT_NOT_PENDING", "The receipt is not pending.", 409);

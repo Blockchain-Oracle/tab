@@ -13,27 +13,33 @@ import {
   formatUsdCents,
 } from "../../../../lib/leash/leash-format";
 import type { OwnerAgent } from "../../../../lib/leash/owner-agents";
+import type { listOwnerReceipts } from "../../../../lib/leash/receipt-store";
+import { CycleResetLine } from "./cycle-reset-line";
+import { classifyFloatHealth } from "./float-health";
 import styles from "./leash-overview.module.css";
+import { OverviewCards } from "./overview-cards";
+import { OverviewLiveHealth } from "./overview-live-health";
 import { type NotificationPreview, OverviewNotifications } from "./overview-notifications";
+import { OverviewReceipts } from "./overview-receipts";
+import { OverviewActions, OverviewStateNotices } from "./overview-state";
 
 type KeySummary = Awaited<ReturnType<typeof readOwnerLeashKey>>;
+type ReceiptPreview = Awaited<ReturnType<typeof listOwnerReceipts>>["receipts"][number];
 type FloatRead = { balanceAtomic: string | null; label: string; network: string };
 const statusCopy = {
   cancelled: "Cancelled — provisioning required",
   frozen: "Frozen",
-  nuked: "Nuked — provisioning required",
+  nuked: "Not provisioned — credential destroyed",
   paused: "Paused",
   provisioned: "Active",
 } as const;
-
-function maskedKey(key: NonNullable<KeySummary>) {
-  return `${key.prefix}••••••••${key.last4}`;
-}
-
-function floatTotal(reads: FloatRead[]) {
-  if (reads.some((read) => read.balanceAtomic === null)) return null;
-  return reads.reduce((total, read) => total + BigInt(read.balanceAtomic ?? "0"), BigInt(0));
-}
+const statusClass = {
+  cancelled: styles.cancelledStatus,
+  frozen: styles.frozenStatus,
+  nuked: styles.nukedStatus,
+  paused: styles.pausedStatus,
+  provisioned: styles.activeStatus,
+} as const;
 
 export function LeashOverview({
   agent,
@@ -41,6 +47,7 @@ export function LeashOverview({
   keySummary,
   notifications,
   policy,
+  receipts,
   unreadCount,
 }: {
   agent: OwnerAgent;
@@ -48,10 +55,13 @@ export function LeashOverview({
   keySummary: KeySummary;
   notifications: NotificationPreview[];
   policy: CapPolicyView | null;
+  receipts: ReceiptPreview[];
   unreadCount: number;
 }) {
-  const totalFloat = floats ? floatTotal(floats) : null;
+  const floatHealth = classifyFloatHealth(floats, agent.agentAddress !== null);
   const query = `?agentId=${encodeURIComponent(agent.id)}`;
+  const terminal = agent.status === "cancelled" || agent.status === "nuked";
+  const halted = !terminal && policy?.halted === true;
 
   return (
     <main className={styles.page}>
@@ -60,26 +70,32 @@ export function LeashOverview({
           <p className={styles.eyebrow}>COMMAND BRIDGE</p>
           <div className={styles.titleLine}>
             <h1>{agent.name}</h1>
-            <span className={styles.statusChip}>{statusCopy[agent.status]}</span>
+            <span
+              className={`${styles.statusChip} ${halted ? styles.haltedStatus : statusClass[agent.status]}`}
+            >
+              {halted ? "Halted — cap reached" : statusCopy[agent.status]}
+            </span>
+            <OverviewLiveHealth agentId={agent.id} />
           </div>
         </div>
-        <div className={styles.headerActions}>
-          <Link href={`/leash/cap${query}`}>{policy ? "Adjust cap" : "Set cap"}</Link>
-          <Link className={styles.secondaryAction} href={`/leash/connect${query}`}>
-            Manage connection
-          </Link>
-        </div>
+        <OverviewActions
+          floatState={floatHealth.state}
+          policy={policy}
+          query={query}
+          status={agent.status}
+        />
       </header>
 
-      {!policy ? (
-        <section className={styles.warning}>
-          <div>
-            <strong>Set a cap to enable payments.</strong>
-            <p>The hosted signer currently refuses every payment for this agent.</p>
-          </div>
-          <Link href={`/leash/cap${query}`}>Set cap</Link>
-        </section>
-      ) : (
+      <OverviewStateNotices
+        hasAddress={agent.agentAddress !== null}
+        notifications={notifications}
+        policy={policy}
+        query={query}
+        status={agent.status}
+        floatHealth={floatHealth}
+      />
+
+      {!terminal && policy ? (
         <section className={styles.spendCard}>
           <div className={styles.cardHeading}>
             <span>SPEND THIS CYCLE</span>
@@ -90,14 +106,18 @@ export function LeashOverview({
             <span>/ {formatUsdCents(policy.cap.amountUsdCents)}</span>
             <b>{formatBasisPoints(policy.spend.committedBasisPoints ?? "0")}</b>
           </p>
-          <div aria-label={capUsageDescription(policy)} className={styles.spendTrack} role="img">
+          <div
+            aria-label={capUsageDescription(policy)}
+            className={`${styles.spendTrack} ${policy.halted ? styles.haltedTrack : ""}`}
+            role="img"
+          >
             <span
               className={styles.settledFill}
               style={{ width: capFillWidth(policy.spend.settledFillBasisPoints ?? "0") }}
             />
             <span
               className={styles.pendingFill}
-              style={{ width: capFillWidth(policy.spend.pendingFillBasisPoints ?? "0") }}
+              style={{ width: capFillWidth(policy.spend.reservedFillBasisPoints ?? "0") }}
             />
             {BigInt(policy.spend.overageAtomic) > BigInt(0) ? (
               <span
@@ -108,65 +128,29 @@ export function LeashOverview({
           </div>
           <div className={styles.spendMeta}>
             <span>
-              {BigInt(policy.spend.pendingAtomic) > BigInt(0)
-                ? `incl. ${formatUsdAtomic(policy.spend.pendingAtomic)} pending`
-                : "No pending payments"}
+              {BigInt(policy.spend.reservedAtomic) > BigInt(0)
+                ? `incl. ${formatUsdAtomic(policy.spend.reservedAtomic)} reserved / unsettled`
+                : "No reserved authorizations"}
             </span>
             <span>{policy.halted ? "Payments halted at the cap" : "Cap gate active"}</span>
             <span>{blockedReceiptEvidence(policy.spend.blockedReceiptCount)}</span>
+            <CycleResetLine
+              frequency={policy.cap.frequency}
+              nextResetAt={policy.cycle.nextResetAt}
+            />
           </div>
         </section>
-      )}
+      ) : null}
 
-      <section className={styles.cards}>
-        <article>
-          <span className={styles.cardLabel}>AGENT BALANCE</span>
-          <strong>
-            {!agent.agentAddress
-              ? "Not provisioned"
-              : totalFloat === null
-                ? "Live read unavailable"
-                : formatUsdAtomic(totalFloat.toString())}
-          </strong>
-          <p>{agent.agentAddress ? "Native USDC floats" : "No signing address exists"}</p>
-          {floats ? (
-            <ul className={styles.floatList}>
-              {floats.map((read) => (
-                <li key={read.network}>
-                  <span>{read.label}</span>
-                  <b>
-                    {read.balanceAtomic === null
-                      ? "Unavailable"
-                      : formatUsdAtomic(read.balanceAtomic)}
-                  </b>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </article>
-        <article>
-          <span className={styles.cardLabel}>CONNECTED AGENT</span>
-          <strong>{agent.clientName ?? "No client connected"}</strong>
-          <p>
-            {agent.transport ?? "Connection metadata appears after the first real initialize call."}
-          </p>
-          <small>
-            {agent.connectionCount} recorded connection{agent.connectionCount === 1 ? "" : "s"}
-          </small>
-        </article>
-        <article>
-          <span className={styles.cardLabel}>LEASH KEY</span>
-          <strong>{keySummary ? "Active" : "Not issued"}</strong>
-          <p className={styles.mono}>
-            {keySummary ? maskedKey(keySummary) : "No key material exists"}
-          </p>
-          <small>
-            {keySummary
-              ? "Hash stored at rest · reveal unavailable"
-              : "Generate it once in Connect agent"}
-          </small>
-        </article>
-      </section>
+      <OverviewCards
+        agent={agent}
+        floats={floats}
+        health={floatHealth}
+        keySummary={keySummary}
+        query={query}
+      />
+
+      <OverviewReceipts query={query} receipts={receipts} />
 
       <OverviewNotifications
         agentId={agent.id}

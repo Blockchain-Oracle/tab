@@ -11,6 +11,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./ua": {
+      "types": "./dist/ua.d.ts",
+      "import": "./dist/ua.js",
+      "require": "./dist/ua.cjs"
     }
   },
   "files": [

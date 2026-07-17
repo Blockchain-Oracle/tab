@@ -5,6 +5,7 @@ const APPROACHING_BASIS_POINTS = BigInt(7_500);
 type CapDisplayInput = {
   capUsdCents: string | null;
   pendingAtomic: string;
+  revertedAtomic?: string;
   settledAtomic: string;
 };
 
@@ -25,8 +26,10 @@ function roundedBasisPoints(value: bigint, scaleAtomic: bigint) {
 
 export function deriveCapDisplay(input: CapDisplayInput) {
   const pendingAtomic = nonnegativeInteger(input.pendingAtomic, "pendingAtomic");
+  const revertedAtomic = nonnegativeInteger(input.revertedAtomic ?? "0", "revertedAtomic");
   const settledAtomic = nonnegativeInteger(input.settledAtomic, "settledAtomic");
-  const committedAtomic = settledAtomic + pendingAtomic;
+  const reservedAtomic = pendingAtomic + revertedAtomic;
+  const committedAtomic = settledAtomic + reservedAtomic;
 
   if (input.capUsdCents === null) {
     return {
@@ -40,6 +43,9 @@ export function deriveCapDisplay(input: CapDisplayInput) {
       overageFillBasisPoints: null,
       pendingAtomic: pendingAtomic.toString(),
       pendingFillBasisPoints: null,
+      reservedAtomic: reservedAtomic.toString(),
+      reservedFillBasisPoints: null,
+      revertedAtomic: revertedAtomic.toString(),
       settledAtomic: settledAtomic.toString(),
       settledFillBasisPoints: null,
     };
@@ -69,7 +75,10 @@ export function deriveCapDisplay(input: CapDisplayInput) {
     ).toString(),
     overageFillBasisPoints: overageFill.toString(),
     pendingAtomic: pendingAtomic.toString(),
-    pendingFillBasisPoints: pendingFill.toString(),
+    pendingFillBasisPoints: roundedBasisPoints(pendingAtomic, displayScaleAtomic).toString(),
+    reservedAtomic: reservedAtomic.toString(),
+    reservedFillBasisPoints: pendingFill.toString(),
+    revertedAtomic: revertedAtomic.toString(),
     settledAtomic: settledAtomic.toString(),
     settledFillBasisPoints: settledFill.toString(),
   };

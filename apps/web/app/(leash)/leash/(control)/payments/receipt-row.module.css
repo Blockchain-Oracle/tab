@@ -1,0 +1,144 @@
+.item {
+  border: 1px solid #e8e6df;
+  border-radius: 11px;
+  background: #fff;
+}
+.newest {
+  border-color: #cfe2db;
+  background: #f4faf7;
+  animation: receipt-in 240ms ease-out both;
+}
+.row {
+  display: grid;
+  grid-template-columns: 84px minmax(180px, 1fr) 72px 90px 116px 112px;
+  align-items: center;
+  gap: 14px;
+  min-height: 72px;
+  padding: 11px 15px;
+}
+.row:hover {
+  border-radius: 11px;
+  background: #fcfbf8;
+}
+.resource {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  color: #1c1b18;
+  text-decoration: none;
+}
+.resource strong {
+  overflow: hidden;
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.resource small,
+.time {
+  color: #68665f;
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+.amount {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.network,
+.target,
+.settled,
+.pending,
+.failed,
+.blocked {
+  justify-self: start;
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 9.5px;
+  font-weight: 700;
+}
+.network {
+  background: #efede7;
+  color: #5f5d55;
+}
+.target {
+  background: #fbf1dc;
+  color: #7a5410;
+}
+.settled {
+  background: #e7f3ef;
+  color: #17503a;
+}
+.pending {
+  background: #fff2dc;
+  color: #8a5711;
+}
+.failed {
+  background: #faecec;
+  color: #b4383d;
+}
+.blocked {
+  background: #e8eff5;
+  color: #345a73;
+}
+.transaction {
+  min-width: 0;
+  font-size: 10px;
+}
+.transaction a {
+  color: #206b4e;
+  font-size: 9px;
+  font-weight: 500;
+}
+.transaction code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+.time {
+  justify-self: end;
+  white-space: nowrap;
+}
+.resource:focus-visible,
+.transaction a:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid #206b4e;
+  outline-offset: 2px;
+}
+@keyframes receipt-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .newest {
+    animation: none;
+  }
+}
+@media (max-width: 760px) {
+  .row {
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
+  }
+  .amount,
+  .resource {
+    grid-column: 1 / -1;
+  }
+  .network,
+  .target {
+    grid-row: 2;
+  }
+  .settled,
+  .pending,
+  .failed,
+  .blocked {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+  .transaction {
+    grid-row: 3;
+  }
+  .time {
+    grid-column: 2;
+    grid-row: 3;
+    justify-self: end;
+  }
+}

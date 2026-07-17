@@ -192,6 +192,16 @@ describe("final hosted-signer policy decision", () => {
     });
   });
 
+  it("drops an expired pending authorization from live float liability", async () => {
+    const identity = await provision("300");
+    await reserve(identity, "600000", nowSeconds + 1);
+    const current = await reserve(identity, "600000");
+
+    await expect(
+      finalCheck(identity, current.receiptId, BigInt(600_000), nowSeconds + 2),
+    ).resolves.toMatchObject({ kind: "ready" });
+  });
+
   it("deduplicates concurrent and replayed float-empty failures once per cycle", async () => {
     const identity = await provision("300");
     const [first, second] = await Promise.all([

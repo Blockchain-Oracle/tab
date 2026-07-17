@@ -1,0 +1,216 @@
+.page {
+  display: grid;
+  gap: 14px;
+  padding: 26px 32px 48px;
+}
+.back {
+  width: fit-content;
+  color: #5f5d55;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.header p,
+.evidenceCard > p {
+  margin: 0;
+  color: #68665f;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.header h1 {
+  margin: 5px 0 0;
+  font-size: 24px;
+  letter-spacing: -0.03em;
+}
+.header h1 span {
+  color: #68665f;
+  font-size: 12px;
+}
+.header b {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10.5px;
+}
+.settled {
+  background: #e7f3ef;
+  color: #17503a;
+}
+.pending {
+  background: #fff2dc;
+  color: #8a5711;
+}
+.failed {
+  background: #faecec;
+  color: #b4383d;
+}
+.blocked {
+  background: #e8eff5;
+  color: #345a73;
+}
+.summary,
+.capContext,
+.evidenceCard,
+.unavailable,
+.loading {
+  border: 1px solid #e8e6df;
+  border-radius: 11px;
+  background: #fff;
+}
+.summary {
+  padding: 8px 18px;
+}
+.capContext {
+  padding: 14px 18px;
+  border-color: #d8e1e7;
+  background: #f5f8fa;
+}
+.capContext b {
+  color: #345a73;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+}
+.capContext p {
+  margin: 5px 0 0;
+  color: #31434f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.summary dl,
+.evidenceCard dl {
+  margin: 0;
+}
+.summary dl > div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid #efede7;
+}
+.summary dl > div:last-child {
+  border-bottom: 0;
+}
+.summary dt,
+.evidenceCard dt {
+  color: #68665f;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+.summary dd,
+.evidenceCard dd {
+  min-width: 0;
+  margin: 0;
+  color: #1c1b18;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.summary a {
+  color: #206b4e;
+}
+.mono,
+.evidenceCard code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+.evidenceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.evidenceCard {
+  min-width: 0;
+  padding: 17px;
+}
+.evidenceCard dl {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+.evidenceCard dl > div {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 8px;
+}
+.evidenceUnavailable {
+  display: block;
+  margin-top: 12px;
+  color: #5f5d55;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+.evidenceCard code {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #5f5d55;
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+.evidenceLine {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.evidenceLine > :first-child {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.evidenceCard .evidenceLine {
+  margin-top: 12px;
+}
+.evidenceCard > a {
+  display: inline-flex;
+  margin-top: 12px;
+  padding: 7px 9px;
+  border-radius: 7px;
+  background: #206b4e;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.error {
+  margin: 0;
+  padding: 9px 12px;
+  border: 1px solid #ecd49f;
+  border-radius: 9px;
+  background: #fff9ec;
+  color: #7a5410;
+  font-size: 11.5px;
+}
+.loading,
+.unavailable {
+  padding: 48px 24px;
+  text-align: center;
+}
+.unavailable h1 {
+  margin: 0;
+  font-size: 17px;
+}
+.unavailable p {
+  margin: 7px 0 0;
+  color: #5f5d55;
+  font-size: 12px;
+}
+.back:focus-visible,
+.summary a:focus-visible,
+.evidenceCard > a:focus-visible {
+  outline: 2px solid #206b4e;
+  outline-offset: 2px;
+}
+@media (max-width: 760px) {
+  .page {
+    padding: 22px 18px 36px;
+  }
+  .evidenceGrid {
+    grid-template-columns: 1fr;
+  }
+  .summary dl > div {
+    grid-template-columns: 82px minmax(0, 1fr);
+  }
+}

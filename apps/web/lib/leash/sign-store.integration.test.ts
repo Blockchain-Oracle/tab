@@ -1,135 +1,20 @@
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomBytes } from "node:crypto";
 
-import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { createDatabase } from "../db/client";
 import { completePreSigningChecks, reserveSignRequest, type SignGateError } from "./sign-store";
-
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) throw new Error("DATABASE_URL is required for sign-store tests");
-
-const connection = createDatabase(databaseUrl, 4);
-const agentAddress = "0x2222222222222222222222222222222222222222";
-const payTo = "0x1111111111111111111111111111111111111111";
-const baseUsdc = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
-const nowSeconds = 1_784_271_300;
-
-beforeEach(async () => {
-  await connection.client`truncate table users cascade`;
-});
-
-afterAll(async () => {
-  await connection.client.end();
-});
-
-async function provision(
-  options: {
-    capCents?: string | null;
-    status?: "provisioned" | "paused" | "frozen" | "cancelled" | "nuked";
-  } = {},
-) {
-  const [owner] = await connection.client<{ id: string }[]>`
-    insert into users (email, magic_issuer)
-    values (${`${randomUUID()}@example.test`}, ${`did:ethr:${randomUUID()}`})
-    returning id
-  `;
-  if (!owner) throw new Error("Expected an owner");
-  const [agent] = await connection.client<{ id: string }[]>`
-    insert into agents (owner_id, name, status, signer_subject, agent_address)
-    values (
-      ${owner.id}, 'Sign test', ${options.status ?? "provisioned"},
-      ${`leash:${randomUUID()}`}, ${agentAddress}
-    ) returning id
-  `;
-  if (!agent) throw new Error("Expected an agent");
-  const [key] = await connection.client<{ id: string }[]>`
-    insert into leash_keys (agent_id, hashed_key, prefix, last4)
-    values (${agent.id}, ${randomBytes(32).toString("hex")}, 'leash_sk_', 'a1B2')
-    returning id
-  `;
-  const [cycle] = await connection.client<{ id: string }[]>`
-    insert into cap_cycles (agent_id, started_at)
-    values (${agent.id}, now() - interval '1 minute') returning id
-  `;
-  if (!key || !cycle) throw new Error("Expected key and cycle");
-  if (options.capCents !== null) {
-    await connection.client`
-      insert into caps (agent_id, amount_usd_cents, frequency)
-      values (${agent.id}, ${options.capCents ?? "100"}, 'daily')
-    `;
-  }
-  return { agentId: agent.id, cycleId: cycle.id, keyId: key.id };
-}
-
-function signBody(amount = "250000", nonce = randomBytes(32).toString("hex")) {
-  return {
-    amount,
-    asset: baseUsdc,
-    network: "eip155:8453",
-    origin: { clientName: "Claude Code", toolName: "search", transport: "mcp" },
-    payTo,
-    resourceUrl: "mcp://tool/search",
-    signerRequest: {
-      domain: {
-        chainId: 8453,
-        name: "USD Coin",
-        verifyingContract: baseUsdc,
-        version: "2",
-      },
-      message: {
-        from: agentAddress,
-        nonce: `0x${nonce}`,
-        to: payTo,
-        validAfter: "0",
-        validBefore: String(nowSeconds + 300),
-        value: amount,
-      },
-      primaryType: "TransferWithAuthorization",
-      types: {
-        TransferWithAuthorization: [
-          { name: "from", type: "address" },
-          { name: "to", type: "address" },
-          { name: "value", type: "uint256" },
-          { name: "validAfter", type: "uint256" },
-          { name: "validBefore", type: "uint256" },
-          { name: "nonce", type: "bytes32" },
-        ],
-      },
-    },
-  };
-}
-
-async function insertCommitted(
-  agentId: string,
-  cycleId: string,
-  status: "pending" | "settled" | "failed" | "blocked",
-  amount: string,
-) {
-  const terminal = status === "settled";
-  const blocked = status === "blocked";
-  await connection.client`
-    insert into receipts (
-      agent_id, cycle_id, status, reason, amount_atomic, amount_usd, asset, network,
-      intended_network, pay_to, authorization_nonce, request_fingerprint,
-      authorization_valid_before, origin, tx_hash, settlement_response, settled_at
-    ) values (
-      ${agentId}, ${cycleId}, ${status},
-      ${status === "failed" ? "FLOAT_EMPTY" : blocked ? "LEASH_CAP_EXCEEDED" : null},
-      ${amount}, ${amount}::numeric / 1000000, ${baseUsdc}, 'eip155:8453',
-      ${blocked ? "eip155:8453" : null}, ${payTo},
-      ${`0x${randomBytes(32).toString("hex")}`}, ${randomBytes(32).toString("hex")},
-      now() + interval '5 minutes', null,
-      ${terminal ? `0x${randomBytes(32).toString("hex")}` : null},
-      ${terminal ? JSON.stringify({ verified: true }) : null}::jsonb,
-      ${terminal ? new Date().toISOString() : null}::timestamptz
-    )
-  `;
-}
+import {
+  connection,
+  insertCommitted,
+  insertRevertedAuthorization,
+  nowSeconds,
+  provision,
+  signBody,
+} from "./sign-store.integration-support";
 
 describe("atomic hosted-signer reservation gate", () => {
   it.each([
     ["paused", "AGENT_PAUSED"],
-    ["frozen", "AGENT_FROZEN"],
     ["cancelled", "AGENT_CANCELLED"],
     ["nuked", "AGENT_CANCELLED"],
   ] as const)("rejects %s before parsing an invalid request", async (status, code) => {
@@ -145,7 +30,39 @@ describe("atomic hosted-signer reservation gate", () => {
     expect(count?.count).toBe("0");
   });
 
-  it("counts pending and settled only, allows exact cap, then writes a blocked attempt", async () => {
+  it("reserves a frozen request, then persists the signer-stage rejection as failed evidence", async () => {
+    const identity = await provision({ status: "frozen" });
+    const reservation = await reserveSignRequest(connection.db, {
+      ...identity,
+      body: signBody(),
+      nowSeconds,
+    });
+    expect(reservation).toMatchObject({ kind: "pending", replayed: false });
+    if (reservation.kind !== "pending") throw new Error("Expected a frozen reservation");
+
+    await expect(
+      completePreSigningChecks(connection.db, {
+        ...identity,
+        liveBalanceAtomic: BigInt(1_000_000),
+        nowSeconds,
+        receiptId: reservation.receiptId,
+        signerAvailable: true,
+      }),
+    ).resolves.toMatchObject({
+      code: "AGENT_FROZEN",
+      kind: "failed",
+      receiptId: reservation.receiptId,
+    });
+
+    const [stored] = await connection.client<
+      { reason: string | null; status: string; tx_hash: string | null }[]
+    >`
+      select status, reason, tx_hash from receipts where id = ${reservation.receiptId}
+    `;
+    expect(stored).toEqual({ reason: "AGENT_FROZEN", status: "failed", tx_hash: null });
+  });
+
+  it("excludes only non-replayable failures and blocked attempts from committed spend", async () => {
     const identity = await provision({ capCents: "100" });
     await insertCommitted(identity.agentId, identity.cycleId, "settled", "300000");
     await insertCommitted(identity.agentId, identity.cycleId, "pending", "300000");
@@ -165,12 +82,64 @@ describe("atomic hosted-signer reservation gate", () => {
     });
     expect(blocked).toMatchObject({ code: "LEASH_CAP_EXCEEDED", kind: "blocked" });
 
-    const [stored] = await connection.client<{ intended_network: string; status: string }[]>`
-      select status, intended_network from receipts where id = ${blocked.receiptId}
+    const stored = await connection.client<
+      {
+        cap_atomic_at_attempt: string | null;
+        committed_atomic_before: string | null;
+        id: string;
+        intended_network: string | null;
+        status: string;
+      }[]
+    >`
+      select id, status, intended_network, cap_atomic_at_attempt, committed_atomic_before
+      from receipts
+      where id in (${exact.receiptId}, ${blocked.receiptId})
+      order by id
     `;
-    expect(stored).toEqual({ intended_network: "eip155:8453", status: "blocked" });
+    expect(stored).toEqual(
+      [
+        {
+          cap_atomic_at_attempt: "1000000",
+          committed_atomic_before: "600000",
+          id: exact.receiptId,
+          intended_network: null,
+          status: "pending",
+        },
+        {
+          cap_atomic_at_attempt: "1000000",
+          committed_atomic_before: "1000000",
+          id: blocked.receiptId,
+          intended_network: "eip155:8453",
+          status: "blocked",
+        },
+      ].sort((left, right) => left.id.localeCompare(right.id)),
+    );
   });
 
+  it("keeps a reverted authorization committed after validBefore for the whole cycle", async () => {
+    const identity = await provision({ capCents: "100" });
+    await insertRevertedAuthorization(identity.agentId, identity.cycleId, "700000", nowSeconds);
+
+    const exact = await reserveSignRequest(connection.db, {
+      ...identity,
+      body: signBody("300000"),
+      nowSeconds,
+    });
+    expect(exact).toMatchObject({ kind: "pending", replayed: false });
+    const blocked = await reserveSignRequest(connection.db, {
+      ...identity,
+      body: signBody("1"),
+      nowSeconds,
+    });
+    expect(blocked).toMatchObject({ code: "LEASH_CAP_EXCEEDED", kind: "blocked" });
+
+    const [stored] = await connection.client<
+      { committed_atomic_before: string | null; status: string }[]
+    >`
+      select committed_atomic_before, status from receipts where id = ${exact.receiptId}
+    `;
+    expect(stored).toEqual({ committed_atomic_before: "700000", status: "pending" });
+  });
   it("serializes concurrent requests so only one can reserve the remaining cap", async () => {
     const identity = await provision({ capCents: "50" });
     const results = await Promise.all(

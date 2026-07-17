@@ -162,6 +162,28 @@ describe("POST /api/agent/sign", () => {
     expect(rpcMethods).toHaveLength(0);
   });
 
+  it("parses frozen requests but rejects their reservation at the signer gate", async () => {
+    const frozen = await provision({ status: "frozen" });
+    const malformed = await POST(request(frozen.secret, "{", true));
+    expect(malformed.status).toBe(400);
+    await expect(malformed.json()).resolves.toMatchObject({
+      error: { code: "INVALID_SIGN_REQUEST" },
+    });
+    expect(await connection.db.select({ id: receipts.id }).from(receipts)).toEqual([]);
+
+    const response = await POST(request(frozen.secret, signBody()));
+    const body = await response.json();
+    expect(response.status).toBe(423);
+    expect(body).toMatchObject({ error: { code: "AGENT_FROZEN" } });
+    expect(JSON.stringify(body)).not.toContain("signature");
+    expect(rpcMethods).toEqual(["eth_call"]);
+
+    const [stored] = await connection.db
+      .select({ reason: receipts.reason, status: receipts.status, txHash: receipts.txHash })
+      .from(receipts);
+    expect(stored).toEqual({ reason: "AGENT_FROZEN", status: "failed", txHash: null });
+  });
+
   it("rejects malformed authority and no-cap policy before touching RPC", async () => {
     const configured = await provision();
     expect((await POST(request(configured.secret, { arbitrary: "typed data" }))).status).toBe(400);

@@ -3,7 +3,7 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   clean: true,
   dts: true,
-  entry: ["src/index.ts"],
+  entry: { index: "src/index.ts", ua: "src/ua.ts" },
   external: [
     "@particle-network/universal-account-sdk",
     "magic-sdk",

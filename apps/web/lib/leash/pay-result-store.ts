@@ -1,8 +1,9 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import type { Database } from "../db/client";
 import { agents, capCycles, caps, receipts } from "../db/schema";
 import { emitCap75 } from "./notifier";
+import { receiptCommitted } from "./receipt-commitment";
 import { type parseSettlementObservation, verifySettlementOnchain } from "./settlement-evidence";
 
 type SettlementEvidence = ReturnType<typeof parseSettlementObservation>;
@@ -23,11 +24,14 @@ function terminalResult(
   receipt: Pick<typeof receipts.$inferSelect, "id" | "status" | "txHash">,
   evidence: SettlementEvidence,
 ) {
-  if (receipt.status === "settled") {
-    if (receipt.txHash?.toLowerCase() !== evidence.transaction.toLowerCase()) {
+  if (receipt.status === "settled" || (receipt.status === "failed" && receipt.txHash)) {
+    const sameOutcome = evidence.success
+      ? receipt.status === "settled"
+      : receipt.status === "failed";
+    if (!sameOutcome || receipt.txHash?.toLowerCase() !== evidence.transaction.toLowerCase()) {
       throw new SettlementResultConflictError();
     }
-    return { kind: "settled" as const, receiptId: receipt.id, verified: true };
+    return { kind: receipt.status, receiptId: receipt.id, verified: true } as const;
   }
   return { kind: receipt.status, receiptId: receipt.id, verified: false } as const;
 }
@@ -46,6 +50,7 @@ export async function applySettlementObservation(
         agentAddress: agents.agentAddress,
         amountAtomic: receipts.amountAtomic,
         authorizationNonce: receipts.authorizationNonce,
+        authorizationValidBefore: receipts.authorizationValidBefore,
         cycleId: receipts.cycleId,
         id: receipts.id,
         network: receipts.network,
@@ -59,18 +64,24 @@ export async function applySettlementObservation(
         and(eq(receipts.id, options.evidence.receiptId), eq(receipts.agentId, options.agentId)),
       );
     if (!row) return { kind: "not_found" as const };
-    if (row.status !== "pending") return terminalResult(row, options.evidence);
+    const reconcilingFailure =
+      row.status === "failed" && row.txHash !== null && options.evidence.success;
+    if (row.status !== "pending" && !reconcilingFailure) {
+      return terminalResult(row, options.evidence);
+    }
     if (!row.agentAddress) {
-      return { kind: "pending" as const, receiptId: row.id, verified: false };
+      return { kind: row.status, receiptId: row.id, verified: false } as const;
     }
     return {
       agentAddress: row.agentAddress,
       amountAtomic: row.amountAtomic,
       authorizationNonce: row.authorizationNonce as `0x${string}`,
+      authorizationValidBefore: row.authorizationValidBefore,
       cycleId: row.cycleId,
       kind: "candidate" as const,
       network: row.network,
       payTo: row.payTo,
+      priorRevertedTransaction: reconcilingFailure ? row.txHash : null,
       receiptId: row.id,
     };
   });
@@ -81,6 +92,7 @@ export async function applySettlementObservation(
     agentAddress: candidate.agentAddress,
     amountAtomic: candidate.amountAtomic,
     authorizationNonce: candidate.authorizationNonce,
+    authorizationValidBefore: candidate.authorizationValidBefore,
     network: candidate.network,
     payTo: candidate.payTo,
   });
@@ -114,16 +126,47 @@ export async function applySettlementObservation(
       .where(and(eq(receipts.id, candidate.receiptId), eq(receipts.agentId, options.agentId)))
       .for("update");
     if (!current) return { kind: "not_found" as const };
-    if (current.status !== "pending") return terminalResult(current, options.evidence);
+    const reconcilingFailure =
+      current.status === "failed" && current.txHash !== null && options.evidence.success;
+    if (current.status !== "pending" && !reconcilingFailure) {
+      return terminalResult(current, options.evidence);
+    }
+
+    if (!options.evidence.success) {
+      const [failed] = await transaction
+        .update(receipts)
+        .set({
+          reason: options.evidence.errorReason,
+          settlementResponse: {
+            ...(options.evidence.errorMessage
+              ? { errorMessage: options.evidence.errorMessage }
+              : {}),
+            errorReason: options.evidence.errorReason,
+            network: options.evidence.network,
+            payer: options.evidence.payer,
+            proof: "reverted_matching_eip3009_call",
+            success: false,
+            transaction: options.evidence.transaction,
+          },
+          status: "failed",
+          txHash: options.evidence.transaction,
+        })
+        .where(and(eq(receipts.id, current.id), eq(receipts.status, "pending")))
+        .returning({ id: receipts.id });
+      if (!failed) throw new SettlementResultConflictError();
+      return { kind: "failed" as const, receiptId: failed.id, verified: true };
+    }
 
     const settledAt = new Date();
     const [settled] = await transaction
       .update(receipts)
       .set({
+        reason: null,
         settledAt,
         settlementResponse: {
           network: options.evidence.network,
           payer: options.evidence.payer,
+          ...(reconcilingFailure ? { priorRevertedTransaction: current.txHash } : {}),
           proof: "usdc_transfer_and_authorization_used",
           success: true,
           transaction: options.evidence.transaction,
@@ -131,7 +174,7 @@ export async function applySettlementObservation(
         status: "settled",
         txHash: options.evidence.transaction,
       })
-      .where(and(eq(receipts.id, current.id), eq(receipts.status, "pending")))
+      .where(and(eq(receipts.id, current.id), eq(receipts.status, current.status)))
       .returning({ id: receipts.id });
     if (!settled) throw new SettlementResultConflictError();
     if (cap?.amountUsdCents) {
@@ -141,11 +184,7 @@ export async function applySettlementObservation(
         })
         .from(receipts)
         .where(
-          and(
-            eq(receipts.agentId, agent.id),
-            eq(receipts.cycleId, cycle.id),
-            inArray(receipts.status, ["pending", "settled"]),
-          ),
+          and(eq(receipts.agentId, agent.id), eq(receipts.cycleId, cycle.id), receiptCommitted()),
         );
       const committedAtomic = usage?.amountAtomic ?? "0";
       const capAtomic = (BigInt(cap.amountUsdCents) * ATOMIC_UNITS_PER_CENT).toString();

@@ -157,5 +157,12 @@ describe("owner-authenticated Leash cap routes", () => {
     const body = await reset.json();
     expect(body.policy).toMatchObject({ spend: { committedAtomic: "0" } });
     expect(body.policy.cycle.id).not.toBe(first.policy.cycle.id);
+
+    const refreshed = await GET(
+      request("GET", `/api/leash/caps?agentId=${owner.agentId}`, owner.token),
+    );
+    await expect(refreshed.json()).resolves.toMatchObject({
+      resetNotice: { reason: "manual", resetAt: body.policy.cycle.startedAt },
+    });
   });
 });

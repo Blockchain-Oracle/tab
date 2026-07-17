@@ -66,6 +66,11 @@ function insertReceipt(
   const blocked = status === "blocked";
   const network = values.network ?? "eip155:8453";
   const asset = values.asset ?? (network === "eip155:42161" ? arbitrumUsdc : baseUsdc);
+  const reason = Object.hasOwn(values, "reason")
+    ? (values.reason ?? null)
+    : blocked
+      ? "CAP_EXCEEDED"
+      : null;
   return sql`
     insert into receipts (
       agent_id, cycle_id, status, amount_atomic, amount_usd, asset, network,
@@ -76,7 +81,7 @@ function insertReceipt(
       ${asset}, ${network}, ${payTo},
       ${values.nonce ?? auth.nonce}, ${values.fingerprint ?? auth.fingerprint},
       now() + interval '5 minutes', ${sql.json({ clientName: "integration", toolName: "pay", transport: "mcp" })},
-      ${values.reason ?? (blocked ? "CAP_EXCEEDED" : null)},
+      ${reason},
       ${blocked ? network : null},
       ${settled ? `0x${"a".repeat(64)}` : null},
       ${settled ? sql.json({ success: true }) : null}, ${settled ? new Date() : null}
@@ -209,6 +214,24 @@ describe("Phase 6 Leash PostgreSQL schema", () => {
     await expect(sql`
       update receipts set status = 'settled' where status = 'pending'
     `).rejects.toMatchObject({ code: "23514" });
+  });
+
+  it("requires lowercase authorization nonces at the database boundary", async () => {
+    const { agentId } = await createOwnerAgent("lowercase-nonce");
+    const cycleId = await createCycle(agentId);
+
+    await expect(
+      insertReceipt(agentId, cycleId, { nonce: `0x${"AB".repeat(32)}` }),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+
+  it.each(["failed", "blocked"])("requires a reason for %s receipts", async (status) => {
+    const { agentId } = await createOwnerAgent(`${status}-reason`);
+    const cycleId = await createCycle(agentId);
+
+    await expect(insertReceipt(agentId, cycleId, { reason: null, status })).rejects.toMatchObject({
+      code: "23514",
+    });
   });
 
   it("prevents receipts from borrowing another agent's cycle", async () => {

@@ -4,9 +4,26 @@
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "leash-mcp": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./fetch": {
+      "types": "./dist/fetch.d.ts",
+      "import": "./dist/fetch.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc --project tsconfig.json",
-    "dev": "tsc --watch --preserveWatchOutput --project tsconfig.json",
+    "build": "rm -rf dist && tsc --build tsconfig.build.json --force",
+    "dev": "tsc --watch --preserveWatchOutput --project tsconfig.build.json",
     "typecheck": "tsc --noEmit --project tsconfig.json",
     "test": "vitest run --passWithNoTests",
     "lint": "biome check ."

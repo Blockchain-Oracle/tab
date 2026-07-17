@@ -6,12 +6,11 @@ import type { SettleResponse } from "@x402/core/types";
 import { MCP_PAYMENT_META_KEY, MCP_PAYMENT_RESPONSE_META_KEY } from "@x402/mcp";
 
 import { detectMcpPaymentRequired } from "./detect.js";
+import { SignerNotConfiguredError } from "./errors.js";
 import { withPaymentOrigin } from "./origin-context.js";
-import type { LeashRemoteSigner } from "./remote-signer.js";
 
 interface LeashProxyOptions {
-  paymentClient: x402Client;
-  signer: LeashRemoteSigner;
+  paymentClient?: x402Client;
   upstream: Client;
 }
 
@@ -66,6 +65,7 @@ export function createLeashProxyServer(options: LeashProxyOptions) {
           if (!initialResult) throw new Error("Upstream tool returned no result");
           return initialResult;
         }
+        if (!options.paymentClient) throw new SignerNotConfiguredError();
 
         const paymentPayload = await options.paymentClient.createPaymentPayload(challenge);
         const paidResult = await options.upstream.callTool(

@@ -99,6 +99,7 @@ function request(secret: string | null, body: unknown, raw = false) {
 
 describe("POST /api/agent/sign", () => {
   let liveBalance = BigInt(1_000_000);
+  let rpcUnavailable = false;
   const rpcMethods: string[] = [];
   const server = createServer(async (incoming, response) => {
     const chunks: Buffer[] = [];
@@ -106,6 +107,16 @@ describe("POST /api/agent/sign", () => {
     const body = JSON.parse(Buffer.concat(chunks).toString("utf8"));
     rpcMethods.push(body.method);
     response.setHeader("content-type", "application/json");
+    if (rpcUnavailable) {
+      response.end(
+        JSON.stringify({
+          error: { code: -32_000, message: "RPC unavailable" },
+          id: body.id,
+          jsonrpc: "2.0",
+        }),
+      );
+      return;
+    }
     response.end(
       JSON.stringify({
         id: body.id,
@@ -124,6 +135,7 @@ describe("POST /api/agent/sign", () => {
 
   beforeEach(async () => {
     liveBalance = BigInt(1_000_000);
+    rpcUnavailable = false;
     rpcMethods.length = 0;
     await connection.client`truncate table users cascade`;
   });
@@ -188,6 +200,21 @@ describe("POST /api/agent/sign", () => {
       .from(receipts);
     expect(stored).toEqual({ reason: "FLOAT_EMPTY", status: "failed" });
     expect(rpcMethods).toEqual(["eth_call"]);
+  });
+
+  it("terminalizes a reservation when RPC fails before any signature can escape", async () => {
+    const identity = await provision();
+    rpcUnavailable = true;
+    const response = await POST(request(identity.secret, signBody()));
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "FLOAT_CHECK_UNAVAILABLE" },
+    });
+    const [stored] = await connection.db
+      .select({ reason: receipts.reason, status: receipts.status })
+      .from(receipts);
+    expect(stored).toEqual({ reason: "FLOAT_CHECK_UNAVAILABLE", status: "failed" });
   });
 
   it("returns the honest signer block with a failed receipt and no signature or hash", async () => {

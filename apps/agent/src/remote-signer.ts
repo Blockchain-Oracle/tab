@@ -1,9 +1,13 @@
 import type { PaymentResponseContext } from "@x402/core/client";
 import type { ClientEvmSigner } from "@x402/evm";
-import { isAddress } from "viem";
+import { isAddress, isAddressEqual, recoverTypedDataAddress } from "viem";
 
+import {
+  InvalidEip3009AuthorizationError,
+  parseExactEip3009Authorization,
+  type SignerRequest,
+} from "./eip3009-authorization.js";
 import { currentPaymentOrigin } from "./origin-context.js";
-import { ARBITRUM_NETWORK, BASE_NETWORK } from "./routing.js";
 
 export interface PaymentOrigin {
   clientName: string;
@@ -16,14 +20,11 @@ interface RemoteSignerOptions {
   apiBaseUrl: string;
   apiKey: string;
   fetch?: typeof globalThis.fetch;
+  nowSeconds?: () => number;
   origin?: () => PaymentOrigin | undefined;
-}
-
-interface SignerRequest {
-  domain: Record<string, unknown>;
-  message: Record<string, unknown>;
-  primaryType: string;
-  types: Record<string, unknown>;
+  reportAttempts?: number;
+  reportRetryDelayMs?: number;
+  reportTimeoutMs?: number;
 }
 
 export class RemoteSignerError extends Error {
@@ -35,27 +36,6 @@ export class RemoteSignerError extends Error {
     super(message);
     this.name = "RemoteSignerError";
   }
-}
-
-function stringValue(value: unknown, field: string) {
-  if (typeof value === "bigint") return value.toString();
-  if (typeof value === "number" && Number.isSafeInteger(value)) return String(value);
-  if (typeof value === "string" && value.length > 0) return value;
-  throw new RemoteSignerError("INVALID_SIGNER_REQUEST", `${field} is invalid.`, 400);
-}
-
-function networkFromChainId(value: unknown) {
-  const chainId = stringValue(value, "domain.chainId");
-  if (chainId === "8453") return BASE_NETWORK;
-  if (chainId === "42161") return ARBITRUM_NETWORK;
-  throw new RemoteSignerError("UNSUPPORTED_NETWORK", "The signing network is unsupported.", 400);
-}
-
-function addressValue(value: unknown, field: string) {
-  if (typeof value !== "string" || !isAddress(value)) {
-    throw new RemoteSignerError("INVALID_SIGNER_REQUEST", `${field} is invalid.`, 400);
-  }
-  return value;
 }
 
 function jsonBody(value: unknown) {
@@ -85,7 +65,12 @@ export class LeashRemoteSigner implements ClientEvmSigner {
   readonly #apiKey: string;
   readonly #endpoint: URL;
   readonly #fetch: typeof globalThis.fetch;
+  readonly #inFlightObservations = new Set<Promise<void>>();
+  readonly #nowSeconds: () => number;
   readonly #origin: (() => PaymentOrigin | undefined) | undefined;
+  readonly #reportAttempts: number;
+  readonly #reportRetryDelayMs: number;
+  readonly #reportTimeoutMs: number;
   readonly #resultEndpoint: URL;
   readonly #receiptBySignature = new Map<string, string>();
 
@@ -96,24 +81,44 @@ export class LeashRemoteSigner implements ClientEvmSigner {
     this.#apiKey = options.apiKey;
     this.#endpoint = new URL("/api/agent/sign", options.apiBaseUrl);
     this.#fetch = options.fetch ?? globalThis.fetch;
+    this.#nowSeconds = options.nowSeconds ?? (() => Math.floor(Date.now() / 1_000));
     this.#origin = options.origin ?? currentPaymentOrigin;
+    this.#reportAttempts = options.reportAttempts ?? 3;
+    this.#reportRetryDelayMs = options.reportRetryDelayMs ?? 250;
+    this.#reportTimeoutMs = options.reportTimeoutMs ?? 2_000;
+    if (
+      !Number.isSafeInteger(this.#reportAttempts) ||
+      this.#reportAttempts < 1 ||
+      !Number.isSafeInteger(this.#reportRetryDelayMs) ||
+      this.#reportRetryDelayMs < 0 ||
+      !Number.isSafeInteger(this.#reportTimeoutMs) ||
+      this.#reportTimeoutMs < 1
+    ) {
+      throw new Error("Leash result-report timeout is invalid");
+    }
     this.#resultEndpoint = new URL("/api/agent/pay/result", options.apiBaseUrl);
   }
 
   async signTypedData(signerRequest: SignerRequest): Promise<`0x${string}`> {
-    const network = networkFromChainId(signerRequest.domain.chainId);
-    const amount = stringValue(signerRequest.message.value, "message.value");
-    const payTo = addressValue(signerRequest.message.to, "message.to");
-    const asset = addressValue(signerRequest.domain.verifyingContract, "domain.verifyingContract");
+    let authorization: ReturnType<typeof parseExactEip3009Authorization>;
+    try {
+      authorization = parseExactEip3009Authorization(signerRequest, {
+        address: this.address,
+        nowSeconds: this.#nowSeconds(),
+      });
+    } catch (error) {
+      if (!(error instanceof InvalidEip3009AuthorizationError)) throw error;
+      throw new RemoteSignerError("INVALID_SIGNER_REQUEST", "The signer request is invalid.", 400);
+    }
     const origin = this.#origin?.();
     const response = await this.#fetch(this.#endpoint, {
       body: jsonBody({
-        amount,
-        asset,
-        network,
+        amount: authorization.amount,
+        asset: authorization.asset,
+        network: authorization.network,
         ...(origin ? { origin } : {}),
-        payTo,
-        signerRequest,
+        payTo: authorization.payTo,
+        signerRequest: authorization.typedData,
       }),
       headers: { authorization: `Bearer ${this.#apiKey}`, "content-type": "application/json" },
       method: "POST",
@@ -132,17 +137,104 @@ export class LeashRemoteSigner implements ClientEvmSigner {
         502,
       );
     }
-    this.#receiptBySignature.set(body.signature, body.receiptId);
-    return body.signature as `0x${string}`;
+    const signature = body.signature as `0x${string}`;
+    try {
+      const recovered = await recoverTypedDataAddress({
+        ...authorization.typedData,
+        signature,
+      });
+      if (!isAddressEqual(recovered, this.address)) throw new Error("Signer mismatch");
+    } catch {
+      throw new RemoteSignerError(
+        "INVALID_SIGNER_RESPONSE",
+        "The signer response is invalid.",
+        502,
+      );
+    }
+    this.#receiptBySignature.set(signature.toLowerCase(), body.receiptId);
+    return signature;
   }
 
-  takeReceiptId(signature: string) {
-    const receiptId = this.#receiptBySignature.get(signature) ?? null;
-    this.#receiptBySignature.delete(signature);
-    return receiptId;
+  receiptIdForSignature(signature: string) {
+    return this.#receiptBySignature.get(signature.toLowerCase()) ?? null;
   }
 
-  async reportSettledPayment(context: PaymentResponseContext) {
+  async #sendObservationAttempt(body: unknown) {
+    const controller = new AbortController();
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const deadline = new Promise<null>((resolve) => {
+      timeout = setTimeout(() => {
+        controller.abort();
+        resolve(null);
+      }, this.#reportTimeoutMs);
+    });
+    try {
+      const response = await Promise.race([
+        this.#fetch(this.#resultEndpoint, {
+          body: JSON.stringify(body),
+          headers: { authorization: `Bearer ${this.#apiKey}`, "content-type": "application/json" },
+          method: "POST",
+          signal: controller.signal,
+        }),
+        deadline,
+      ]);
+      if (!response) return { retry: true, verified: false };
+      if (!response.ok) {
+        return {
+          retry: response.status === 429 || response.status >= 500,
+          verified: false,
+        };
+      }
+      if (response.status === 204) return { retry: false, verified: false };
+      try {
+        const acknowledgement = (await response.json()) as {
+          receiptId?: unknown;
+          status?: unknown;
+          verified?: unknown;
+        };
+        const acknowledgedReceipt =
+          typeof acknowledgement.receiptId === "string" ? acknowledgement.receiptId : undefined;
+        return {
+          retry:
+            response.status === 202 &&
+            acknowledgement.status === "pending" &&
+            acknowledgement.verified === false &&
+            acknowledgedReceipt !== undefined,
+          verified:
+            response.status === 200 &&
+            acknowledgement.verified === true &&
+            acknowledgement.status === "settled" &&
+            acknowledgedReceipt !== undefined,
+          verifiedReceiptId: acknowledgedReceipt,
+        };
+      } catch {
+        return { retry: false, verified: false };
+      }
+    } catch {
+      return { retry: true, verified: false };
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  async #sendObservation(body: unknown, receiptId: string, signature: string) {
+    for (let attempt = 0; attempt < this.#reportAttempts; attempt += 1) {
+      const result = await this.#sendObservationAttempt(body);
+      if (result.verified && result.verifiedReceiptId === receiptId) {
+        const normalizedSignature = signature.toLowerCase();
+        if (this.#receiptBySignature.get(normalizedSignature) === receiptId) {
+          this.#receiptBySignature.delete(normalizedSignature);
+        }
+        return;
+      }
+      if (!result.retry || attempt === this.#reportAttempts - 1) return;
+      await new Promise<void>((resolve) =>
+        setTimeout(resolve, this.#reportRetryDelayMs * (attempt + 1)),
+      );
+    }
+  }
+
+  reportPaymentObservation(context: PaymentResponseContext): Promise<void> {
     const settlement = context.settleResponse;
     const signature = context.paymentPayload.payload.signature;
     if (
@@ -153,17 +245,31 @@ export class LeashRemoteSigner implements ClientEvmSigner {
       settlement.payer?.toLowerCase() !== this.address.toLowerCase() ||
       !/^0x[0-9a-fA-F]{64}$/.test(settlement.transaction)
     ) {
-      return;
+      return Promise.resolve();
     }
-    const receiptId = this.#receiptBySignature.get(signature);
-    if (!receiptId) return;
+    const receiptId = this.#receiptBySignature.get(signature.toLowerCase());
+    if (!receiptId) return Promise.resolve();
 
-    const response = await this.#fetch(this.#resultEndpoint, {
-      body: JSON.stringify({ outcome: "settled", paymentResponse: settlement, receiptId }),
-      headers: { authorization: `Bearer ${this.#apiKey}`, "content-type": "application/json" },
-      method: "POST",
-    });
-    if (!response.ok) throw await responseError(response);
-    this.#receiptBySignature.delete(signature);
+    const task = this.#sendObservation(
+      {
+        outcome: "observed",
+        paymentResponse: {
+          network: settlement.network,
+          payer: settlement.payer,
+          success: true,
+          transaction: settlement.transaction,
+        },
+        receiptId,
+      },
+      receiptId,
+      signature,
+    );
+    this.#inFlightObservations.add(task);
+    void task.finally(() => this.#inFlightObservations.delete(task));
+    return Promise.resolve();
+  }
+
+  async flushPaymentObservations() {
+    await Promise.allSettled([...this.#inFlightObservations]);
   }
 }

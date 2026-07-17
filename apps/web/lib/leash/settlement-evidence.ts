@@ -157,13 +157,13 @@ export async function verifySettlementOnchain(
     if (getAddress(log.address) !== getAddress(config.token)) continue;
     const decoded = decodedLog(log);
     if (decoded?.eventName === "Transfer") {
-      transferred =
+      transferred ||=
         getAddress(decoded.args.from) === getAddress(expected.agentAddress) &&
         getAddress(decoded.args.to) === getAddress(expected.payTo) &&
         decoded.args.value === BigInt(expected.amountAtomic);
     }
     if (decoded?.eventName === "AuthorizationUsed") {
-      authorizationUsed =
+      authorizationUsed ||=
         getAddress(decoded.args.authorizer) === getAddress(expected.agentAddress) &&
         decoded.args.nonce.toLowerCase() === expected.authorizationNonce.toLowerCase();
     }

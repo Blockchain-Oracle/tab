@@ -15,8 +15,20 @@ interface LeashFetchOptions {
 type FetchInput = Request | string | URL;
 
 function requestName(input: FetchInput, init?: RequestInit) {
-  const request = new Request(input, init);
-  return `${request.method} ${request.url}`;
+  const method = init?.method ?? (input instanceof Request ? input.method : "GET");
+  const rawUrl = input instanceof Request ? input.url : input.toString();
+  let safeUrl = "Invalid URL";
+  try {
+    const url = new URL(rawUrl);
+    url.username = "";
+    url.password = "";
+    url.search = "";
+    url.hash = "";
+    safeUrl = url.toString();
+  } catch {
+    // The underlying fetch reports invalid input without persisting the raw value as receipt origin.
+  }
+  return `${method.toUpperCase()} ${safeUrl}`;
 }
 
 export function createLeashFetch(options: LeashFetchOptions) {

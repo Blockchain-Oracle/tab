@@ -9,5 +9,5 @@ export function createLeashPaymentClient(signer: LeashRemoteSigner) {
   return new x402Client(selectLeashPaymentRequirements)
     .register(BASE_NETWORK, scheme)
     .register(ARBITRUM_NETWORK, scheme)
-    .onPaymentResponse((context) => signer.reportSettledPayment(context));
+    .onPaymentResponse((context) => signer.reportPaymentObservation(context));
 }

@@ -190,6 +190,71 @@ describe("atomic hosted-signer reservation gate", () => {
     expect(count?.count).toBe("1");
   });
 
+  it("treats case variants of one EIP-3009 nonce as the same reservation", async () => {
+    const identity = await provision();
+    const mixedCaseNonce = "aB".repeat(32);
+    const first = await reserveSignRequest(connection.db, {
+      ...identity,
+      body: signBody("250000", mixedCaseNonce),
+      nowSeconds,
+    });
+    const second = await reserveSignRequest(connection.db, {
+      ...identity,
+      body: signBody("250000", mixedCaseNonce.toLowerCase()),
+      nowSeconds,
+    });
+
+    expect(second).toMatchObject({ kind: "pending", receiptId: first.receiptId, replayed: true });
+    const rows = await connection.client<{ authorization_nonce: string }[]>`
+      select authorization_nonce from receipts where agent_id = ${identity.agentId}
+    `;
+    expect(rows).toEqual([{ authorization_nonce: `0x${"ab".repeat(32)}` }]);
+  });
+
+  it("replays a migrated legacy receipt by semantics without rewriting its audit fingerprint", async () => {
+    const identity = await provision();
+    const mixedCaseNonce = "aB".repeat(32);
+    const body = signBody("250000", mixedCaseNonce);
+    const first = await reserveSignRequest(connection.db, { ...identity, body, nowSeconds });
+    const legacyFingerprint = "f".repeat(64);
+    await connection.client`
+      update receipts set request_fingerprint = ${legacyFingerprint} where id = ${first.receiptId}
+    `;
+
+    const replay = await reserveSignRequest(connection.db, {
+      ...identity,
+      body: signBody("250000", mixedCaseNonce.toLowerCase()),
+      nowSeconds,
+    });
+
+    expect(replay).toMatchObject({ kind: "pending", receiptId: first.receiptId, replayed: true });
+    const [stored] = await connection.client<{ request_fingerprint: string }[]>`
+      select request_fingerprint from receipts where id = ${first.receiptId}
+    `;
+    expect(stored?.request_fingerprint).toBe(legacyFingerprint);
+  });
+
+  it("rejects a reused nonce when the stored payment semantics differ", async () => {
+    const identity = await provision();
+    const nonce = randomBytes(32).toString("hex");
+    await reserveSignRequest(connection.db, {
+      ...identity,
+      body: signBody("250000", nonce),
+      nowSeconds,
+    });
+
+    await expect(
+      reserveSignRequest(connection.db, {
+        ...identity,
+        body: signBody("250001", nonce),
+        nowSeconds,
+      }),
+    ).rejects.toMatchObject({
+      code: "SIGN_REQUEST_CONFLICT",
+      status: 409,
+    } satisfies Partial<SignGateError>);
+  });
+
   it("fails safely before signing when pending floats overcommit or the signer is blocked", async () => {
     const identity = await provision({ capCents: "200" });
     const first = await reserveSignRequest(connection.db, {
@@ -208,6 +273,7 @@ describe("atomic hosted-signer reservation gate", () => {
       completePreSigningChecks(connection.db, {
         ...identity,
         liveBalanceAtomic: BigInt(1_000_000),
+        nowSeconds,
         receiptId: second.receiptId,
         signerAvailable: true,
       }),
@@ -216,6 +282,7 @@ describe("atomic hosted-signer reservation gate", () => {
       completePreSigningChecks(connection.db, {
         ...identity,
         liveBalanceAtomic: BigInt(1_000_000),
+        nowSeconds,
         receiptId: first.receiptId,
         signerAvailable: false,
       }),

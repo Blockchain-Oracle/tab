@@ -2,4 +2,3 @@ export { createLeashFetch } from "./fetch-wrapper.js";
 export type CreateLeashFetchOptions = Parameters<
   typeof import("./fetch-wrapper.js").createLeashFetch
 >[0];
-export { LeashRemoteSigner, RemoteSignerError } from "./remote-signer.js";

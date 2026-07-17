@@ -6,6 +6,7 @@ import { readFloatBalance } from "../../../../lib/leash/float-balance";
 import { InvalidSignRequestError } from "../../../../lib/leash/sign-request";
 import {
   completePreSigningChecks,
+  failSignRequestBeforeSigning,
   reserveSignRequest,
   SignGateError,
 } from "../../../../lib/leash/sign-store";
@@ -50,6 +51,11 @@ export async function POST(request: NextRequest) {
         network: reservation.network,
       });
     } catch {
+      await failSignRequestBeforeSigning(database, {
+        agentId: principal.agentId,
+        reason: "FLOAT_CHECK_UNAVAILABLE",
+        receiptId: reservation.receiptId,
+      });
       return signError("FLOAT_CHECK_UNAVAILABLE", 503);
     }
 

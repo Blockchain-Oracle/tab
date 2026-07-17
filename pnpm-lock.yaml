@@ -118,6 +118,9 @@ importers:
         specifier: ^3.6.7
         version: 3.6.7
     devDependencies:
+      '@tab/agent':
+        specifier: workspace:*
+        version: link:../agent
       '@types/node':
         specifier: ^22.0.0
         version: 22.20.1

@@ -4,14 +4,15 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import type { PaymentRequired } from "@x402/core/types";
 import { MCP_PAYMENT_META_KEY, MCP_PAYMENT_RESPONSE_META_KEY } from "@x402/mcp";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { privateKeyToAccount } from "viem/accounts";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createLeashPaymentClient } from "./payment-client.js";
 import { createLeashProxyServer } from "./proxy.js";
 import { LeashRemoteSigner } from "./remote-signer.js";
 
-const payer = "0x2222222222222222222222222222222222222222" as const;
-const signature = `0x${"ab".repeat(65)}` as const;
+const payerAccount = privateKeyToAccount(`0x${"11".repeat(32)}`);
+const payer = payerAccount.address;
 const transaction = `0x${"cd".repeat(32)}`;
 const paymentRequired = {
   accepts: [
@@ -39,15 +40,23 @@ describe("Leash MCP proxy with real SDK transports", () => {
   const signBodies: unknown[] = [];
   const resultBodies: unknown[] = [];
   const paidMetadata: unknown[] = [];
+  let resultStatus = 204;
   const remoteFetch = vi.fn(async (input: Request | string | URL, init?: RequestInit) => {
     const path = new URL(input.toString()).pathname;
     if (path === "/api/agent/sign") {
-      signBodies.push(JSON.parse(String(init?.body)));
-      return Response.json({ receiptId: "receipt-mcp", signature });
+      const body = JSON.parse(String(init?.body));
+      signBodies.push(body);
+      const signature = await payerAccount.signTypedData(body.signerRequest);
+      return Response.json({ receiptId: `receipt-mcp-${signBodies.length}`, signature });
     }
     if (path === "/api/agent/pay/result") {
       resultBodies.push(JSON.parse(String(init?.body)));
-      return new Response(null, { status: 204 });
+      return resultStatus === 204
+        ? new Response(null, { status: 204 })
+        : Response.json(
+            { error: { code: "OUTAGE", message: "offline" } },
+            { status: resultStatus },
+          );
     }
     return Response.json({ error: { code: "NOT_FOUND", message: "Not found." } }, { status: 404 });
   });
@@ -56,10 +65,10 @@ describe("Leash MCP proxy with real SDK transports", () => {
     apiBaseUrl: "https://tab.example.test",
     apiKey: "leash_sk_integration",
     fetch: remoteFetch,
+    reportRetryDelayMs: 1,
   });
   const proxy = createLeashProxyServer({
     paymentClient: createLeashPaymentClient(signer),
-    signer,
     upstream: upstreamClient,
   });
 
@@ -109,6 +118,13 @@ describe("Leash MCP proxy with real SDK transports", () => {
     await upstreamServer.close();
   });
 
+  beforeEach(() => {
+    paidMetadata.length = 0;
+    resultBodies.length = 0;
+    resultStatus = 204;
+    signBodies.length = 0;
+  });
+
   it("forwards tools, pays once, and preserves request/result metadata", async () => {
     await expect(downstream.listTools()).resolves.toMatchObject({ tools: [{ name: "search" }] });
     const result = await downstream.callTool({
@@ -129,15 +145,33 @@ describe("Leash MCP proxy with real SDK transports", () => {
     });
     expect(resultBodies).toEqual([
       {
-        outcome: "settled",
+        outcome: "observed",
         paymentResponse: {
           network: "eip155:8453",
           payer,
           success: true,
           transaction,
         },
-        receiptId: "receipt-mcp",
+        receiptId: "receipt-mcp-1",
       },
     ]);
+  });
+
+  it("returns the already-paid tool result once when observation reporting is offline", async () => {
+    resultStatus = 503;
+
+    const result = await downstream.callTool({
+      arguments: { query: "outage" },
+      name: "search",
+    });
+    await signer.flushPaymentObservations();
+
+    expect(result).toMatchObject({
+      content: [{ text: "paid result", type: "text" }],
+      structuredContent: { answer: 42 },
+    });
+    expect(signBodies).toHaveLength(1);
+    expect(paidMetadata).toHaveLength(1);
+    expect(resultBodies).toHaveLength(3);
   });
 });

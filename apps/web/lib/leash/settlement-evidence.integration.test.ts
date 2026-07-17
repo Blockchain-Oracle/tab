@@ -161,6 +161,32 @@ describe("settlement observation and on-chain proof", () => {
     expect(rpcMethods.at(-1)).toBe("eth_getTransactionReceipt");
   });
 
+  it("keeps a proven match when a later unrelated USDC log is present", async () => {
+    receipt = validReceipt();
+    receipt.logs.push(
+      rpcLog(
+        encodeEventTopics({
+          abi: settlementEvents,
+          args: { from: facilitator, to: payTo },
+          eventName: "Transfer",
+        }),
+        encodeAbiParameters([{ type: "uint256" }], [BigInt(1)]),
+        "0x2",
+      ),
+    );
+
+    await expect(
+      verifySettlementOnchain(parseSettlementObservation(observedResult()), {
+        agentAddress,
+        amountAtomic: "25000",
+        authorizationNonce: nonce,
+        network: "eip155:8453",
+        payTo,
+        rpcUrl,
+      }),
+    ).resolves.toBe(true);
+  });
+
   it("keeps a shaped resource claim unproven without its matching nonce-use log", async () => {
     const withoutAuthorization = validReceipt();
     withoutAuthorization.logs = withoutAuthorization.logs.slice(0, 1);

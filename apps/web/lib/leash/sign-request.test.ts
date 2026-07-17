@@ -56,6 +56,55 @@ describe("remote EIP-3009 sign request validation", () => {
     });
   });
 
+  it("canonicalizes nonce casing before fingerprinting and returning signer data", () => {
+    const mixedCase = validRequest();
+    mixedCase.signerRequest.message.nonce = `0x${"aB".repeat(32)}`;
+    const lowercase = validRequest();
+    lowercase.signerRequest.message.nonce = mixedCase.signerRequest.message.nonce.toLowerCase();
+
+    const first = parseSignRequest(mixedCase, { agentAddress, nowSeconds: 1_784_271_300 });
+    const second = parseSignRequest(lowercase, { agentAddress, nowSeconds: 1_784_271_300 });
+
+    expect(first.authorizationNonce).toBe(`0x${"ab".repeat(32)}`);
+    expect(first.signerRequest.message.nonce).toBe(`0x${"ab".repeat(32)}`);
+    expect(first.requestFingerprint).toBe(second.requestFingerprint);
+  });
+
+  it("redacts HTTP credentials, queries, and fragments from persisted origin telemetry", () => {
+    const request = validRequest();
+    request.origin = {
+      clientName: "leash-fetch",
+      toolName:
+        "post https://receipt-user:receipt-password@example.test/v1/pay?api_key=receipt-secret#fragment-secret",
+      transport: "http",
+    };
+
+    const parsed = parseSignRequest(request, { agentAddress, nowSeconds: 1_784_271_300 });
+
+    expect(parsed.origin).toEqual({
+      clientName: "leash-fetch",
+      toolName: "POST https://example.test/v1/pay",
+      transport: "http",
+    });
+    expect(JSON.stringify(parsed.origin)).not.toMatch(
+      /receipt-user|receipt-password|receipt-secret|fragment-secret/,
+    );
+  });
+
+  it.each([
+    "POST not-an-absolute-url?api_key=receipt-secret",
+    "GET javascript:alert('receipt-secret')",
+    "SECRET https://example.test/protected",
+  ])("replaces malformed HTTP telemetry with a generic safe label: %s", (toolName) => {
+    const request = validRequest();
+    request.origin = { clientName: "leash-fetch", toolName, transport: "http" };
+
+    const parsed = parseSignRequest(request, { agentAddress, nowSeconds: 1_784_271_300 });
+
+    expect(parsed.origin?.toolName).toBe("HTTP request");
+    expect(JSON.stringify(parsed.origin)).not.toContain(toolName);
+  });
+
   it.each([
     [
       "Permit2",

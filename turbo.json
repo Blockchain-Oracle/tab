@@ -20,6 +20,7 @@
     },
     "test": {
       "cache": false,
+      "dependsOn": ["^build"],
       "outputs": ["coverage/**"],
       "passThroughEnv": ["DATABASE_URL", "PAYMENT_INTENT_SIGNING_SECRET", "SESSION_SECRET"]
     },

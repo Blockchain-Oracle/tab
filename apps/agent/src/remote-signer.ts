@@ -7,7 +7,8 @@ import {
   parseExactEip3009Authorization,
   type SignerRequest,
 } from "./eip3009-authorization.js";
-import { currentPaymentOrigin } from "./origin-context.js";
+import { currentPaymentOrigin, currentPaymentResourceUrl } from "./origin-context.js";
+import { redactPaymentResourceUrl } from "./resource-url.js";
 
 export interface PaymentOrigin {
   clientName: string;
@@ -22,6 +23,7 @@ interface RemoteSignerOptions {
   fetch?: typeof globalThis.fetch;
   nowSeconds?: () => number;
   origin?: () => PaymentOrigin | undefined;
+  resourceUrl?: () => string | undefined;
   reportAttempts?: number;
   reportRetryDelayMs?: number;
   reportTimeoutMs?: number;
@@ -71,6 +73,7 @@ export class LeashRemoteSigner implements ClientEvmSigner {
   readonly #reportAttempts: number;
   readonly #reportRetryDelayMs: number;
   readonly #reportTimeoutMs: number;
+  readonly #resourceUrl: (() => string | undefined) | undefined;
   readonly #resultEndpoint: URL;
   readonly #receiptBySignature = new Map<string, string>();
 
@@ -83,6 +86,7 @@ export class LeashRemoteSigner implements ClientEvmSigner {
     this.#fetch = options.fetch ?? globalThis.fetch;
     this.#nowSeconds = options.nowSeconds ?? (() => Math.floor(Date.now() / 1_000));
     this.#origin = options.origin ?? currentPaymentOrigin;
+    this.#resourceUrl = options.resourceUrl ?? currentPaymentResourceUrl;
     this.#reportAttempts = options.reportAttempts ?? 3;
     this.#reportRetryDelayMs = options.reportRetryDelayMs ?? 250;
     this.#reportTimeoutMs = options.reportTimeoutMs ?? 2_000;
@@ -111,6 +115,9 @@ export class LeashRemoteSigner implements ClientEvmSigner {
       throw new RemoteSignerError("INVALID_SIGNER_REQUEST", "The signer request is invalid.", 400);
     }
     const origin = this.#origin?.();
+    const rawResourceUrl = this.#resourceUrl?.();
+    const resourceUrl =
+      rawResourceUrl === undefined ? undefined : redactPaymentResourceUrl(rawResourceUrl);
     const response = await this.#fetch(this.#endpoint, {
       body: jsonBody({
         amount: authorization.amount,
@@ -118,6 +125,7 @@ export class LeashRemoteSigner implements ClientEvmSigner {
         network: authorization.network,
         ...(origin ? { origin } : {}),
         payTo: authorization.payTo,
+        ...(resourceUrl ? { resourceUrl } : {}),
         signerRequest: authorization.typedData,
       }),
       headers: { authorization: `Bearer ${this.#apiKey}`, "content-type": "application/json" },

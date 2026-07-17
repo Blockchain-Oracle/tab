@@ -10,6 +10,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
   varchar,
@@ -42,6 +43,8 @@ export const receipts = pgTable(
     network: leashNetwork("network").notNull(),
     intendedNetwork: leashNetwork("intended_network"),
     payTo: varchar("pay_to", { length: 42 }).notNull(),
+    resourceUrl: text("resource_url"),
+    resourceHost: text("resource_host"),
     authorizationNonce: varchar("authorization_nonce", { length: 66 }).notNull(),
     requestFingerprint: varchar("request_fingerprint", { length: 64 }).notNull(),
     authorizationValidBefore: timestamp("authorization_valid_before", {
@@ -59,6 +62,7 @@ export const receipts = pgTable(
       foreignColumns: [capCycles.id, capCycles.agentId],
       name: "receipts_cycle_agent_fk",
     }),
+    unique("receipts_id_cycle_agent_unique").on(table.id, table.cycleId, table.agentId),
     uniqueIndex("receipts_agent_nonce_unique").on(table.agentId, table.authorizationNonce),
     uniqueIndex("receipts_agent_fingerprint_unique").on(table.agentId, table.requestFingerprint),
     uniqueIndex("receipts_network_tx_hash_unique")
@@ -75,6 +79,17 @@ export const receipts = pgTable(
       "receipts_pay_to_check",
       sql`${table.payTo} ~ '^0x[0-9a-fA-F]{40}$'
         and lower(${table.payTo}) <> '0x0000000000000000000000000000000000000000'`,
+    ),
+    check(
+      "receipts_resource_check",
+      sql`(${table.resourceUrl} is null and ${table.resourceHost} is null)
+        or (${table.resourceUrl} is not null and ${table.resourceHost} is not null
+          and char_length(${table.resourceUrl}) between 1 and 2048
+          and ${table.resourceUrl} ~ '^[A-Za-z][A-Za-z0-9+.-]*://[^[:space:]]+$'
+          and char_length(${table.resourceHost}) between 1 and 253
+          and ${table.resourceHost} = lower(${table.resourceHost})
+          and ${table.resourceHost} = btrim(${table.resourceHost})
+          and ${table.resourceHost} !~ '[/?#@[:space:]]')`,
     ),
     check(
       "receipts_native_usdc_check",

@@ -7,12 +7,17 @@ const sessionIssuer = "tab";
 const sessionAudience = "tab-web";
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export interface MerchantSession {
+export interface UserSession {
   email: string;
-  merchantId: string;
-  mode: "test" | "live";
   userId: string;
 }
+
+export interface MerchantSession extends UserSession {
+  merchantId: string;
+  mode: "test" | "live";
+}
+
+export type Session = UserSession | MerchantSession;
 
 export class InvalidSessionTokenError extends Error {
   constructor(message = "The merchant session token is invalid", options?: ErrorOptions) {
@@ -46,17 +51,26 @@ export function sessionSigningConfigured() {
   return Boolean(secret && new TextEncoder().encode(secret).byteLength >= 32);
 }
 
-function validatedClaims(payload: Record<string, unknown>): MerchantSession {
+function validatedClaims(payload: Record<string, unknown>): Session {
   const { email, merchantId, mode, sub: userId } = payload;
 
   if (
     typeof email !== "string" ||
     !email.includes("@") ||
-    typeof merchantId !== "string" ||
-    !uuid.test(merchantId) ||
-    (mode !== "test" && mode !== "live") ||
     typeof userId !== "string" ||
     !uuid.test(userId)
+  ) {
+    throw new Error("Session claims are invalid");
+  }
+
+  const hasMerchantId = merchantId !== undefined;
+  const hasMode = mode !== undefined;
+  if (hasMerchantId !== hasMode) throw new Error("Session claims are invalid");
+  if (!hasMerchantId) return { email, userId };
+  if (
+    typeof merchantId !== "string" ||
+    !uuid.test(merchantId) ||
+    (mode !== "test" && mode !== "live")
   ) {
     throw new Error("Session claims are invalid");
   }
@@ -64,11 +78,21 @@ function validatedClaims(payload: Record<string, unknown>): MerchantSession {
   return { email, merchantId, mode, userId };
 }
 
-export async function createSessionToken(claims: MerchantSession, secret = configuredSecret()) {
+export function isMerchantSession(session: Session): session is MerchantSession {
+  return "merchantId" in session;
+}
+
+function merchantClaims(claims: Session) {
+  const hasMerchantId = "merchantId" in claims;
+  const hasMode = "mode" in claims;
+  if (hasMerchantId !== hasMode) throw new Error("Merchant session claims must be complete");
+  return hasMerchantId ? { merchantId: claims.merchantId, mode: claims.mode } : {};
+}
+
+export async function createSessionToken(claims: Session, secret = configuredSecret()) {
   return new SignJWT({
     email: claims.email,
-    merchantId: claims.merchantId,
-    mode: claims.mode,
+    ...merchantClaims(claims),
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuer(sessionIssuer)

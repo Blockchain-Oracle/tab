@@ -2,11 +2,19 @@ import { createHash } from "node:crypto";
 
 import { getAddress, isAddress } from "viem";
 
+import { canonicalResourceIdentity } from "./resource-identity";
+
 const BASE_NETWORK = "eip155:8453";
 const ARBITRUM_NETWORK = "eip155:42161";
 const BASE_USDC = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const ARBITRUM_USDC = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
 const MAX_AUTHORIZATION_LIFETIME_SECONDS = 600;
+// Mirrors numeric(20,0) cap cents at 10,000 atomic USDC units per cent.
+const MAX_CAP_USD_CENTS = BigInt(10) ** BigInt(20) - BigInt(1);
+const ATOMIC_UNITS_PER_CENT = BigInt(10_000);
+export const MAX_USDC_AMOUNT_ATOMIC = MAX_CAP_USD_CENTS * ATOMIC_UNITS_PER_CENT;
+const MAX_RESOURCE_HOST_LENGTH = 253;
+const MAX_RESOURCE_URL_LENGTH = 2_048;
 const HTTP_METHODS = new Set([
   "CONNECT",
   "DELETE",
@@ -126,6 +134,36 @@ function origin(value: unknown) {
   };
 }
 
+function resource(value: unknown) {
+  if (typeof value !== "string" || value.length < 1 || value.length > MAX_RESOURCE_URL_LENGTH) {
+    throw new InvalidSignRequestError();
+  }
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new InvalidSignRequestError();
+  }
+  const resourceHost = url.hostname.toLowerCase();
+  if (resourceHost.length < 1 || resourceHost.length > MAX_RESOURCE_HOST_LENGTH) {
+    throw new InvalidSignRequestError();
+  }
+  url.hostname = resourceHost;
+  url.username = "";
+  url.password = "";
+  url.search = "";
+  url.hash = "";
+  const resourceUrl = url.toString();
+  if (resourceUrl.length < 1 || resourceUrl.length > MAX_RESOURCE_URL_LENGTH) {
+    throw new InvalidSignRequestError();
+  }
+  try {
+    return { resourceHost, resourceUrl, ...canonicalResourceIdentity(resourceUrl, resourceHost) };
+  } catch {
+    throw new InvalidSignRequestError();
+  }
+}
+
 export function parseSignRequest(
   value: unknown,
   options: { agentAddress: string; nowSeconds?: number },
@@ -136,13 +174,18 @@ export function parseSignRequest(
     "network",
     "origin",
     "payTo",
+    "resourceUrl",
     "signerRequest",
   ]);
   const network = supportedNetwork(body.network);
   const amountAtomic = unsigned(body.amount);
-  if (BigInt(amountAtomic) === BigInt(0)) throw new InvalidSignRequestError();
+  const amount = BigInt(amountAtomic);
+  if (amount === BigInt(0) || amount > MAX_USDC_AMOUNT_ATOMIC) {
+    throw new InvalidSignRequestError();
+  }
   const asset = address(body.asset);
   const payTo = address(body.payTo);
+  const parsedResource = resource(body.resourceUrl);
   if (asset !== network.asset) throw new InvalidSignRequestError();
 
   const signerRequest = exactRecord(body.signerRequest, [
@@ -218,6 +261,7 @@ export function parseSignRequest(
     network: network.network,
     origin: origin(body.origin),
     payTo,
+    ...parsedResource,
     requestFingerprint: createHash("sha256").update(fingerprint.join("\0")).digest("hex"),
     signerRequest: {
       domain,

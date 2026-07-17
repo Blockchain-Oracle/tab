@@ -60,6 +60,19 @@ describe("POST /api/auth/precheck with real PostgreSQL", () => {
     });
   });
 
+  it("allows signup for an exact Leash-first user who has no merchant yet", async () => {
+    const email = "leash-first@example.test";
+    await connection.client`
+      insert into users (email, magic_issuer)
+      values (${email}, ${`did:ethr:${randomUUID()}`})
+    `;
+
+    const response = await POST(request({ email, flow: "signup" }));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ allowed: true });
+  });
+
   it("allows login only for an existing merchant", async () => {
     const missingResponse = await POST(request({ email: "missing@example.test", flow: "login" }));
 

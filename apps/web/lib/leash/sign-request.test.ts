@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { InvalidSignRequestError, parseSignRequest } from "./sign-request";
 
 const agentAddress = "0x2222222222222222222222222222222222222222";
+const maxAtomicUsdcAmount = BigInt("999999999999999999990000");
 
 function validRequest() {
   return {
@@ -11,6 +12,7 @@ function validRequest() {
     network: "eip155:8453",
     origin: { clientName: "Claude Code", toolName: "search", transport: "mcp" },
     payTo: "0x1111111111111111111111111111111111111111",
+    resourceUrl: "mcp://tool/search",
     signerRequest: {
       domain: {
         chainId: 8453,
@@ -52,8 +54,57 @@ describe("remote EIP-3009 sign request validation", () => {
       authorizationValidBefore: new Date(1_784_271_600_000),
       network: "eip155:8453",
       payTo: "0x1111111111111111111111111111111111111111",
+      resourceHost: "tool",
+      resourceUrl: "mcp://tool/search",
       requestFingerprint: expect.stringMatching(/^[0-9a-f]{64}$/),
     });
+  });
+
+  it("accepts the cap-domain ceiling and rejects one atomic unit above it", () => {
+    const largest = validRequest();
+    largest.amount = maxAtomicUsdcAmount.toString();
+    largest.signerRequest.message.value = largest.amount;
+    expect(
+      parseSignRequest(largest, { agentAddress, nowSeconds: 1_784_271_300 }).amountAtomic,
+    ).toBe(maxAtomicUsdcAmount.toString());
+
+    const oversized = validRequest();
+    oversized.amount = (maxAtomicUsdcAmount + BigInt(1)).toString();
+    oversized.signerRequest.message.value = oversized.amount;
+    expect(() => parseSignRequest(oversized, { agentAddress, nowSeconds: 1_784_271_300 })).toThrow(
+      InvalidSignRequestError,
+    );
+  });
+
+  it("canonicalizes receipt resource provenance and removes URL secrets server-side", () => {
+    const request = validRequest();
+    request.resourceUrl =
+      "MCP://receipt-user:receipt-password@PAYMENTS.Example.TEST/tool/search?api_key=receipt-secret#fragment-secret";
+
+    const parsed = parseSignRequest(request, { agentAddress, nowSeconds: 1_784_271_300 });
+
+    expect(parsed).toMatchObject({
+      resourceHost: "payments.example.test",
+      resourceUrl: "mcp://payments.example.test/tool/search",
+    });
+    expect(JSON.stringify(parsed)).not.toMatch(
+      /receipt-user|receipt-password|receipt-secret|fragment-secret/,
+    );
+  });
+
+  it.each([
+    "not an absolute URL",
+    "file:///hostless/path",
+    "mailto:hostless@example.test",
+    "ftp://tool.example.test/pay",
+    `https://example.test/${"x".repeat(2_049)}`,
+  ])("rejects malformed, hostless, or overlong resource provenance: %s", (resourceUrl) => {
+    const request = validRequest();
+    request.resourceUrl = resourceUrl;
+
+    expect(() => parseSignRequest(request, { agentAddress, nowSeconds: 1_784_271_300 })).toThrow(
+      InvalidSignRequestError,
+    );
   });
 
   it("canonicalizes nonce casing before fingerprinting and returning signer data", () => {

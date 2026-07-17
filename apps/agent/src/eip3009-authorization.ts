@@ -3,6 +3,10 @@ import { getAddress, type TypedData } from "viem";
 import { ARBITRUM_NETWORK, ARBITRUM_USDC, BASE_NETWORK, BASE_USDC } from "./routing.js";
 
 const MAX_AUTHORIZATION_LIFETIME_SECONDS = 600;
+// Mirrors numeric(20,0) cap cents at 10,000 atomic USDC units per cent.
+const MAX_CAP_USD_CENTS = 10n ** 20n - 1n;
+const ATOMIC_UNITS_PER_CENT = 10_000n;
+export const MAX_USDC_AMOUNT_ATOMIC = MAX_CAP_USD_CENTS * ATOMIC_UNITS_PER_CENT;
 const AUTHORIZATION_TYPES = [
   { name: "from", type: "address" },
   { name: "to", type: "address" },
@@ -103,6 +107,7 @@ export function parseExactEip3009Authorization(
   if (
     from !== getAddress(options.address) ||
     amount === "0" ||
+    BigInt(amount) > MAX_USDC_AMOUNT_ATOMIC ||
     validAfter !== "0" ||
     typeof nonce !== "string" ||
     !/^0x[0-9a-fA-F]{64}$/.test(nonce) ||

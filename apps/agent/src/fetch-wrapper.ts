@@ -1,6 +1,10 @@
 import { wrapFetchWithPayment } from "@x402/fetch";
 
-import { currentPaymentOrigin, withPaymentOrigin } from "./origin-context.js";
+import {
+  currentPaymentOrigin,
+  withPaymentOrigin,
+  withPaymentResourceUrl,
+} from "./origin-context.js";
 import { createLeashPaymentClient } from "./payment-client.js";
 import { LeashRemoteSigner } from "./remote-signer.js";
 
@@ -13,6 +17,10 @@ interface LeashFetchOptions {
 }
 
 type FetchInput = Request | string | URL;
+
+function requestUrl(input: FetchInput) {
+  return input instanceof Request ? input.url : input.toString();
+}
 
 function requestName(input: FetchInput, init?: RequestInit) {
   const method = init?.method ?? (input instanceof Request ? input.method : "GET");
@@ -49,6 +57,6 @@ export function createLeashFetch(options: LeashFetchOptions) {
         toolName: requestName(input, init),
         transport: "http",
       },
-      () => paidFetch(input, init),
+      () => withPaymentResourceUrl(requestUrl(input), () => paidFetch(input, init)),
     );
 }

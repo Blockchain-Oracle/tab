@@ -1,11 +1,13 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 
 import type { Database } from "../db/client";
-import { agents, receipts } from "../db/schema";
+import { agents, capCycles, caps, receipts } from "../db/schema";
+import { emitCap75 } from "./notifier";
 import { type parseSettlementObservation, verifySettlementOnchain } from "./settlement-evidence";
 
 type SettlementEvidence = ReturnType<typeof parseSettlementObservation>;
 type VerifySettlement = typeof verifySettlementOnchain;
+const ATOMIC_UNITS_PER_CENT = BigInt(10_000);
 
 export class SettlementResultConflictError extends Error {
   readonly code = "SETTLEMENT_RESULT_CONFLICT";
@@ -44,6 +46,7 @@ export async function applySettlementObservation(
         agentAddress: agents.agentAddress,
         amountAtomic: receipts.amountAtomic,
         authorizationNonce: receipts.authorizationNonce,
+        cycleId: receipts.cycleId,
         id: receipts.id,
         network: receipts.network,
         payTo: receipts.payTo,
@@ -54,8 +57,7 @@ export async function applySettlementObservation(
       .innerJoin(agents, eq(agents.id, receipts.agentId))
       .where(
         and(eq(receipts.id, options.evidence.receiptId), eq(receipts.agentId, options.agentId)),
-      )
-      .for("update");
+      );
     if (!row) return { kind: "not_found" as const };
     if (row.status !== "pending") return terminalResult(row, options.evidence);
     if (!row.agentAddress) {
@@ -65,6 +67,7 @@ export async function applySettlementObservation(
       agentAddress: row.agentAddress,
       amountAtomic: row.amountAtomic,
       authorizationNonce: row.authorizationNonce as `0x${string}`,
+      cycleId: row.cycleId,
       kind: "candidate" as const,
       network: row.network,
       payTo: row.payTo,
@@ -86,6 +89,25 @@ export async function applySettlementObservation(
   }
 
   return db.transaction(async (transaction) => {
+    const [agent] = await transaction
+      .select({ id: agents.id })
+      .from(agents)
+      .where(eq(agents.id, options.agentId))
+      .for("update");
+    if (!agent) return { kind: "not_found" as const };
+
+    const [cap] = await transaction
+      .select({ amountUsdCents: caps.amountUsdCents })
+      .from(caps)
+      .where(eq(caps.agentId, agent.id))
+      .for("update");
+    const [cycle] = await transaction
+      .select({ id: capCycles.id })
+      .from(capCycles)
+      .where(and(eq(capCycles.id, candidate.cycleId), eq(capCycles.agentId, agent.id)))
+      .for("update");
+    if (!cycle) return { kind: "not_found" as const };
+
     const [current] = await transaction
       .select({ id: receipts.id, status: receipts.status, txHash: receipts.txHash })
       .from(receipts)
@@ -94,10 +116,11 @@ export async function applySettlementObservation(
     if (!current) return { kind: "not_found" as const };
     if (current.status !== "pending") return terminalResult(current, options.evidence);
 
+    const settledAt = new Date();
     const [settled] = await transaction
       .update(receipts)
       .set({
-        settledAt: new Date(),
+        settledAt,
         settlementResponse: {
           network: options.evidence.network,
           payer: options.evidence.payer,
@@ -111,6 +134,31 @@ export async function applySettlementObservation(
       .where(and(eq(receipts.id, current.id), eq(receipts.status, "pending")))
       .returning({ id: receipts.id });
     if (!settled) throw new SettlementResultConflictError();
+    if (cap?.amountUsdCents) {
+      const [usage] = await transaction
+        .select({
+          amountAtomic: sql<string>`coalesce(sum(${receipts.amountAtomic}), 0)::text`,
+        })
+        .from(receipts)
+        .where(
+          and(
+            eq(receipts.agentId, agent.id),
+            eq(receipts.cycleId, cycle.id),
+            inArray(receipts.status, ["pending", "settled"]),
+          ),
+        );
+      const committedAtomic = usage?.amountAtomic ?? "0";
+      const capAtomic = (BigInt(cap.amountUsdCents) * ATOMIC_UNITS_PER_CENT).toString();
+      if (BigInt(committedAtomic) * BigInt(100) >= BigInt(capAtomic) * BigInt(75)) {
+        await emitCap75(transaction, {
+          agentId: agent.id,
+          capAtomic,
+          committedAtomic,
+          cycleId: cycle.id,
+          now: settledAt,
+        });
+      }
+    }
     return { kind: "settled" as const, receiptId: settled.id, verified: true };
   });
 }

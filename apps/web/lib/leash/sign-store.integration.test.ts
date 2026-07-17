@@ -68,6 +68,7 @@ function signBody(amount = "250000", nonce = randomBytes(32).toString("hex")) {
     network: "eip155:8453",
     origin: { clientName: "Claude Code", toolName: "search", transport: "mcp" },
     payTo,
+    resourceUrl: "mcp://tool/search",
     signerRequest: {
       domain: {
         chainId: 8453,

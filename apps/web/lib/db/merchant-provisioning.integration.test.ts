@@ -4,6 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { createDatabase } from "./client";
 import { MerchantAlreadyExistsError, provisionMerchant } from "./provision-merchant";
+import { users } from "./schema";
 
 const databaseUrl = process.env.DATABASE_URL;
 
@@ -106,6 +107,54 @@ describe("merchant provisioning with real PostgreSQL", () => {
     expect(keys.every((key) => key.public_key.endsWith(key.last4))).toBe(true);
     expect(keys.find((key) => key.env === "test")?.public_key).toMatch(/^pk_test_/);
     expect(keys.find((key) => key.env === "live")?.public_key).toMatch(/^pk_live_/);
+  });
+
+  it("attaches merchant resources to an exact verified Leash-first principal", async () => {
+    const input = signupInput("leash-first@example.test");
+    const [owner] = await connection.db
+      .insert(users)
+      .values({ email: input.email, magicIssuer: input.magicIssuer })
+      .returning({ userId: users.id });
+    if (!owner) throw new Error("PostgreSQL did not return the Leash-first owner");
+
+    const result = await provisionMerchant(connection.db, input);
+
+    expect(result.userId).toBe(owner.userId);
+    const countRow = requiredRow(
+      await connection.client<{ users_count: number; merchants_count: number }[]>`select
+          (select count(*)::int from users) as users_count,
+          (select count(*)::int from merchants) as merchants_count`,
+      "shared principal counts",
+    );
+    expect({
+      merchantsCount: countRow.merchants_count,
+      usersCount: countRow.users_count,
+    }).toEqual({ merchantsCount: 1, usersCount: 1 });
+  });
+
+  it("rejects a bare-user email or issuer collision without attaching a merchant", async () => {
+    const input = signupInput("bound-owner@example.test");
+    await connection.db
+      .insert(users)
+      .values({ email: input.email, magicIssuer: input.magicIssuer });
+
+    await expect(
+      provisionMerchant(connection.db, {
+        ...input,
+        magicIssuer: `did:ethr:${randomUUID()}`,
+      }),
+    ).rejects.toBeInstanceOf(MerchantAlreadyExistsError);
+    await expect(
+      provisionMerchant(connection.db, {
+        ...input,
+        email: `other-${randomUUID()}@example.test`,
+      }),
+    ).rejects.toBeInstanceOf(MerchantAlreadyExistsError);
+
+    const [count] = await connection.client<{ count: number }[]>`
+      select count(*)::int as count from merchants
+    `;
+    expect(count?.count).toBe(0);
   });
 
   it("rejects a case-insensitive duplicate email without creating another tenant", async () => {

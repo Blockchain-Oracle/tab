@@ -83,9 +83,19 @@ function signerWithFetch(fetch: typeof globalThis.fetch) {
     apiKey: "leash_sk_secret",
     fetch,
     nowSeconds: () => nowSeconds,
+    resourceUrl: credentialedResourceUrl,
     reportRetryDelayMs: 1,
     reportTimeoutMs: 10,
   });
+}
+
+function credentialedResourceUrl() {
+  const url = new URL("https://TOOL.EXAMPLE.TEST:8443/search");
+  url.username = "wire-user";
+  url.password = "wire-pass";
+  url.searchParams.set("token", "wire-secret");
+  url.hash = "fragment";
+  return url.toString();
 }
 
 describe("Leash remote signer authorization gate", () => {
@@ -99,6 +109,7 @@ describe("Leash remote signer authorization gate", () => {
         asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
         network: "eip155:8453",
         payTo: "0x1111111111111111111111111111111111111111",
+        resourceUrl: "https://tool.example.test:8443/search",
         signerRequest: {
           ...signerRequest,
           message: {
@@ -112,9 +123,7 @@ describe("Leash remote signer authorization gate", () => {
       return Response.json({ receiptId: "receipt-1", signature });
     });
     const signer = signerWithFetch(fetch);
-
     await expect(signer.signTypedData(signerRequest)).resolves.toBe(signature);
-    expect(signer.receiptIdForSignature(signature)).toBe("receipt-1");
     expect(signer.receiptIdForSignature(signature)).toBe("receipt-1");
   });
 
@@ -171,7 +180,6 @@ describe("Leash remote signer authorization gate", () => {
     mutate(request);
     const fetch = vi.fn(async () => Response.json({}));
     const signer = signerWithFetch(fetch);
-
     await expect(signer.signTypedData(request)).rejects.toMatchObject({
       code: "INVALID_SIGNER_REQUEST",
     });
@@ -184,7 +192,6 @@ describe("Leash remote signer authorization gate", () => {
     const signer = signerWithFetch(async () =>
       Response.json({ receiptId: "receipt-forged", signature: forgedSignature }),
     );
-
     await expect(signer.signTypedData(signerRequest)).rejects.toMatchObject({
       code: "INVALID_SIGNER_RESPONSE",
       status: 502,

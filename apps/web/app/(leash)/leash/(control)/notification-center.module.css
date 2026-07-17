@@ -1,0 +1,291 @@
+.page {
+  display: grid;
+  gap: 14px;
+  padding: 26px 32px 48px;
+}
+
+.header,
+.headerActions,
+.filters,
+.filters > div,
+.itemTopline,
+.itemActions {
+  display: flex;
+  align-items: center;
+}
+
+.header {
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.header p {
+  margin: 0;
+  color: #8c8a80;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.header h1 {
+  margin: 5px 0 0;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.headerSubtitle {
+  display: block;
+  margin-top: 5px;
+  color: #5f5d55;
+  font-size: 12.5px;
+}
+
+.headerActions {
+  gap: 9px;
+}
+
+.headerActions b {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #e7f3ef;
+  color: #17503a;
+  font-size: 10.5px;
+}
+
+.headerActions button,
+.itemActions button,
+.itemActions a,
+.loadMore button {
+  border: 1px solid #dbd9d0;
+  border-radius: 8px;
+  background: #fff;
+  color: #1c1b18;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.headerActions button {
+  height: 34px;
+  padding: 0 12px;
+}
+
+.loadMore {
+  text-align: center;
+}
+
+.loadMore button {
+  padding: 8px 12px;
+}
+
+.filters {
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid #e8e6df;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.filters > div {
+  gap: 6px;
+}
+
+.filters button {
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid #dbd9d0;
+  border-radius: 999px;
+  background: #fff;
+  color: #5f5d55;
+  font-size: 11.5px;
+}
+
+.filters button[aria-pressed="true"] {
+  border-color: #1c1b18;
+  background: #1c1b18;
+  color: #fff;
+}
+
+.filters label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #8c8a80;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.filters select {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid #dbd9d0;
+  border-radius: 7px;
+  background: #fff;
+  color: #1c1b18;
+  font-size: 11px;
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item,
+.stickyItem,
+.empty {
+  border: 1px solid #e8e6df;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.item,
+.stickyItem {
+  padding: 15px 17px;
+}
+
+.stickyItem {
+  border-color: #e8b6b9;
+  background: #fdf7f7;
+  box-shadow: inset 3px 0 #b4383d;
+}
+
+.itemTopline {
+  gap: 7px;
+}
+
+.itemTopline > span,
+.itemTopline i {
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 9.5px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.tier2 {
+  background: #fbf1dc;
+  color: #96650f;
+}
+
+.tier3 {
+  background: #faecec;
+  color: #b4383d;
+}
+
+.itemTopline i {
+  background: #e7f3ef;
+  color: #17503a;
+}
+
+.itemTopline .resolved {
+  background: #efede7;
+  color: #5f5d55;
+}
+
+.itemTopline time {
+  margin-left: auto;
+  color: #8c8a80;
+  font-size: 10.5px;
+}
+
+.item h2 {
+  margin: 10px 0 0;
+  font-size: 14px;
+}
+
+.stickyItem h2 {
+  margin: 10px 0 0;
+  font-size: 14px;
+}
+
+.item > p,
+.stickyItem > p {
+  margin: 4px 0 0;
+  color: #5f5d55;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.itemActions {
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.itemActions button,
+.itemActions a {
+  padding: 6px 9px;
+  text-decoration: none;
+}
+
+.itemActions a {
+  border-color: #206b4e;
+  background: #206b4e;
+  color: #fff;
+}
+
+.empty {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.empty h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.empty p {
+  margin: 6px 0 0;
+  color: #8c8a80;
+  font-size: 12px;
+}
+
+.error {
+  margin: 0;
+  color: #b4383d;
+  font-size: 12px;
+}
+
+.headerActions button:focus-visible,
+.filters button:focus-visible,
+.filters select:focus-visible,
+.itemActions button:focus-visible,
+.itemActions a:focus-visible,
+.loadMore button:focus-visible {
+  outline: 2px solid #206b4e;
+  outline-offset: 2px;
+}
+
+button:disabled,
+.filters select:disabled {
+  opacity: 0.55;
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 22px 18px 36px;
+  }
+
+  .header,
+  .filters {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .filters label {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .itemTopline {
+    flex-wrap: wrap;
+  }
+
+  .itemTopline time {
+    width: 100%;
+    margin-left: 0;
+  }
+}

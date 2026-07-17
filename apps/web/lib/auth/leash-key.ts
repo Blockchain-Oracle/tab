@@ -42,8 +42,16 @@ export interface LeashKeyScope {
   agentId: string;
 }
 
+export interface OwnedLeashKeyScope extends LeashKeyScope {
+  ownerId: string;
+}
+
 export interface LeashKeyTarget extends LeashKeyScope {
   keyId: string;
+}
+
+export interface OwnedLeashKeyTarget extends LeashKeyTarget {
+  ownerId: string;
 }
 
 export interface LeashKeyPrincipal {
@@ -87,12 +95,39 @@ export function readBearerLeashKey(authorizationHeader: string | null) {
   return bearer;
 }
 
-export async function issueLeashKey(db: Database, input: LeashKeyScope) {
+type InternalLeashKeyScope = LeashKeyScope & { ownerId?: string };
+type InternalLeashKeyTarget = LeashKeyTarget & { ownerId?: string };
+
+function agentScope(input: InternalLeashKeyScope) {
+  return input.ownerId
+    ? and(eq(agents.id, input.agentId), eq(agents.ownerId, input.ownerId))
+    : eq(agents.id, input.agentId);
+}
+
+export async function readOwnerLeashKey(db: Database, input: OwnedLeashKeyScope) {
   return db.transaction(async (transaction) => {
     const [agent] = await transaction
       .select({ id: agents.id })
       .from(agents)
-      .where(eq(agents.id, input.agentId))
+      .where(agentScope(input))
+      .for("share");
+    if (!agent) throw new LeashAgentNotFoundError();
+
+    const [key] = await transaction
+      .select(keySummary)
+      .from(leashKeys)
+      .where(and(eq(leashKeys.agentId, input.agentId), isNull(leashKeys.revokedAt)))
+      .limit(1);
+    return key ?? null;
+  });
+}
+
+async function issueScopedLeashKey(db: Database, input: InternalLeashKeyScope) {
+  return db.transaction(async (transaction) => {
+    const [agent] = await transaction
+      .select({ id: agents.id })
+      .from(agents)
+      .where(agentScope(input))
       .for("update");
     if (!agent) throw new LeashAgentNotFoundError();
 
@@ -119,12 +154,20 @@ export async function issueLeashKey(db: Database, input: LeashKeyScope) {
   });
 }
 
-export async function rotateLeashKey(db: Database, input: LeashKeyTarget) {
+export function issueLeashKey(db: Database, input: LeashKeyScope) {
+  return issueScopedLeashKey(db, input);
+}
+
+export function issueOwnerLeashKey(db: Database, input: OwnedLeashKeyScope) {
+  return issueScopedLeashKey(db, input);
+}
+
+async function rotateScopedLeashKey(db: Database, input: InternalLeashKeyTarget) {
   return db.transaction(async (transaction) => {
     const [agent] = await transaction
       .select({ id: agents.id })
       .from(agents)
-      .where(eq(agents.id, input.agentId))
+      .where(agentScope(input))
       .for("update");
     if (!agent) throw new LeashAgentNotFoundError();
 
@@ -171,6 +214,14 @@ export async function rotateLeashKey(db: Database, input: LeashKeyTarget) {
 
     return { key, secret: material.secret };
   });
+}
+
+export function rotateLeashKey(db: Database, input: LeashKeyTarget) {
+  return rotateScopedLeashKey(db, input);
+}
+
+export function rotateOwnerLeashKey(db: Database, input: OwnedLeashKeyTarget) {
+  return rotateScopedLeashKey(db, input);
 }
 
 export async function authenticateLeashKey(

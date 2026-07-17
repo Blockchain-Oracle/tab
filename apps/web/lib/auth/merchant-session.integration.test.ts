@@ -4,6 +4,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { createDatabase } from "../db/client";
 import { provisionMerchant } from "../db/provision-merchant";
+import { users } from "../db/schema";
 import { createSessionToken } from "./session";
 import {
   InactiveMerchantSessionError,
@@ -69,6 +70,38 @@ describe("protected merchant session lookup with real PostgreSQL", () => {
     await expect(loadMerchantSession(connection.db, "not-a-jwt", secret)).rejects.toBeInstanceOf(
       InvalidMerchantSessionError,
     );
+  });
+
+  it("does not promote a Leash-only owner token without a real merchant", async () => {
+    const email = "leash-only@example.test";
+    const [owner] = await connection.db
+      .insert(users)
+      .values({ email, magicIssuer: `did:ethr:${randomUUID()}` })
+      .returning({ userId: users.id });
+    if (!owner) throw new Error("PostgreSQL did not return the owner user");
+    const token = await createSessionToken({ email, userId: owner.userId }, secret);
+
+    await expect(loadMerchantSession(connection.db, token, secret)).rejects.toBeInstanceOf(
+      InactiveMerchantSessionError,
+    );
+  });
+
+  it("resolves a real merchant from the shared owner-only token in safe test mode", async () => {
+    const provisioned = await provisionMerchant(
+      connection.db,
+      signupInput("shared-owner@example.test"),
+    );
+    const token = await createSessionToken(
+      { email: "shared-owner@example.test", userId: provisioned.userId },
+      secret,
+    );
+
+    await expect(loadMerchantSession(connection.db, token, secret)).resolves.toMatchObject({
+      email: "shared-owner@example.test",
+      merchantId: provisioned.merchantId,
+      mode: "test",
+      userId: provisioned.userId,
+    });
   });
 
   it("rejects a signed session after its tenant is deleted", async () => {

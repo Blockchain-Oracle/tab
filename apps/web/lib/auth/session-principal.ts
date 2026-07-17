@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 
 import type { Database } from "../db/client";
 import { merchants, users } from "../db/schema";
-import { InvalidSessionTokenError, readSessionToken } from "./session";
+import { InvalidSessionTokenError, isMerchantSession, readSessionToken } from "./session";
 
 export class InactiveMerchantSessionError extends Error {
   constructor() {
@@ -30,6 +30,8 @@ export async function loadMerchantSession(db: Database, token: string, secret?: 
     throw error;
   }
 
+  const merchantSession = isMerchantSession(session) ? session : undefined;
+
   const [principal] = await db
     .select({
       businessName: merchants.businessName,
@@ -44,7 +46,13 @@ export async function loadMerchantSession(db: Database, token: string, secret?: 
     })
     .from(users)
     .innerJoin(merchants, eq(merchants.userId, users.id))
-    .where(and(eq(users.id, session.userId), eq(merchants.id, session.merchantId)))
+    .where(
+      and(
+        eq(users.id, session.userId),
+        eq(users.email, session.email),
+        merchantSession ? eq(merchants.id, merchantSession.merchantId) : undefined,
+      ),
+    )
     .limit(1);
 
   if (!principal) {
@@ -58,7 +66,7 @@ export async function loadMerchantSession(db: Database, token: string, secret?: 
     logoEtag: principal.logoEtag,
     logoUrl: principal.logoUrl,
     merchantId: principal.merchantId,
-    mode: session.mode,
+    mode: merchantSession?.mode ?? "test",
     receivingAddress: principal.receivingAddress,
     receivingAddressSource: principal.receivingAddressSource,
     userId: principal.userId,

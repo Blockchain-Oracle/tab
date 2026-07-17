@@ -1,9 +1,15 @@
 import { randomBytes, randomUUID } from "node:crypto";
 
+import { eq } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
-import { createDatabase } from "../db/client";
-import { completePreSigningChecks, reserveSignRequest } from "./sign-store";
+import { createDatabase, type Database } from "../db/client";
+import { notifications } from "../db/schema";
+import {
+  completePreSigningChecks,
+  failSignRequestBeforeSigning,
+  reserveSignRequest,
+} from "./sign-store";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required for sign preflight tests");
@@ -59,6 +65,7 @@ function signBody(amount: string, validBefore = nowSeconds + 300) {
     network: "eip155:8453",
     origin: { clientName: "Claude Code", toolName: "search", transport: "mcp" },
     payTo,
+    resourceUrl: "mcp://tool/search",
     signerRequest: {
       domain: {
         chainId: 8453,
@@ -131,6 +138,10 @@ function finalCheck(
   });
 }
 
+function floatNotifications() {
+  return connection.db.select().from(notifications).where(eq(notifications.type, "float_empty"));
+}
+
 describe("final hosted-signer policy decision", () => {
   it("fails a reservation when the cap is lowered during the RPC gap", async () => {
     const identity = await provision("100");
@@ -141,7 +152,7 @@ describe("final hosted-signer policy decision", () => {
 
     await expect(finalCheck(identity, pending.receiptId)).resolves.toMatchObject({
       code: "LEASH_CAP_EXCEEDED",
-      kind: "failed",
+      kind: "blocked",
     });
   });
 
@@ -166,6 +177,97 @@ describe("final hosted-signer policy decision", () => {
       code: "FLOAT_EMPTY",
       kind: "failed",
     });
+    const [event] = await floatNotifications();
+    expect(event).toMatchObject({
+      cycleId: current.cycleId,
+      eventKey: `float_empty:${current.cycleId}:eip155:8453`,
+      metadata: {
+        availableAtomic: "1000000",
+        network: "eip155:8453",
+        reservedAtomic: "1200000",
+      },
+      receiptId: pending.receiptId,
+      sticky: false,
+      tier: "2",
+    });
+  });
+
+  it("deduplicates concurrent and replayed float-empty failures once per cycle", async () => {
+    const identity = await provision("300");
+    const [first, second] = await Promise.all([
+      reserve(identity, "600000"),
+      reserve(identity, "600000"),
+      reserve(identity, "600000"),
+    ]);
+    if (!first || !second) throw new Error("Expected reservations");
+
+    const results = await Promise.all([
+      finalCheck(identity, first.receiptId, BigInt(1_000_000)),
+      finalCheck(identity, second.receiptId, BigInt(1_000_000)),
+    ]);
+    expect(results).toMatchObject([{ code: "FLOAT_EMPTY" }, { code: "FLOAT_EMPTY" }]);
+    await expect(finalCheck(identity, first.receiptId, BigInt(1_000_000))).resolves.toMatchObject({
+      code: "FLOAT_EMPTY",
+    });
+
+    const rows = await floatNotifications();
+    expect(rows).toHaveLength(1);
+    expect([first.receiptId, second.receiptId]).toContain(rows[0]?.receiptId);
+    expect(rows[0]?.metadata).toMatchObject({ reservedAtomic: "1800000" });
+  });
+
+  it("does not emit float-empty for signer or balance-check availability failures", async () => {
+    const identity = await provision();
+    const signerFailure = await reserve(identity, "250000");
+    const checkFailure = await reserve(identity, "250000");
+
+    await expect(
+      completePreSigningChecks(connection.db, {
+        ...identity,
+        liveBalanceAtomic: BigInt(10_000_000),
+        nowSeconds,
+        receiptId: signerFailure.receiptId,
+        signerAvailable: false,
+      }),
+    ).resolves.toMatchObject({ code: "SIGNER_NOT_CONFIGURED" });
+    await expect(
+      failSignRequestBeforeSigning(connection.db, {
+        agentId: identity.agentId,
+        reason: "FLOAT_CHECK_UNAVAILABLE",
+        receiptId: checkFailure.receiptId,
+      }),
+    ).resolves.toMatchObject({ code: "FLOAT_CHECK_UNAVAILABLE" });
+    expect(await floatNotifications()).toEqual([]);
+  });
+
+  it("rolls the failed receipt and float-empty notification back together", async () => {
+    const identity = await provision();
+    const pending = await reserve(identity, "600000");
+    await reserve(identity, "600000");
+
+    await expect(
+      connection.db.transaction(async (transaction) => {
+        await completePreSigningChecks(transaction as unknown as Database, {
+          ...identity,
+          liveBalanceAtomic: BigInt(1_000_000),
+          nowSeconds,
+          receiptId: pending.receiptId,
+          signerAvailable: true,
+        });
+        const inside = await transaction
+          .select()
+          .from(notifications)
+          .where(eq(notifications.type, "float_empty"));
+        expect(inside).toHaveLength(1);
+        throw new Error("rollback float decision");
+      }),
+    ).rejects.toThrow("rollback float decision");
+
+    const [stored] = await connection.client<{ status: string }[]>`
+      select status from receipts where id = ${pending.receiptId}
+    `;
+    expect(stored?.status).toBe("pending");
+    expect(await floatNotifications()).toEqual([]);
   });
 
   it("rechecks authorization expiry immediately before signing", async () => {

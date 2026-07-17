@@ -12,7 +12,8 @@ returns a fabricated signature or transaction hash.
 ## Artifacts Checked
 
 - Phase 5 baseline: `975aa4b`
-- Phase 6 implementation commits: `eab8053`, `bd59fce`, and `8d05657`
+- Phase 6 implementation commits: `eab8053`, `bd59fce`, and `8d05657`; clean-runner
+  runtime correction: `0da3240`
 - Domain wiki and its x402, MCP, Magic, Particle, and hackathon source map
 - `.thoughts/decisions/DECISIONS.md`
 - Product spec and Story 3, "Agent pays an x402 resource within cap"
@@ -80,7 +81,9 @@ returns a fabricated signature or transaction hash.
   is exactly 300 lines.
 - Independent follow-up correctness/security review: READY with no remaining blockers after all
   prior HOLD findings and the 0015-to-0016 migration gap were resolved.
-- Pull-request CI: pending publication; update this evidence after the hosted workflow passes.
+- Pull-request GitHub Actions CI: passed on PR #3 at `0da3240` ([run 29567541704](https://github.com/Blockchain-Oracle/tab/actions/runs/29567541704); `Lint → Typecheck → Test → Build`).
+  The first clean-runner run exposed an undeclared `tsx` CLI-test runtime; `0da3240` declared it
+  directly and the rerun passed.
 
 ## Deviations From Plan
 

@@ -1,0 +1,144 @@
+.preview {
+  border: 1px solid #e8e6df;
+  border-radius: 12px;
+  background: #fff;
+  padding: 18px 20px;
+}
+
+.heading,
+.heading > div,
+.list a {
+  display: flex;
+}
+
+.heading {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.heading > div {
+  flex-direction: column;
+  gap: 3px;
+}
+
+.heading span {
+  color: #68665f;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+}
+
+.heading h2 {
+  margin: 0;
+  color: #24231f;
+  font-size: 15px;
+}
+
+.heading a {
+  color: #206b4e;
+  font-size: 11.5px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.empty {
+  margin: 18px 0 3px;
+  color: #79766e;
+  font-size: 12.5px;
+}
+
+.list {
+  display: grid;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  border-top: 1px solid #efede8;
+}
+
+.list a {
+  align-items: center;
+  gap: 14px;
+  min-height: 58px;
+  color: #24231f;
+  text-decoration: none;
+}
+
+.amount {
+  min-width: 68px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.resource {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 3px;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+
+.resource small {
+  color: #68665f;
+  font-size: 10.5px;
+}
+
+.network,
+.receiptStatus {
+  border-radius: 999px;
+  font-size: 10.5px;
+  padding: 4px 8px;
+}
+
+.network {
+  background: #f2f0eb;
+  color: #5d5951;
+}
+
+.receiptStatus {
+  min-width: 58px;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.settled {
+  background: #e7f3ef;
+  color: #17503a;
+}
+.pending {
+  background: #fff2dc;
+  color: #8a5711;
+}
+.failed {
+  background: #fbe9e6;
+  color: #9a3025;
+}
+.blocked {
+  background: #e8eff5;
+  color: #345a73;
+}
+
+.list a:focus-visible,
+.heading a:focus-visible {
+  border-radius: 6px;
+  outline: 2px solid #206b4e;
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .network {
+    display: none;
+  }
+  .list a {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 12px 0;
+  }
+  .resource {
+    flex-basis: calc(100% - 90px);
+  }
+}

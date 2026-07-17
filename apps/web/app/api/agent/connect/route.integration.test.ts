@@ -8,6 +8,7 @@ import { issueLeashKey } from "../../../../lib/auth/leash-key";
 import { createDatabase } from "../../../../lib/db/client";
 import { agentEvents, agents, leashKeys, users } from "../../../../lib/db/schema";
 import { closeServerDatabase } from "../../../../lib/db/server";
+import { revokeOwnerAgent } from "../../../../lib/leash/revoke-store";
 import { POST } from "./route";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -54,7 +55,7 @@ async function provisionAgent(label: string, status: AgentStatus = "provisioned"
   if (!agent) throw new Error("PostgreSQL did not return the Leash agent");
 
   const key = await issueLeashKey(connection.db, { agentId: agent.id });
-  return { agentId: agent.id, keyId: key.key.id, secret: key.secret };
+  return { agentId: agent.id, keyId: key.key.id, ownerId: user.id, secret: key.secret };
 }
 
 async function agentRow(agentId: string) {
@@ -221,14 +222,34 @@ describe("POST /api/agent/connect with real PostgreSQL", () => {
     await expect(eventsFor(provisioned.agentId)).resolves.toHaveLength(2);
   });
 
-  it("allows every lifecycle status to report a connection", async () => {
-    for (const status of ["provisioned", "paused", "frozen", "cancelled", "nuked"] as const) {
+  it("allows credential-preserving lifecycle statuses to report a connection", async () => {
+    for (const status of ["provisioned", "paused", "frozen"] as const) {
       const provisioned = await provisionAgent(`status-${status}`, status);
       const response = await POST(request({ transport: "mcp" }, provisioned.secret));
 
       expect(response.status).toBe(200);
       expect((await agentRow(provisioned.agentId))?.connectionCount).toBe(1);
     }
+  });
+
+  it.each(["cancelled", "nuked"] as const)("rejects an old key after %s", async (status) => {
+    const label = `terminal-${status}`;
+    const provisioned = await provisionAgent(label);
+    await revokeOwnerAgent(connection.db, {
+      action: status === "cancelled" ? "cancel" : "nuclear",
+      actorSurface: "web",
+      agentId: provisioned.agentId,
+      confirmation: status === "cancelled" ? "CANCEL" : `${label} agent`,
+      ownerId: provisioned.ownerId,
+    });
+
+    const response = await POST(request({ transport: "mcp" }, provisioned.secret));
+    expect(response.status).toBe(401);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect((await agentRow(provisioned.agentId))?.connectionCount).toBe(0);
+    expect(
+      (await eventsFor(provisioned.agentId)).filter((event) => event.type === "connect"),
+    ).toEqual([]);
   });
 
   it("serializes concurrent reports without losing counts or audit events", async () => {

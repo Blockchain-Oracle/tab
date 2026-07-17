@@ -39,6 +39,8 @@ export const receipts = pgTable(
     reason: text("reason"),
     amountAtomic: numeric("amount_atomic").notNull(),
     amountUsd: numeric("amount_usd", { precision: 38, scale: 6 }).notNull(),
+    capAtomicAtAttempt: numeric("cap_atomic_at_attempt"),
+    committedAtomicBefore: numeric("committed_atomic_before"),
     asset: varchar("asset", { length: 42 }).notNull(),
     network: leashNetwork("network").notNull(),
     intendedNetwork: leashNetwork("intended_network"),
@@ -53,7 +55,7 @@ export const receipts = pgTable(
     origin: jsonb("origin").$type<ReceiptOrigin>(),
     settlementResponse: jsonb("settlement_response").$type<Record<string, unknown>>(),
     txHash: varchar("tx_hash", { length: 66 }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { precision: 3, withTimezone: true }).defaultNow().notNull(),
     settledAt: timestamp("settled_at", { withTimezone: true }),
   },
   (table) => [
@@ -69,12 +71,21 @@ export const receipts = pgTable(
       .on(table.network, table.txHash)
       .where(sql`${table.txHash} is not null`),
     index("receipts_cap_gate_idx").on(table.agentId, table.cycleId, table.status),
-    index("receipts_agent_created_idx").on(table.agentId, table.createdAt.desc()),
+    index("receipts_agent_created_idx").on(table.agentId, table.createdAt.desc(), table.id.desc()),
     check(
       "receipts_amount_atomic_check",
       sql`${table.amountAtomic} > 0 and ${table.amountAtomic} = trunc(${table.amountAtomic})`,
     ),
     check("receipts_amount_usd_check", sql`${table.amountUsd} > 0`),
+    check(
+      "receipts_cap_context_check",
+      sql`(${table.capAtomicAtAttempt} is null and ${table.committedAtomicBefore} is null)
+        or (${table.capAtomicAtAttempt} is not null and ${table.committedAtomicBefore} is not null
+          and ${table.capAtomicAtAttempt} > 0
+          and ${table.capAtomicAtAttempt} = trunc(${table.capAtomicAtAttempt})
+          and ${table.committedAtomicBefore} >= 0
+          and ${table.committedAtomicBefore} = trunc(${table.committedAtomicBefore}))`,
+    ),
     check(
       "receipts_pay_to_check",
       sql`${table.payTo} ~ '^0x[0-9a-fA-F]{40}$'
@@ -120,11 +131,16 @@ export const receipts = pgTable(
           and ${table.settlementResponse} is null and ${table.settledAt} is null)
         or (${table.status} = 'settled' and ${table.reason} is null
           and ${table.intendedNetwork} is null and ${table.txHash} is not null
-          and ${table.settlementResponse} is not null and ${table.settledAt} is not null)
+          and ${table.settlementResponse} is not null and ${table.settledAt} is not null
+          and (${table.settlementResponse} @> '{"success":true}'::jsonb
+            and ${table.settlementResponse}->>'transaction' = ${table.txHash}) is true)
         or (${table.status} = 'failed' and ${table.reason} is not null
           and ${table.reason} ~ '[^[:space:]]' and ${table.intendedNetwork} is null
-          and ${table.txHash} is null and ${table.settlementResponse} is null
-          and ${table.settledAt} is null)
+          and ${table.settledAt} is null
+          and ((${table.txHash} is null and ${table.settlementResponse} is null)
+            or (${table.txHash} is not null and ${table.settlementResponse} is not null
+              and ${table.settlementResponse} @> '{"success":false}'::jsonb
+              and ${table.settlementResponse}->>'transaction' = ${table.txHash}) is true))
         or (${table.status} = 'blocked' and ${table.reason} is not null
           and ${table.reason} ~ '[^[:space:]]' and ${table.intendedNetwork} is not null
           and ${table.txHash} is null and ${table.settlementResponse} is null

@@ -21,6 +21,9 @@ describe("Leash cap display", () => {
       overageFillBasisPoints: "0",
       pendingAtomic: "800000",
       pendingFillBasisPoints: "800",
+      reservedAtomic: "800000",
+      reservedFillBasisPoints: "800",
+      revertedAtomic: "0",
       settledAtomic: "4200000",
       settledFillBasisPoints: "4200",
     });
@@ -42,6 +45,24 @@ describe("Leash cap display", () => {
       overageFillBasisPoints: "0",
       pendingFillBasisPoints: "1000",
       settledFillBasisPoints: "9000",
+    });
+  });
+
+  it("keeps matching reverted-call evidence distinct while reserving it in committed spend", () => {
+    expect(
+      deriveCapDisplay({
+        capUsdCents: "100",
+        pendingAtomic: "100000",
+        revertedAtomic: "200000",
+        settledAtomic: "300000",
+      }),
+    ).toMatchObject({
+      committedAtomic: "600000",
+      pendingAtomic: "100000",
+      reservedAtomic: "300000",
+      reservedFillBasisPoints: "3000",
+      revertedAtomic: "200000",
+      settledAtomic: "300000",
     });
   });
 
@@ -100,6 +121,9 @@ describe("Leash cap display", () => {
       overageFillBasisPoints: null,
       pendingAtomic: "0",
       pendingFillBasisPoints: null,
+      reservedAtomic: "0",
+      reservedFillBasisPoints: null,
+      revertedAtomic: "0",
       settledAtomic: "0",
       settledFillBasisPoints: null,
     });

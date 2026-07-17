@@ -8,7 +8,7 @@ vi.mock("next/navigation", () => ({ usePathname: () => "/leash/cap" }));
 import { LeashShell } from "./leash-shell";
 
 describe("Leash control-plane shell", () => {
-  it("renders only live Phase 7 destinations and an owner-scoped unread badge", () => {
+  it("renders the live control destinations and an owner-scoped unread badge", () => {
     const html = renderToStaticMarkup(
       <LeashShell email="owner@example.test" unreadCount={3}>
         <main>Owner control plane</main>
@@ -17,14 +17,16 @@ describe("Leash control-plane shell", () => {
 
     expect(html).toContain('href="/leash"');
     expect(html).toContain('href="/leash/notifications"');
+    expect(html).toContain('href="/leash/payments"');
     expect(html).toContain('href="/leash/cap"');
+    expect(html).toContain('href="/leash/funds"');
+    expect(html).toContain('href="/leash/provision"');
+    expect(html).toContain('href="/leash/revocation"');
     expect(html).toContain('href="/leash/connect"');
     expect(html).toContain("owner@example.test");
     expect(html).toContain("Owner control plane");
     expect(html).toContain('aria-current="page"');
     expect(html).toContain("3 unread notifications");
-    expect(html).not.toContain('href="/leash/revocation"');
-    expect(html).not.toContain('href="/leash/payments"');
   });
 
   it("does not invent a zero badge when unread data is unavailable", () => {

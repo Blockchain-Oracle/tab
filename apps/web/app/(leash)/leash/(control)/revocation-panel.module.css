@@ -1,0 +1,165 @@
+.page {
+  display: grid;
+  margin: 0 auto;
+  max-width: 1080px;
+  padding: 42px 40px 64px;
+  width: 100%;
+}
+
+.background {
+  display: grid;
+  gap: 24px;
+}
+
+.header {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+}
+
+.eyebrow,
+.level {
+  color: #79746b;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+}
+
+.header h1 {
+  color: #171713;
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: -0.04em;
+  margin: 7px 0 8px;
+}
+
+.header p,
+.spectrum p {
+  color: #68635b;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.status {
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 11px;
+}
+
+.provisioned {
+  background: #e8f5ed;
+  border-color: #b7dbc4;
+  color: #23663c;
+}
+.paused {
+  background: #efede8;
+  border-color: #d2cec5;
+  color: #625d54;
+}
+.frozen {
+  background: #e8eff5;
+  border-color: #b8cbd9;
+  color: #345a73;
+}
+.cancelled {
+  background: #fff2dc;
+  border-color: #eccf9a;
+  color: #8a5711;
+}
+.nuked {
+  background: #fbe9e6;
+  border-color: #e5b5ae;
+  color: #9a3025;
+}
+
+.spectrum {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.spectrum article {
+  background: #fff;
+  border: 1px solid #e3e0d9;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+  padding: 24px;
+}
+
+.spectrum h2 {
+  color: #24231f;
+  font-size: 19px;
+  margin: 12px 0 9px;
+}
+
+.controlButton {
+  align-self: flex-start;
+  background: #252520;
+  border: 0;
+  border-radius: 9px;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  margin-top: auto;
+  padding: 11px 15px;
+}
+
+.spectrum .warningCard {
+  border-color: #e8cf9f;
+}
+.spectrum .dangerCard {
+  border-color: #e2b5af;
+}
+.dangerButton {
+  background: #a33a2e;
+}
+.controlButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.message {
+  color: #514d46;
+  min-height: 24px;
+}
+
+.recovery {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 16px;
+  border: 1px solid #e2b5af;
+  border-radius: 11px;
+  background: #fbe9e6;
+  color: #7c2e27;
+}
+
+.recovery p {
+  margin: 3px 0 0;
+}
+
+.recovery a {
+  flex: 0 0 auto;
+  color: #7c2e27;
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 28px 20px 48px;
+  }
+  .header {
+    gap: 18px;
+  }
+  .spectrum {
+    grid-template-columns: 1fr;
+  }
+  .spectrum article {
+    min-height: 195px;
+  }
+}

@@ -8,6 +8,7 @@ import {
   type SignerRequest,
 } from "./eip3009-authorization.js";
 import { currentPaymentOrigin, currentPaymentResourceUrl } from "./origin-context.js";
+import { PaymentCorrelations } from "./payment-correlation.js";
 import { redactPaymentResourceUrl } from "./resource-url.js";
 
 export interface PaymentOrigin {
@@ -65,6 +66,7 @@ async function responseError(response: Response) {
 export class LeashRemoteSigner implements ClientEvmSigner {
   readonly address: `0x${string}`;
   readonly #apiKey: string;
+  readonly #correlations: PaymentCorrelations;
   readonly #endpoint: URL;
   readonly #fetch: typeof globalThis.fetch;
   readonly #inFlightObservations = new Set<Promise<void>>();
@@ -75,7 +77,6 @@ export class LeashRemoteSigner implements ClientEvmSigner {
   readonly #reportTimeoutMs: number;
   readonly #resourceUrl: (() => string | undefined) | undefined;
   readonly #resultEndpoint: URL;
-  readonly #receiptBySignature = new Map<string, string>();
 
   constructor(options: RemoteSignerOptions) {
     if (!isAddress(options.address)) throw new Error("Leash signer address is invalid");
@@ -85,6 +86,7 @@ export class LeashRemoteSigner implements ClientEvmSigner {
     this.#endpoint = new URL("/api/agent/sign", options.apiBaseUrl);
     this.#fetch = options.fetch ?? globalThis.fetch;
     this.#nowSeconds = options.nowSeconds ?? (() => Math.floor(Date.now() / 1_000));
+    this.#correlations = new PaymentCorrelations(this.#nowSeconds);
     this.#origin = options.origin ?? currentPaymentOrigin;
     this.#resourceUrl = options.resourceUrl ?? currentPaymentResourceUrl;
     this.#reportAttempts = options.reportAttempts ?? 3;
@@ -159,12 +161,16 @@ export class LeashRemoteSigner implements ClientEvmSigner {
         502,
       );
     }
-    this.#receiptBySignature.set(signature.toLowerCase(), body.receiptId);
+    this.#correlations.set(
+      signature,
+      body.receiptId,
+      Number(authorization.typedData.message.validBefore),
+    );
     return signature;
   }
 
   receiptIdForSignature(signature: string) {
-    return this.#receiptBySignature.get(signature.toLowerCase()) ?? null;
+    return this.#correlations.get(signature);
   }
 
   async #sendObservationAttempt(body: unknown) {
@@ -211,9 +217,10 @@ export class LeashRemoteSigner implements ClientEvmSigner {
           verified:
             response.status === 200 &&
             acknowledgement.verified === true &&
-            acknowledgement.status === "settled" &&
+            (acknowledgement.status === "settled" || acknowledgement.status === "failed") &&
             acknowledgedReceipt !== undefined,
           verifiedReceiptId: acknowledgedReceipt,
+          verifiedStatus: acknowledgement.status,
         };
       } catch {
         return { retry: false, verified: false };
@@ -229,9 +236,8 @@ export class LeashRemoteSigner implements ClientEvmSigner {
     for (let attempt = 0; attempt < this.#reportAttempts; attempt += 1) {
       const result = await this.#sendObservationAttempt(body);
       if (result.verified && result.verifiedReceiptId === receiptId) {
-        const normalizedSignature = signature.toLowerCase();
-        if (this.#receiptBySignature.get(normalizedSignature) === receiptId) {
-          this.#receiptBySignature.delete(normalizedSignature);
+        if (result.verifiedStatus === "settled") {
+          this.#correlations.deleteIf(signature, receiptId);
         }
         return;
       }
@@ -246,7 +252,9 @@ export class LeashRemoteSigner implements ClientEvmSigner {
     const settlement = context.settleResponse;
     const signature = context.paymentPayload.payload.signature;
     if (
-      settlement?.success !== true ||
+      typeof settlement?.success !== "boolean" ||
+      (!settlement.success &&
+        (typeof settlement.errorReason !== "string" || !/\S/.test(settlement.errorReason))) ||
       typeof signature !== "string" ||
       settlement.network !== context.requirements.network ||
       !isAddress(settlement.payer ?? "") ||
@@ -255,16 +263,22 @@ export class LeashRemoteSigner implements ClientEvmSigner {
     ) {
       return Promise.resolve();
     }
-    const receiptId = this.#receiptBySignature.get(signature.toLowerCase());
+    const receiptId = this.#correlations.get(signature);
     if (!receiptId) return Promise.resolve();
 
     const task = this.#sendObservation(
       {
         outcome: "observed",
         paymentResponse: {
+          ...(settlement.success
+            ? {}
+            : {
+                ...(settlement.errorMessage ? { errorMessage: settlement.errorMessage } : {}),
+                errorReason: settlement.errorReason,
+              }),
           network: settlement.network,
           payer: settlement.payer,
-          success: true,
+          success: settlement.success,
           transaction: settlement.transaction,
         },
         receiptId,

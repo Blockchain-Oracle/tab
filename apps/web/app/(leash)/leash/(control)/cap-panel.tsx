@@ -97,7 +97,7 @@ export function CapPanel({ agentId, initialPolicy }: CapPanelProps) {
   }
 
   const committedBasisPoints = policy?.spend.committedBasisPoints ?? "0";
-  const hasPending = policy ? BigInt(policy.spend.pendingAtomic) > BigInt(0) : false;
+  const hasReserved = policy ? BigInt(policy.spend.reservedAtomic) > BigInt(0) : false;
   const hasOverage = policy ? BigInt(policy.spend.overageAtomic) > BigInt(0) : false;
 
   return (
@@ -138,7 +138,7 @@ export function CapPanel({ agentId, initialPolicy }: CapPanelProps) {
             />
             <span
               className={styles.pendingFill}
-              style={{ width: capFillWidth(policy.spend.pendingFillBasisPoints ?? "0") }}
+              style={{ width: capFillWidth(policy.spend.reservedFillBasisPoints ?? "0") }}
             />
             {hasOverage ? (
               <span
@@ -154,10 +154,15 @@ export function CapPanel({ agentId, initialPolicy }: CapPanelProps) {
             </span>
             <span>
               <i className={styles.pendingKey} />
-              Pending
+              Reserved / unsettled
             </span>
-            {hasPending ? (
-              <strong>incl. {formatUsdAtomic(policy.spend.pendingAtomic)} pending</strong>
+            {hasReserved ? (
+              <strong>
+                incl. {formatUsdAtomic(policy.spend.reservedAtomic)} reserved
+                {BigInt(policy.spend.revertedAtomic) > BigInt(0)
+                  ? ` · ${formatUsdAtomic(policy.spend.revertedAtomic)} matching reverted-call evidence`
+                  : ""}
+              </strong>
             ) : null}
           </div>
           <div className={styles.resetLine}>

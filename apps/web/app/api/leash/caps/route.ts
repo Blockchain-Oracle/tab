@@ -7,6 +7,7 @@ import {
   parseCapMutation,
 } from "../../../../lib/leash/cap-input";
 import { readOwnerCap, setOwnerCap } from "../../../../lib/leash/cap-policy";
+import { readOwnerCapResetNotice } from "../../../../lib/leash/cap-reset-notice";
 import {
   capPolicyError,
   LEASH_RESPONSE_HEADERS,
@@ -35,11 +36,19 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const policy = await readOwnerCap(getServerDatabase().db, {
+    const database = getServerDatabase().db;
+    const scope = {
       ...target,
       ownerId: authenticated.principal.userId,
-    });
-    return NextResponse.json({ policy }, { headers: LEASH_RESPONSE_HEADERS, status: 200 });
+    };
+    const [policy, resetNotice] = await Promise.all([
+      readOwnerCap(database, scope),
+      readOwnerCapResetNotice(database, scope),
+    ]);
+    return NextResponse.json(
+      { policy, resetNotice },
+      { headers: LEASH_RESPONSE_HEADERS, status: 200 },
+    );
   } catch (error) {
     return capPolicyError(error);
   }
@@ -69,11 +78,14 @@ async function mutate(request: NextRequest, status: 200 | 201) {
   }
 
   try {
-    const policy = await setOwnerCap(getServerDatabase().db, {
+    const database = getServerDatabase().db;
+    const scope = {
       ...mutation,
       ownerId: authenticated.principal.userId,
-    });
-    return NextResponse.json({ policy }, { headers: LEASH_RESPONSE_HEADERS, status });
+    };
+    const policy = await setOwnerCap(database, scope);
+    const resetNotice = await readOwnerCapResetNotice(database, scope);
+    return NextResponse.json({ policy, resetNotice }, { headers: LEASH_RESPONSE_HEADERS, status });
   } catch (error) {
     return capPolicyError(error);
   }

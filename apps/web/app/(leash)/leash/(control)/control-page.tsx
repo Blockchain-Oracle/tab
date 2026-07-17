@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { OwnerAgent } from "../../../../lib/leash/owner-agents";
 import styles from "./control-page.module.css";
 
@@ -30,9 +32,7 @@ export function NoAgentState() {
           Agent provisioning stays disabled until the funded Magic OIDC signing spike is verified.
           No wallet, balance, cap, or connection has been fabricated for this account.
         </p>
-        <button disabled type="button">
-          Provisioning unavailable
-        </button>
+        <Link href="/leash/provision">Set up agent</Link>
       </section>
     </main>
   );

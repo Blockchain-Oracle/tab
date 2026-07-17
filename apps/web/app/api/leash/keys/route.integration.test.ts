@@ -30,16 +30,29 @@ afterAll(async () => {
   await connection.client.end();
 });
 
-async function provision(label: string) {
+async function provision(
+  label: string,
+  status: "provisioned" | "paused" | "frozen" | "cancelled" | "nuked" = "provisioned",
+) {
   const email = `${label}-${randomUUID()}@example.test`;
   const [owner] = await connection.db
     .insert(users)
     .values({ email, magicIssuer: `did:ethr:${randomUUID()}` })
     .returning({ id: users.id });
   if (!owner) throw new Error("Expected owner");
+  const terminal = status === "cancelled" || status === "nuked";
+  const revokedAt = terminal ? new Date() : null;
   const [agent] = await connection.db
     .insert(agents)
-    .values({ ownerId: owner.id, name: `${label} agent`, signerSubject: `leash:${randomUUID()}` })
+    .values({
+      credentialDestroyedAt: status === "nuked" ? revokedAt : null,
+      createdAt: terminal ? new Date(Date.now() - 1_000) : undefined,
+      ownerId: owner.id,
+      name: `${label} agent`,
+      signerSubject: terminal ? null : `leash:${randomUUID()}`,
+      signerSubjectRevokedAt: revokedAt,
+      status,
+    })
     .returning({ id: agents.id });
   if (!agent) throw new Error("Expected agent");
   const token = await createSessionToken({ email, userId: owner.id });
@@ -182,5 +195,60 @@ describe("owner-authenticated Leash key routes", () => {
       }),
     );
     expect(malformed.status).toBe(400);
+  });
+
+  it.each([
+    "cancelled",
+    "nuked",
+  ] as const)("does not issue or rotate key material for a %s agent", async (status) => {
+    const issueTarget = await provision(`inactive-issue-${status}`, status);
+    const issuedForInactive = await POST(
+      request("POST", "/api/leash/keys", issueTarget.token, { agentId: issueTarget.agentId }),
+    );
+    expect(issuedForInactive.status).toBe(409);
+    await expect(issuedForInactive.json()).resolves.toMatchObject({
+      error: { code: "LEASH_AGENT_INACTIVE" },
+    });
+    expect(
+      await connection.db
+        .select({ id: leashKeys.id })
+        .from(leashKeys)
+        .where(eq(leashKeys.agentId, issueTarget.agentId)),
+    ).toEqual([]);
+
+    const rotateTarget = await provision(`inactive-rotate-${status}`);
+    const initialResponse = await POST(
+      request("POST", "/api/leash/keys", rotateTarget.token, {
+        agentId: rotateTarget.agentId,
+      }),
+    );
+    const initial = await initialResponse.json();
+    const revokedAt = new Date();
+    await connection.db
+      .update(agents)
+      .set({
+        credentialDestroyedAt: status === "nuked" ? revokedAt : null,
+        signerSubject: null,
+        signerSubjectRevokedAt: revokedAt,
+        status,
+      })
+      .where(eq(agents.id, rotateTarget.agentId));
+
+    const rotatedForInactive = await PATCH(
+      request("PATCH", "/api/leash/keys", rotateTarget.token, {
+        agentId: rotateTarget.agentId,
+        keyId: initial.key.id,
+      }),
+    );
+    expect(rotatedForInactive.status).toBe(409);
+    await expect(rotatedForInactive.json()).resolves.toMatchObject({
+      error: { code: "LEASH_AGENT_INACTIVE" },
+    });
+    expect(
+      await connection.db
+        .select({ id: leashKeys.id, revokedAt: leashKeys.revokedAt })
+        .from(leashKeys)
+        .where(eq(leashKeys.agentId, rotateTarget.agentId)),
+    ).toEqual([{ id: initial.key.id, revokedAt: null }]);
   });
 });

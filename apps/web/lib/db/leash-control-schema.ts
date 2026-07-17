@@ -41,7 +41,9 @@ export const agents = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     status: agentStatus("status").default("provisioned").notNull(),
-    signerSubject: text("signer_subject").notNull(),
+    signerSubject: text("signer_subject"),
+    signerSubjectRevokedAt: timestamp("signer_subject_revoked_at", { withTimezone: true }),
+    credentialDestroyedAt: timestamp("credential_destroyed_at", { withTimezone: true }),
     agentAddress: varchar("agent_address", { length: 42 }),
     clientName: text("client_name"),
     clientVersion: text("client_version"),
@@ -58,7 +60,29 @@ export const agents = pgTable(
       .on(table.agentAddress)
       .where(sql`${table.agentAddress} is not null`),
     check("agents_name_check", sql`${table.name} ~ '[^[:space:]]'`),
-    check("agents_signer_subject_check", sql`${table.signerSubject} ~ '[^[:space:]]'`),
+    check(
+      "agents_signer_subject_check",
+      sql`${table.signerSubject} is null or ${table.signerSubject} ~ '[^[:space:]]'`,
+    ),
+    check(
+      "agents_credential_lifecycle_check",
+      sql`(
+        (${table.status} in ('provisioned', 'paused', 'frozen')
+          and ${table.signerSubject} is not null
+          and ${table.signerSubjectRevokedAt} is null
+          and ${table.credentialDestroyedAt} is null)
+        or (${table.status} = 'cancelled'
+          and ${table.signerSubject} is null
+          and ${table.signerSubjectRevokedAt} is not null
+          and ${table.credentialDestroyedAt} is null)
+        or (${table.status} = 'nuked'
+          and ${table.signerSubject} is null
+          and ${table.signerSubjectRevokedAt} is not null
+          and ${table.credentialDestroyedAt} is not null
+          and ${table.credentialDestroyedAt} >= ${table.signerSubjectRevokedAt})
+      ) and (${table.signerSubjectRevokedAt} is null
+        or ${table.signerSubjectRevokedAt} >= ${table.createdAt})`,
+    ),
     check(
       "agents_address_check",
       sql`${table.agentAddress} is null or (${table.agentAddress} ~ '^0x[0-9a-fA-F]{40}$'

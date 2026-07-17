@@ -6,7 +6,6 @@
 
 .header,
 .titleLine,
-.headerActions,
 .cardHeading,
 .spendMeta {
   display: flex;
@@ -24,10 +23,9 @@
 }
 
 .eyebrow,
-.cardLabel,
 .cardHeading > span {
   margin: 0;
-  color: #8c8a80;
+  color: #68665f;
   font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.07em;
@@ -46,61 +44,48 @@
 
 .statusChip {
   padding: 4px 10px;
-  border: 1px solid #bee0d6;
+  border: 1px solid;
   border-radius: 999px;
-  background: #e7f3ef;
-  color: #17503a;
   font-size: 11px;
   font-weight: 600;
 }
 
-.headerActions {
-  gap: 8px;
+.activeStatus {
+  border-color: #bee0d6;
+  background: #e7f3ef;
+  color: #17503a;
 }
 
-.headerActions a,
-.warning a {
-  padding: 9px 13px;
-  border-radius: 8px;
-  background: #206b4e;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
+.pausedStatus {
+  border-color: #d2cec5;
+  background: #efede8;
+  color: #625d54;
 }
 
-.headerActions .secondaryAction {
-  border: 1px solid #dbd9d0;
-  background: #fff;
-  color: #1c1b18;
+.frozenStatus {
+  border-color: #b8cbd9;
+  background: #e8eff5;
+  color: #345a73;
 }
 
-.warning {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 13px 16px;
-  border: 1px solid #f2e3c2;
-  border-radius: 11px;
-  background: #fbf1dc;
-  color: #7a5410;
-  font-size: 12.5px;
+.cancelledStatus {
+  border-color: #eccf9a;
+  background: #fff2dc;
+  color: #8a5711;
 }
 
-.warning p {
-  margin: 3px 0 0;
-}
-
-.spendCard,
-.cards article {
-  border: 1px solid #e8e6df;
-  border-radius: 12px;
-  background: #fff;
+.nukedStatus,
+.haltedStatus {
+  border-color: #e5b5ae;
+  background: #fbe9e6;
+  color: #9a3025;
 }
 
 .spendCard {
   padding: 19px 21px;
+  border: 1px solid #e8e6df;
+  border-radius: 12px;
+  background: #fff;
 }
 
 .cardHeading a {
@@ -151,6 +136,14 @@
   background: repeating-linear-gradient(135deg, #73a38f 0 4px, #a8c7ba 4px 8px);
 }
 
+.haltedTrack .settledFill {
+  background: #b4383d;
+}
+
+.haltedTrack .pendingFill {
+  background: repeating-linear-gradient(135deg, #b4383d 0 4px, #e0a2a5 4px 8px);
+}
+
 .overageFill {
   position: absolute;
   inset: 0 0 0 auto;
@@ -163,73 +156,13 @@
   flex-wrap: wrap;
   gap: 5px 16px;
   margin-top: 9px;
-  color: #8c8a80;
+  color: #68665f;
   font-size: 11.5px;
 }
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.cards article {
-  min-height: 142px;
-  padding: 16px 18px;
-}
-
-.cards article > strong {
-  display: block;
-  margin-top: 8px;
-  font-size: 15px;
-}
-
-.cards article > p {
-  margin: 4px 0 0;
-  color: #5f5d55;
-  font-size: 11.5px;
-  line-height: 1.45;
-}
-
-.cards article > small {
-  display: block;
-  margin-top: 9px;
-  color: #8c8a80;
-  font-size: 10.5px;
-}
-
-.mono,
-.floatList {
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-}
-
-.floatList {
-  display: grid;
-  gap: 4px;
-  margin: 9px 0 0;
-  padding: 0;
-  color: #5f5d55;
-  font-size: 10.5px;
-  list-style: none;
-}
-
-.floatList li {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.headerActions a:focus-visible,
-.warning a:focus-visible,
 .cardHeading a:focus-visible {
   outline: 2px solid #206b4e;
   outline-offset: 2px;
-}
-
-@media (max-width: 920px) {
-  .cards {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 620px) {
@@ -238,13 +171,8 @@
   }
 
   .header,
-  .warning,
   .spendMeta {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .headerActions {
-    flex-wrap: wrap;
   }
 }

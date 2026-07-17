@@ -1,0 +1,67 @@
+.page {
+  display: grid;
+  gap: 14px;
+  padding: 26px 32px 48px;
+}
+
+.heading,
+.banner,
+.wideCard,
+.cards div {
+  border-radius: 12px;
+  background: linear-gradient(90deg, #efede8 25%, #f8f7f3 50%, #efede8 75%);
+  background-size: 200% 100%;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.heading {
+  width: min(420px, 75%);
+  height: 54px;
+}
+
+.banner {
+  height: 54px;
+}
+
+.wideCard {
+  height: 150px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.cards div {
+  height: 142px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+@keyframes pulse {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heading,
+  .banner,
+  .wideCard,
+  .cards div {
+    animation: none;
+  }
+}
+
+@media (max-width: 920px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}

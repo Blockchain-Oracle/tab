@@ -22,11 +22,16 @@ export class SignGateError extends Error {
   }
 }
 
-export function statusGateError(status: typeof agents.$inferSelect.status) {
+export function preParseStatusGateError(status: typeof agents.$inferSelect.status) {
   if (status === "paused") return new SignGateError("AGENT_PAUSED", 423);
-  if (status === "frozen") return new SignGateError("AGENT_FROZEN", 423);
   if (status === "cancelled" || status === "nuked") {
     return new SignGateError("AGENT_CANCELLED", 423);
   }
   return null;
+}
+
+export function statusGateError(status: typeof agents.$inferSelect.status) {
+  return status === "frozen"
+    ? new SignGateError("AGENT_FROZEN", 423)
+    : preParseStatusGateError(status);
 }

@@ -47,6 +47,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
       <NotificationCenter
         agentId={selection.selected.id}
         initialResult={notificationResultView(result)}
+        key={selection.selected.id}
       />
     </>
   );

@@ -4,6 +4,7 @@ import {
   ActiveLeashKeyExistsError,
   ActiveLeashKeyNotFoundError,
   issueOwnerLeashKey,
+  LeashAgentInactiveError,
   LeashAgentNotFoundError,
   readOwnerLeashKey,
   rotateOwnerLeashKey,
@@ -41,6 +42,9 @@ function inputError() {
 function lifecycleError(error: unknown) {
   if (error instanceof LeashAgentNotFoundError) {
     return leashError("LEASH_AGENT_NOT_FOUND", "The Leash agent was not found.", 404);
+  }
+  if (error instanceof LeashAgentInactiveError) {
+    return leashError("LEASH_AGENT_INACTIVE", error.message, 409);
   }
   if (error instanceof ActiveLeashKeyNotFoundError) {
     return leashError("LEASH_KEY_NOT_FOUND", "The active Leash key was not found.", 404);

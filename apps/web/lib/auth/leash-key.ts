@@ -38,6 +38,13 @@ export class LeashAgentNotFoundError extends Error {
   }
 }
 
+export class LeashAgentInactiveError extends Error {
+  constructor() {
+    super("A cancelled or nuked Leash agent cannot receive key material.");
+    this.name = "LeashAgentInactiveError";
+  }
+}
+
 export interface LeashKeyScope {
   agentId: string;
 }
@@ -125,11 +132,14 @@ export async function readOwnerLeashKey(db: Database, input: OwnedLeashKeyScope)
 async function issueScopedLeashKey(db: Database, input: InternalLeashKeyScope) {
   return db.transaction(async (transaction) => {
     const [agent] = await transaction
-      .select({ id: agents.id })
+      .select({ id: agents.id, status: agents.status })
       .from(agents)
       .where(agentScope(input))
       .for("update");
     if (!agent) throw new LeashAgentNotFoundError();
+    if (agent.status === "cancelled" || agent.status === "nuked") {
+      throw new LeashAgentInactiveError();
+    }
 
     const [active] = await transaction
       .select({ id: leashKeys.id })
@@ -165,11 +175,14 @@ export function issueOwnerLeashKey(db: Database, input: OwnedLeashKeyScope) {
 async function rotateScopedLeashKey(db: Database, input: InternalLeashKeyTarget) {
   return db.transaction(async (transaction) => {
     const [agent] = await transaction
-      .select({ id: agents.id })
+      .select({ id: agents.id, status: agents.status })
       .from(agents)
       .where(agentScope(input))
       .for("update");
     if (!agent) throw new LeashAgentNotFoundError();
+    if (agent.status === "cancelled" || agent.status === "nuked") {
+      throw new LeashAgentInactiveError();
+    }
 
     const [previous] = await transaction
       .update(leashKeys)

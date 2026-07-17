@@ -26,7 +26,7 @@ export function blockedReceiptEvidence(count: number) {
     count === 0
       ? "No cap-blocked attempts"
       : `${count} cap-blocked attempt${count === 1 ? "" : "s"}`;
-  return `${attempts} this cycle · blocked and failed receipts are excluded from spend.`;
+  return `${attempts} this cycle · blocked and pre-sign failures are excluded; matching reverted-call evidence remains reserved.`;
 }
 
 export function capUsageDescription(policy: CapPolicyView) {
@@ -37,7 +37,8 @@ export function capUsageDescription(policy: CapPolicyView) {
   return [
     "Current cycle cap usage:",
     `${formatUsdAtomic(policy.spend.settledAtomic)} settled;`,
-    `${formatUsdAtomic(policy.spend.pendingAtomic)} pending;`,
+    `${formatUsdAtomic(policy.spend.pendingAtomic)} awaiting result;`,
+    `${formatUsdAtomic(policy.spend.revertedAtomic)} matching reverted-call evidence reserved;`,
     `${formatUsdCents(policy.cap.amountUsdCents)} cap;`,
     `${overage};`,
     blockedReceiptEvidence(policy.spend.blockedReceiptCount),

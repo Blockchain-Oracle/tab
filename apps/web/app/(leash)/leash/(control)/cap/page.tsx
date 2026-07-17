@@ -40,6 +40,7 @@ export default async function CapPage({ searchParams }: CapPageProps) {
       <CapPanel
         agentId={selection.selected.id}
         initialPolicy={policy ? capPolicyView(policy) : null}
+        key={selection.selected.id}
       />
     </main>
   );

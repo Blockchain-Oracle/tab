@@ -63,6 +63,7 @@ function insertReceipt(
   const auth = authorization();
   const status = values.status ?? "pending";
   const settled = status === "settled";
+  const txHash = settled ? `0x${"a".repeat(64)}` : null;
   const blocked = status === "blocked";
   const network = values.network ?? "eip155:8453";
   const asset = values.asset ?? (network === "eip155:42161" ? arbitrumUsdc : baseUsdc);
@@ -83,8 +84,9 @@ function insertReceipt(
       now() + interval '5 minutes', ${sql.json({ clientName: "integration", toolName: "pay", transport: "mcp" })},
       ${reason},
       ${blocked ? network : null},
-      ${settled ? `0x${"a".repeat(64)}` : null},
-      ${settled ? sql.json({ success: true }) : null}, ${settled ? new Date() : null}
+      ${txHash},
+      ${settled ? sql.json({ success: true, transaction: txHash }) : null},
+      ${settled ? new Date() : null}
     )
     returning id
   `;
@@ -211,6 +213,9 @@ describe("Phase 6 Leash PostgreSQL schema", () => {
       code: "23514",
     });
     await sql`update receipts set origin = null where status = 'pending'`;
+    await expect(sql`
+      update receipts set settlement_response = '{}'::jsonb where status = 'settled'
+    `).rejects.toMatchObject({ code: "23514" });
     await expect(sql`
       update receipts set status = 'settled' where status = 'pending'
     `).rejects.toMatchObject({ code: "23514" });

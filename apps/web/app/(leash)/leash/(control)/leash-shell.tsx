@@ -9,8 +9,12 @@ import styles from "./leash-shell.module.css";
 
 const navigation = [
   { href: "/leash", label: "Overview" },
+  { href: "/leash/payments", label: "Payments" },
   { href: "/leash/notifications", label: "Notifications" },
   { href: "/leash/cap", label: "Cap & limits" },
+  { href: "/leash/funds", label: "Funds" },
+  { href: "/leash/provision", label: "Provision agent" },
+  { href: "/leash/revocation", label: "Revocation" },
   { href: "/leash/connect", label: "Connect agent" },
 ] as const;
 

@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import { eq, or } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { normalizeReceivingAddress } from "../merchant/receiving-address";
 import type { Database } from "./client";
 import { apiKeys, merchants, users } from "./schema";
@@ -32,7 +32,11 @@ function publishableKey(env: "test" | "live") {
   };
 }
 
-const identityConstraints = new Set(["users_email_unique", "users_magic_issuer_unique"]);
+const identityConstraints = new Set([
+  "merchants_user_id_unique",
+  "users_email_unique",
+  "users_magic_issuer_unique",
+]);
 
 function uniqueViolationConstraint(error: unknown) {
   const seen = new Set<unknown>();
@@ -72,23 +76,22 @@ export async function provisionMerchant(db: Database, input: ProvisionMerchantIn
 
   try {
     return await db.transaction(async (transaction) => {
-      const [existingUser] = await transaction
-        .select({ id: users.id })
-        .from(users)
-        .where(or(eq(users.email, email), eq(users.magicIssuer, magicIssuer)))
-        .limit(1);
-
-      if (existingUser) {
-        throw new MerchantAlreadyExistsError();
-      }
-
-      const [user] = await transaction
+      const [createdUser] = await transaction
         .insert(users)
         .values({ email, magicIssuer })
+        .onConflictDoNothing()
         .returning({ id: users.id });
+      const [existingUser] = createdUser
+        ? []
+        : await transaction
+            .select({ id: users.id })
+            .from(users)
+            .where(and(eq(users.email, email), eq(users.magicIssuer, magicIssuer)))
+            .limit(1);
+      const user = createdUser ?? existingUser;
 
       if (!user) {
-        throw new Error("PostgreSQL did not return the created user");
+        throw new MerchantAlreadyExistsError();
       }
 
       const [merchant] = await transaction

@@ -7,7 +7,7 @@ import { MCP_PAYMENT_META_KEY, MCP_PAYMENT_RESPONSE_META_KEY } from "@x402/mcp";
 
 import { detectMcpPaymentRequired } from "./detect.js";
 import { SignerNotConfiguredError } from "./errors.js";
-import { withPaymentOrigin } from "./origin-context.js";
+import { withPaymentOrigin, withPaymentResourceUrl } from "./origin-context.js";
 
 interface LeashProxyOptions {
   paymentClient?: x402Client;
@@ -65,9 +65,12 @@ export function createLeashProxyServer(options: LeashProxyOptions) {
           if (!initialResult) throw new Error("Upstream tool returned no result");
           return initialResult;
         }
-        if (!options.paymentClient) throw new SignerNotConfiguredError();
+        const paymentClient = options.paymentClient;
+        if (!paymentClient) throw new SignerNotConfiguredError();
 
-        const paymentPayload = await options.paymentClient.createPaymentPayload(challenge);
+        const paymentPayload = await withPaymentResourceUrl(challenge.resource.url, () =>
+          paymentClient.createPaymentPayload(challenge),
+        );
         const paidResult = await options.upstream.callTool(
           {
             ...request.params,
@@ -81,7 +84,7 @@ export function createLeashProxyServer(options: LeashProxyOptions) {
         );
         const settlement = settlementFromResult(paidResult);
         if (settlement) {
-          await options.paymentClient.handlePaymentResponse({
+          await paymentClient.handlePaymentResponse({
             paymentPayload,
             requirements: paymentPayload.accepted,
             settleResponse: settlement,

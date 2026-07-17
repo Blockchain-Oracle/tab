@@ -138,6 +138,7 @@ describe("Leash fetch wrapper with real x402 and HTTP wires", () => {
         toolName: `GET ${origin}/protected`,
         transport: "http",
       },
+      resourceUrl: `${origin}/protected`,
     });
     expect(JSON.stringify(signRequests[0])).not.toMatch(/receipt-secret|client-fragment/);
     await expect
@@ -186,6 +187,7 @@ describe("Leash fetch wrapper with real x402 and HTTP wires", () => {
     expect(signRequests).toHaveLength(1);
     expect(signRequests[0]).toMatchObject({
       origin: { toolName: `POST ${origin}/protected` },
+      resourceUrl: `${origin}/protected`,
     });
   });
 });

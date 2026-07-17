@@ -26,7 +26,9 @@ const paymentRequired = {
       scheme: "exact",
     },
   ],
-  resource: { url: "mcp://tool/search" },
+  resource: {
+    url: "mcp://wire-user:wire-pass@Search.API.EXAMPLE.TEST:8443/tool/search?token=wire-secret#fragment",
+  },
   x402Version: 2,
 } satisfies PaymentRequired;
 
@@ -142,7 +144,9 @@ describe("Leash MCP proxy with real SDK transports", () => {
     expect(paidMetadata[0]).toMatchObject({ traceId: "trace-1" });
     expect(signBodies[0]).toMatchObject({
       origin: { clientName: "Claude Code", toolName: "search", transport: "mcp" },
+      resourceUrl: "mcp://search.api.example.test:8443/tool/search",
     });
+    expect(JSON.stringify(signBodies[0])).not.toMatch(/wire-user|wire-pass|wire-secret|fragment/);
     expect(resultBodies).toEqual([
       {
         outcome: "observed",

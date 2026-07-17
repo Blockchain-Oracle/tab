@@ -1,0 +1,113 @@
+.card {
+  overflow: hidden;
+  border: 1px solid #e8e6df;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.heading,
+.heading div {
+  display: flex;
+  align-items: center;
+}
+
+.heading {
+  justify-content: space-between;
+  padding: 13px 17px;
+  border-bottom: 1px solid #f0eee8;
+}
+
+.heading div {
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.heading b {
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #e7f3ef;
+  color: #17503a;
+  font-size: 10px;
+}
+
+.heading a {
+  color: #206b4e;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.card ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card li {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 17px;
+  border-bottom: 1px solid #f5f4f0;
+}
+
+.card li > span {
+  width: max-content;
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.tier2 {
+  background: #fbf1dc;
+  color: #96650f;
+}
+
+.tier3 {
+  background: #faecec;
+  color: #b4383d;
+}
+
+.card li strong {
+  font-size: 12px;
+}
+
+.card li p,
+.card time,
+.empty {
+  color: #8c8a80;
+  font-size: 10.5px;
+}
+
+.card li p {
+  margin: 2px 0 0;
+}
+
+.card time {
+  text-align: right;
+}
+
+.empty {
+  margin: 0;
+  padding: 30px 17px;
+  text-align: center;
+}
+
+.heading a:focus-visible {
+  outline: 2px solid #206b4e;
+  outline-offset: 2px;
+}
+
+@media (max-width: 620px) {
+  .card li {
+    grid-template-columns: 1fr;
+  }
+
+  .card time {
+    text-align: left;
+  }
+}

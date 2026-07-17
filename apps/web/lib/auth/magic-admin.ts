@@ -130,3 +130,12 @@ export async function verifyBuyerDidToken(didToken: string) {
     payerAddress: identity.publicAddress,
   };
 }
+
+export async function verifyOwnerDidToken(didToken: string) {
+  const identity = completeIdentity(await verifiedMetadata(didToken));
+
+  return {
+    email: identity.email,
+    magicIssuer: identity.issuer,
+  };
+}

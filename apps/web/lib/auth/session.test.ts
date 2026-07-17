@@ -10,12 +10,39 @@ const claims = {
   mode: "test" as const,
   userId: "20000000-0000-4000-8000-000000000002",
 };
+const ownerClaims = {
+  email: claims.email,
+  userId: claims.userId,
+};
 
 describe("merchant session tokens with real JOSE signing", () => {
   it("round-trips validated merchant claims", async () => {
     const token = await createSessionToken(claims, secret);
 
     await expect(readSessionToken(token, secret)).resolves.toEqual(claims);
+  });
+
+  it("round-trips a genuine owner token without merchant resource claims", async () => {
+    const token = await createSessionToken(ownerClaims, secret);
+
+    await expect(readSessionToken(token, secret)).resolves.toStrictEqual(ownerClaims);
+  });
+
+  it.each([
+    { merchantId: claims.merchantId },
+    { mode: claims.mode },
+  ])("rejects a token with a partial merchant claim set", async (partialMerchantClaims) => {
+    const key = new TextEncoder().encode(secret);
+    const token = await new SignJWT({ email: claims.email, ...partialMerchantClaims })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuer("tab")
+      .setAudience("tab-web")
+      .setSubject(claims.userId)
+      .setIssuedAt()
+      .setExpirationTime("1h")
+      .sign(key);
+
+    await expect(readSessionToken(token, secret)).rejects.toThrow("Session claims are invalid");
   });
 
   it("rejects a token whose signature was changed", async () => {

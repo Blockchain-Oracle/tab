@@ -1,7 +1,10 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import type { Database } from "../db/client";
-import { agents, capCycles, caps, leashKeys, receipts } from "../db/schema";
+import { agentEvents, agents, caps, leashKeys, receipts } from "../db/schema";
+import { findActiveCapHalt } from "./cap-halt-store";
+import { ensureCurrentCapCycle } from "./cycles";
+import { emitFloatEmpty } from "./notifier";
 import { type SignGateCode, SignGateError, statusGateError } from "./sign-gate";
 
 const ATOMIC_UNITS_PER_CENT = BigInt(10_000);
@@ -16,11 +19,33 @@ async function failLockedReceipt(
   receipt: typeof receipts.$inferSelect,
   failure: PreflightFailure,
 ) {
-  await transaction
+  const blockedByCap = failure === "LEASH_CAP_EXCEEDED";
+  const [terminalized] = await transaction
     .update(receipts)
-    .set({ reason: failure, status: "failed" })
-    .where(and(eq(receipts.id, receipt.id), eq(receipts.status, "pending")));
-  return { code: failure, kind: "failed" as const, receiptId: receipt.id };
+    .set({
+      intendedNetwork: blockedByCap ? receipt.network : null,
+      reason: failure,
+      settlementResponse: null,
+      settledAt: null,
+      status: blockedByCap ? "blocked" : "failed",
+      txHash: null,
+    })
+    .where(and(eq(receipts.id, receipt.id), eq(receipts.status, "pending")))
+    .returning({ id: receipts.id });
+  if (!terminalized) throw new Error("The pending receipt changed during pre-sign checks");
+  if (blockedByCap) {
+    await transaction.insert(agentEvents).values({
+      actorSurface: "agent",
+      agentId: receipt.agentId,
+      metadata: { receiptId: receipt.id },
+      type: "block",
+    });
+  }
+  return {
+    code: failure,
+    kind: blockedByCap ? ("blocked" as const) : ("failed" as const),
+    receiptId: receipt.id,
+  };
 }
 
 export async function completePreSigningChecks(
@@ -52,12 +77,27 @@ export async function completePreSigningChecks(
           isNull(leashKeys.revokedAt),
         ),
       );
+    if (!agent || !key) throw new SignGateError("INVALID_LEASH_KEY", 401);
+
+    const [cap] = await transaction
+      .select({ amountUsdCents: caps.amountUsdCents, frequency: caps.frequency })
+      .from(caps)
+      .where(eq(caps.agentId, agent.id))
+      .for("update");
+    const cycle = cap
+      ? await ensureCurrentCapCycle(transaction, {
+          agentId: agent.id,
+          frequency: cap.frequency,
+          now: checkedAt,
+        })
+      : undefined;
+
     const [receipt] = await transaction
       .select()
       .from(receipts)
       .where(and(eq(receipts.id, options.receiptId), eq(receipts.agentId, options.agentId)))
       .for("update");
-    if (!agent || !key || !receipt) throw new SignGateError("INVALID_LEASH_KEY", 401);
+    if (!receipt) throw new SignGateError("INVALID_LEASH_KEY", 401);
     if (receipt.status !== "pending") return terminalReceipt(receipt);
 
     let failure: PreflightFailure | undefined = statusGateError(agent.status)?.code;
@@ -65,36 +105,29 @@ export async function completePreSigningChecks(
       failure = "AUTHORIZATION_EXPIRED";
     }
 
-    const [policy] = failure
-      ? []
-      : await transaction
-          .select({ amountUsdCents: caps.amountUsdCents, cycleId: capCycles.id })
-          .from(caps)
-          .innerJoin(capCycles, and(eq(capCycles.agentId, caps.agentId), isNull(capCycles.endedAt)))
-          .where(eq(caps.agentId, agent.id))
-          .for("update");
-    if (!failure && !policy?.amountUsdCents) failure = "LEASH_CAP_NOT_SET";
-    if (!failure && policy?.cycleId !== receipt.cycleId) failure = "CAP_CYCLE_CHANGED";
+    if (!failure && (!cap?.amountUsdCents || !cycle)) failure = "LEASH_CAP_NOT_SET";
+    if (!failure && cycle?.id !== receipt.cycleId) failure = "CAP_CYCLE_CHANGED";
+    if (!failure && (await findActiveCapHalt(transaction, agent.id))) {
+      failure = "LEASH_CAP_EXCEEDED";
+    }
 
-    if (!failure && policy?.amountUsdCents) {
+    if (!failure && cap?.amountUsdCents && cycle) {
       const [usage] = await transaction
         .select({ amountAtomic: sql<string>`coalesce(sum(${receipts.amountAtomic}), 0)::text` })
         .from(receipts)
         .where(
           and(
             eq(receipts.agentId, agent.id),
-            eq(receipts.cycleId, policy.cycleId),
+            eq(receipts.cycleId, cycle.id),
             inArray(receipts.status, ["pending", "settled"]),
           ),
         );
-      if (
-        BigInt(usage?.amountAtomic ?? "0") >
-        BigInt(policy.amountUsdCents) * ATOMIC_UNITS_PER_CENT
-      ) {
+      if (BigInt(usage?.amountAtomic ?? "0") > BigInt(cap.amountUsdCents) * ATOMIC_UNITS_PER_CENT) {
         failure = "LEASH_CAP_EXCEEDED";
       }
     }
 
+    let reservedAtomic: string | undefined;
     if (!failure) {
       const [reserved] = await transaction
         .select({ amountAtomic: sql<string>`coalesce(sum(${receipts.amountAtomic}), 0)::text` })
@@ -106,13 +139,31 @@ export async function completePreSigningChecks(
             eq(receipts.status, "pending"),
           ),
         );
-      if (BigInt(reserved?.amountAtomic ?? "0") > options.liveBalanceAtomic) {
+      reservedAtomic = reserved?.amountAtomic ?? "0";
+      if (BigInt(reservedAtomic) > options.liveBalanceAtomic) {
         failure = "FLOAT_EMPTY";
       } else if (!options.signerAvailable) {
         failure = "SIGNER_NOT_CONFIGURED";
       }
     }
-    if (failure) return failLockedReceipt(transaction, receipt, failure);
+    if (failure) {
+      const result = await failLockedReceipt(transaction, receipt, failure);
+      if (failure === "FLOAT_EMPTY") {
+        if (!cycle || reservedAtomic === undefined) {
+          throw new Error("Float insufficiency requires an active cap cycle and reservation total");
+        }
+        await emitFloatEmpty(transaction, {
+          agentId: agent.id,
+          availableAtomic: options.liveBalanceAtomic.toString(),
+          cycleId: cycle.id,
+          network: receipt.network,
+          now: checkedAt,
+          receiptId: receipt.id,
+          reservedAtomic,
+        });
+      }
+      return result;
+    }
     return { kind: "ready" as const, receiptId: receipt.id };
   });
 }

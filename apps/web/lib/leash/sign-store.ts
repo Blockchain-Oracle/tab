@@ -1,7 +1,10 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import type { Database } from "../db/client";
-import { agentEvents, agents, capCycles, caps, leashKeys, receipts } from "../db/schema";
+import { agentEvents, agents, caps, leashKeys, receipts } from "../db/schema";
+import { findActiveCapHalt } from "./cap-halt-store";
+import { ensureCurrentCapCycle } from "./cycles";
+import { emitCapBlocked, emitUnusualDomain } from "./notifier";
 import { SignGateError, statusGateError } from "./sign-gate";
 import { InvalidSignRequestError, parseSignRequest } from "./sign-request";
 
@@ -66,6 +69,8 @@ export async function reserveSignRequest(
     nowSeconds?: number;
   },
 ) {
+  const nowSeconds = options.nowSeconds ?? Math.floor(Date.now() / 1_000);
+  const now = new Date(nowSeconds * 1_000);
   return db.transaction(async (transaction) => {
     const [agent] = await transaction
       .select({ address: agents.agentAddress, id: agents.id, status: agents.status })
@@ -92,8 +97,22 @@ export async function reserveSignRequest(
 
     const parsed = parseSignRequest(decodeBody(options.body), {
       agentAddress: agent.address,
-      ...(options.nowSeconds === undefined ? {} : { nowSeconds: options.nowSeconds }),
+      nowSeconds,
     });
+    const [cap] = await transaction
+      .select({ amountUsdCents: caps.amountUsdCents, frequency: caps.frequency })
+      .from(caps)
+      .where(eq(caps.agentId, agent.id))
+      .for("update");
+    if (!cap?.amountUsdCents) throw new SignGateError("LEASH_CAP_NOT_SET", 403);
+    const cycle = await ensureCurrentCapCycle(transaction, {
+      agentId: agent.id,
+      frequency: cap.frequency,
+      now,
+    });
+    if (!cycle) throw new SignGateError("LEASH_CAP_NOT_SET", 403);
+    const activeHalt = await findActiveCapHalt(transaction, agent.id);
+
     const [existing] = await transaction
       .select()
       .from(receipts)
@@ -108,6 +127,30 @@ export async function reserveSignRequest(
         throw new SignGateError("SIGN_REQUEST_CONFLICT", 409);
       }
       if (existing.status === "pending") {
+        if (activeHalt) {
+          await transaction
+            .update(receipts)
+            .set({
+              intendedNetwork: existing.network,
+              reason: "LEASH_CAP_EXCEEDED",
+              settlementResponse: null,
+              settledAt: null,
+              status: "blocked",
+              txHash: null,
+            })
+            .where(and(eq(receipts.id, existing.id), eq(receipts.status, "pending")));
+          await transaction.insert(agentEvents).values({
+            actorSurface: "agent",
+            agentId: agent.id,
+            metadata: { receiptId: existing.id },
+            type: "block",
+          });
+          return {
+            code: "LEASH_CAP_EXCEEDED" as const,
+            kind: "blocked" as const,
+            receiptId: existing.id,
+          };
+        }
         return pendingResult(existing.id, parsed, agent.address, true);
       }
       return {
@@ -120,12 +163,21 @@ export async function reserveSignRequest(
       } as const;
     }
 
-    const [policy] = await transaction
-      .select({ amountUsdCents: caps.amountUsdCents, cycleId: capCycles.id })
-      .from(caps)
-      .innerJoin(capCycles, and(eq(capCycles.agentId, caps.agentId), isNull(capCycles.endedAt)))
-      .where(eq(caps.agentId, agent.id));
-    if (!policy?.amountUsdCents) throw new SignGateError("LEASH_CAP_NOT_SET", 403);
+    const [knownResource] = await transaction
+      .select({ id: receipts.id })
+      .from(receipts)
+      .where(
+        and(
+          eq(receipts.agentId, agent.id),
+          parsed.resourceIdentityKind === "mcp_resource"
+            ? eq(receipts.resourceUrl, parsed.resourceUrl)
+            : and(
+                eq(receipts.resourceHost, parsed.resourceHost),
+                sql`${receipts.resourceUrl} ~ '^https?://'`,
+              ),
+        ),
+      )
+      .limit(1);
 
     const [usage] = await transaction
       .select({
@@ -135,14 +187,15 @@ export async function reserveSignRequest(
       .where(
         and(
           eq(receipts.agentId, agent.id),
-          eq(receipts.cycleId, policy.cycleId),
+          eq(receipts.cycleId, cycle.id),
           inArray(receipts.status, ["pending", "settled"]),
         ),
       );
     const exceedsCap =
       BigInt(usage?.amountAtomic ?? "0") + BigInt(parsed.amountAtomic) >
-      BigInt(policy.amountUsdCents) * ATOMIC_UNITS_PER_CENT;
-    const status = exceedsCap ? "blocked" : "pending";
+      BigInt(cap.amountUsdCents) * ATOMIC_UNITS_PER_CENT;
+    const blockedByCap = activeHalt !== undefined || exceedsCap;
+    const status = blockedByCap ? "blocked" : "pending";
     const receiptValues: typeof receipts.$inferInsert = {
       agentId: agent.id,
       amountAtomic: parsed.amountAtomic,
@@ -150,12 +203,14 @@ export async function reserveSignRequest(
       asset: parsed.asset,
       authorizationNonce: parsed.authorizationNonce,
       authorizationValidBefore: parsed.authorizationValidBefore,
-      cycleId: policy.cycleId,
-      intendedNetwork: exceedsCap ? parsed.network : null,
+      cycleId: cycle.id,
+      intendedNetwork: blockedByCap ? parsed.network : null,
       network: parsed.network,
       origin: parsed.origin,
       payTo: parsed.payTo,
-      reason: exceedsCap ? "LEASH_CAP_EXCEEDED" : null,
+      resourceHost: parsed.resourceHost,
+      resourceUrl: parsed.resourceUrl,
+      reason: blockedByCap ? "LEASH_CAP_EXCEEDED" : null,
       requestFingerprint: parsed.requestFingerprint,
       status,
     };
@@ -168,9 +223,29 @@ export async function reserveSignRequest(
       actorSurface: "agent",
       agentId: agent.id,
       metadata: { receiptId: created.id },
-      type: exceedsCap ? "block" : "sign",
+      type: blockedByCap ? "block" : "sign",
     });
-    if (exceedsCap) {
+    if (!knownResource) {
+      await emitUnusualDomain(transaction, {
+        agentId: agent.id,
+        cycleId: cycle.id,
+        now,
+        receiptId: created.id,
+        resourceHost: parsed.resourceHost,
+        resourceKey: parsed.resourceKey,
+        resourceUrl: parsed.resourceUrl,
+      });
+    }
+    if (blockedByCap) {
+      await emitCapBlocked(transaction, {
+        agentId: agent.id,
+        attemptedAtomic: parsed.amountAtomic,
+        capAtomic: (BigInt(cap.amountUsdCents) * ATOMIC_UNITS_PER_CENT).toString(),
+        committedAtomic: usage?.amountAtomic ?? "0",
+        cycleId: cycle.id,
+        now,
+        receiptId: created.id,
+      });
       return {
         code: "LEASH_CAP_EXCEEDED" as const,
         kind: "blocked" as const,

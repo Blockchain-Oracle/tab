@@ -6,7 +6,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { issueLeashKey } from "../../../../lib/auth/leash-key";
 import { createDatabase } from "../../../../lib/db/client";
-import { agents, capCycles, caps, receipts, users } from "../../../../lib/db/schema";
+import { agents, capCycles, caps, notifications, receipts, users } from "../../../../lib/db/schema";
 import { closeServerDatabase } from "../../../../lib/db/server";
 import { POST } from "./route";
 
@@ -61,6 +61,7 @@ function signBody(amount = "25000") {
     network: "eip155:8453",
     origin: { clientName: "Claude Code", toolName: "search", transport: "mcp" },
     payTo,
+    resourceUrl: "mcp://tool/search",
     signerRequest: {
       domain: { chainId: 8453, name: "USD Coin", verifyingContract: baseUsdc, version: "2" },
       message: {
@@ -170,6 +171,23 @@ describe("POST /api/agent/sign", () => {
     const response = await POST(request(noCap.secret, signBody()));
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toMatchObject({ error: { code: "LEASH_CAP_NOT_SET" } });
+    expect(rpcMethods).toHaveLength(0);
+  });
+
+  it("rejects an oversized uint256 before PostgreSQL can write partial audit state", async () => {
+    const identity = await provision();
+    const uint256Max = (BigInt(2) ** BigInt(256) - BigInt(1)).toString();
+    const response = await POST(request(identity.secret, signBody(uint256Max)));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "INVALID_SIGN_REQUEST" },
+    });
+    const receiptRows = await connection.db.select({ id: receipts.id }).from(receipts);
+    const notificationRows = await connection.db
+      .select({ id: notifications.id })
+      .from(notifications);
+    expect({ notificationRows, receiptRows }).toEqual({ notificationRows: [], receiptRows: [] });
     expect(rpcMethods).toHaveLength(0);
   });
 

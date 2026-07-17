@@ -1,0 +1,143 @@
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+
+import type { Database } from "../db/client";
+import { agents, capCycles, caps, leashKeys, receipts } from "../db/schema";
+import { type SignGateCode, SignGateError, statusGateError } from "./sign-gate";
+
+const ATOMIC_UNITS_PER_CENT = BigInt(10_000);
+type PreflightFailure = SignGateCode | "FLOAT_EMPTY" | "FLOAT_CHECK_UNAVAILABLE";
+
+function terminalReceipt(receipt: typeof receipts.$inferSelect) {
+  return { code: receipt.reason, kind: receipt.status, receiptId: receipt.id } as const;
+}
+
+async function failLockedReceipt(
+  transaction: Parameters<Parameters<Database["transaction"]>[0]>[0],
+  receipt: typeof receipts.$inferSelect,
+  failure: PreflightFailure,
+) {
+  await transaction
+    .update(receipts)
+    .set({ reason: failure, status: "failed" })
+    .where(and(eq(receipts.id, receipt.id), eq(receipts.status, "pending")));
+  return { code: failure, kind: "failed" as const, receiptId: receipt.id };
+}
+
+export async function completePreSigningChecks(
+  db: Database,
+  options: {
+    agentId: string;
+    keyId: string;
+    liveBalanceAtomic: bigint;
+    nowSeconds?: number;
+    receiptId: string;
+    signerAvailable: boolean;
+  },
+) {
+  if (options.liveBalanceAtomic < BigInt(0)) throw new Error("Float balance cannot be negative");
+  const checkedAt = new Date((options.nowSeconds ?? Math.floor(Date.now() / 1_000)) * 1_000);
+  return db.transaction(async (transaction) => {
+    const [agent] = await transaction
+      .select({ id: agents.id, status: agents.status })
+      .from(agents)
+      .where(eq(agents.id, options.agentId))
+      .for("update");
+    const [key] = await transaction
+      .select({ id: leashKeys.id })
+      .from(leashKeys)
+      .where(
+        and(
+          eq(leashKeys.id, options.keyId),
+          eq(leashKeys.agentId, options.agentId),
+          isNull(leashKeys.revokedAt),
+        ),
+      );
+    const [receipt] = await transaction
+      .select()
+      .from(receipts)
+      .where(and(eq(receipts.id, options.receiptId), eq(receipts.agentId, options.agentId)))
+      .for("update");
+    if (!agent || !key || !receipt) throw new SignGateError("INVALID_LEASH_KEY", 401);
+    if (receipt.status !== "pending") return terminalReceipt(receipt);
+
+    let failure: PreflightFailure | undefined = statusGateError(agent.status)?.code;
+    if (!failure && receipt.authorizationValidBefore <= checkedAt) {
+      failure = "AUTHORIZATION_EXPIRED";
+    }
+
+    const [policy] = failure
+      ? []
+      : await transaction
+          .select({ amountUsdCents: caps.amountUsdCents, cycleId: capCycles.id })
+          .from(caps)
+          .innerJoin(capCycles, and(eq(capCycles.agentId, caps.agentId), isNull(capCycles.endedAt)))
+          .where(eq(caps.agentId, agent.id))
+          .for("update");
+    if (!failure && !policy?.amountUsdCents) failure = "LEASH_CAP_NOT_SET";
+    if (!failure && policy?.cycleId !== receipt.cycleId) failure = "CAP_CYCLE_CHANGED";
+
+    if (!failure && policy?.amountUsdCents) {
+      const [usage] = await transaction
+        .select({ amountAtomic: sql<string>`coalesce(sum(${receipts.amountAtomic}), 0)::text` })
+        .from(receipts)
+        .where(
+          and(
+            eq(receipts.agentId, agent.id),
+            eq(receipts.cycleId, policy.cycleId),
+            inArray(receipts.status, ["pending", "settled"]),
+          ),
+        );
+      if (
+        BigInt(usage?.amountAtomic ?? "0") >
+        BigInt(policy.amountUsdCents) * ATOMIC_UNITS_PER_CENT
+      ) {
+        failure = "LEASH_CAP_EXCEEDED";
+      }
+    }
+
+    if (!failure) {
+      const [reserved] = await transaction
+        .select({ amountAtomic: sql<string>`coalesce(sum(${receipts.amountAtomic}), 0)::text` })
+        .from(receipts)
+        .where(
+          and(
+            eq(receipts.agentId, agent.id),
+            eq(receipts.network, receipt.network),
+            eq(receipts.status, "pending"),
+          ),
+        );
+      if (BigInt(reserved?.amountAtomic ?? "0") > options.liveBalanceAtomic) {
+        failure = "FLOAT_EMPTY";
+      } else if (!options.signerAvailable) {
+        failure = "SIGNER_NOT_CONFIGURED";
+      }
+    }
+    if (failure) return failLockedReceipt(transaction, receipt, failure);
+    return { kind: "ready" as const, receiptId: receipt.id };
+  });
+}
+
+export async function failSignRequestBeforeSigning(
+  db: Database,
+  options: {
+    agentId: string;
+    reason: "FLOAT_CHECK_UNAVAILABLE";
+    receiptId: string;
+  },
+) {
+  return db.transaction(async (transaction) => {
+    await transaction
+      .select({ id: agents.id })
+      .from(agents)
+      .where(eq(agents.id, options.agentId))
+      .for("update");
+    const [receipt] = await transaction
+      .select()
+      .from(receipts)
+      .where(and(eq(receipts.id, options.receiptId), eq(receipts.agentId, options.agentId)))
+      .for("update");
+    if (!receipt) throw new SignGateError("INVALID_LEASH_KEY", 401);
+    if (receipt.status !== "pending") return terminalReceipt(receipt);
+    return failLockedReceipt(transaction, receipt, options.reason);
+  });
+}

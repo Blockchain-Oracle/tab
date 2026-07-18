@@ -34,7 +34,7 @@ verify:
     assert:
       kind: exists
   - type: shell
-    command: "rg -n '^## (Entry Points And Navigation Flow|Screen Inventory|Per-screen Required States|On-screen Data Shapes|Generated Artifacts|Copy And Vocabulary Rules|Decided vs Designer.s Call|Traceability|Open Questions)' .thoughts/design/2026-07-18-tab-product-experience-surface-map.md | awk 'END { exit(NR == 9 ? 0 : 1) }'"
+    command: rg -n '^## (Entry Points And Navigation Flow|Screen Inventory|Per-screen Required States|On-screen Data Shapes|Generated Artifacts|Copy And Vocabulary Rules|Decided vs Designer.s Call|Traceability|Open Questions)' .thoughts/design/2026-07-18-tab-product-experience-surface-map.md | awk 'END { exit(NR == 9 ? 0 : 1) }'
 
 - [ ] **Step 2: Capture the pre-rebuild UI baseline**
 action: Create `.thoughts/design/2026-07-18-tab-current-ui-baseline.md` from current source and browser inspection, recording the root placeholder, all public/auth/merchant/checkout/Leash/mobile/docs surfaces, their existing state coverage, visual debt, and the unfinished Phase 9 file list; include no secrets or invented runtime result.
@@ -172,7 +172,7 @@ verify:
   - type: shell
     command: pnpm --filter @tab/ui test
   - type: shell
-    command: "rg -n '\"motion\"' packages/sdk/package.json apps/agent/package.json && exit 1 || exit 0"
+    command: rg -n '"motion"' packages/sdk/package.json apps/agent/package.json && exit 1 || exit 0
 
 - [ ] **Step 17: Establish browser and accessibility test infrastructure**
 action: Add Playwright and axe configuration, deterministic Linux screenshot settings, desktop/tablet/mobile projects, light/dark/reduced-motion coverage, and a smoke test for the current root without changing product behavior.
@@ -500,7 +500,7 @@ verify:
   - type: shell
     command: pnpm --filter @tab/web test -- app/mobile lib/mobile
   - type: shell
-    command: "rg -n 'magic-signer|sign/data|createTransferTransaction' apps/web/app/mobile apps/web/lib/mobile && exit 1 || exit 0"
+    command: rg -n 'magic-signer|sign/data|createTransferTransaction' apps/web/app/mobile apps/web/lib/mobile && exit 1 || exit 0
 gate: human
 
 - [ ] **Step 53: Implement PWA install and offline behavior**
@@ -606,7 +606,7 @@ verify:
   - type: shell
     command: pnpm test
   - type: shell
-    command: "rg -n 'createTransferTransaction|sendTransaction' apps/agent/src/payment-client.ts apps/agent/src/fetch-wrapper.ts && exit 1 || exit 0"
+    command: rg -n 'createTransferTransaction|sendTransaction' apps/agent/src/payment-client.ts apps/agent/src/fetch-wrapper.ts && exit 1 || exit 0
   - type: shell
     command: pnpm check:showcase
   - type: shell

@@ -1,0 +1,88 @@
+[data-tab-stage-flowline] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+[data-tab-stage-flowline] > li {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  min-height: 3.25rem;
+}
+
+[data-tab-flowline-mark] {
+  height: 3.25rem;
+  overflow: visible;
+  width: 1.25rem;
+}
+
+[data-tab-flowline-path] {
+  fill: none;
+  stroke: var(--tab-line);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  stroke-width: 2;
+  transition: stroke-dashoffset var(--tab-flowline-draw-duration) var(--tab-motion-easing);
+  vector-effect: non-scaling-stroke;
+}
+
+[data-tab-flowline-node] {
+  fill: var(--tab-surface);
+  stroke: var(--tab-line);
+  stroke-width: 2;
+  transition:
+    fill var(--tab-motion-duration-base) var(--tab-motion-easing),
+    stroke var(--tab-motion-duration-base) var(--tab-motion-easing);
+  vector-effect: non-scaling-stroke;
+}
+
+[data-tab-stage-flowline] > li[data-state="complete"] [data-tab-flowline-path],
+[data-tab-stage-flowline] > li[aria-current="step"] [data-tab-flowline-path] {
+  stroke-dashoffset: 0;
+}
+
+[data-tab-stage-flowline] > li[data-state="complete"] [data-tab-flowline-node] {
+  fill: var(--tab-status-success);
+  stroke: var(--tab-status-success);
+}
+
+[data-tab-stage-flowline] > li[data-state="active"] [data-tab-flowline-node] {
+  fill: var(--tab-action);
+  stroke: var(--tab-action);
+}
+
+[data-tab-stage-flowline] > li[data-state="blocked"] [data-tab-flowline-node],
+[data-tab-stage-flowline] > li[data-state="failed"] [data-tab-flowline-node] {
+  stroke: var(--tab-status-danger);
+}
+
+[data-tab-flowline-content] {
+  display: grid;
+  gap: 0.125rem 0.75rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 0.25rem 0 0.875rem 0.75rem;
+}
+
+[data-tab-flowline-label] {
+  color: var(--tab-text);
+  font-weight: 650;
+}
+
+[data-tab-flowline-state] {
+  color: var(--tab-text-muted);
+  font-family: var(--tab-font-evidence);
+  font-size: 0.75rem;
+}
+
+[data-tab-flowline-detail] {
+  color: var(--tab-text-muted);
+  grid-column: 1 / -1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-tab-flowline-path],
+  [data-tab-flowline-node] {
+    animation: none;
+    transition: none;
+  }
+}

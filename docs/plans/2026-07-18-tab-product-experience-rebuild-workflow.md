@@ -166,7 +166,7 @@ loop: false
 verify: node scripts/assert-red.mjs --expect "[RED: motion policy]" -- pnpm --filter @tab/ui test
 
 - [ ] **Step 16: Implement application motion primitives**
-action: Add the current verified `motion` dependency to site/web/docs only, implement Flowline/stage primitives satisfying Step 15, and keep `@tab/sdk` and `@tab/agent` free of the dependency.
+action: Implement the framework-neutral, caller-driven StageFlowline in `@tab/ui` with scoped CSS/SVG and no internal timer or stage state. Add the current Context7-verified `motion` dependency to each of site/web/docs only when that real application exists and adopts an application reveal/layout wrapper; do not scaffold an application solely to install a dependency, and keep `@tab/sdk` and `@tab/agent` free of it.
 loop: until tests pass
 max_iterations: 5
 verify:

@@ -28,14 +28,18 @@ function states() {
 
 it(`${RED_MARKER} advances only from a new caller snapshot`, () => {
   vi.useFakeTimers();
-  const { rerender } = render(<StageFlowline label="Checkout progress" stages={initialStages} />);
+  const { rerender } = render(
+    <StageFlowline currentStageId="identity" label="Checkout progress" stages={initialStages} />,
+  );
 
   const before = states();
+  expect(before.filter((stage) => stage.current === "step")).toHaveLength(1);
   act(() => vi.advanceTimersByTime(60_000));
   expect(states()).toEqual(before);
 
   rerender(
     <StageFlowline
+      currentStageId="balance"
       label="Checkout progress"
       stages={[
         { id: "identity", label: "Identity", state: "complete" },

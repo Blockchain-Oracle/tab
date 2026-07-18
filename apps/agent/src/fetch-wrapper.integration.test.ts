@@ -1,4 +1,7 @@
+import { mkdtemp, rm } from "node:fs/promises";
 import { createServer } from "node:http";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import {
   decodePaymentSignatureHeader,
@@ -29,7 +32,21 @@ const paymentRequired = {
   resource: { url: "http://127.0.0.1/protected" },
   x402Version: 2,
 } satisfies PaymentRequired;
-
+const testnetPaymentRequired = {
+  accepts: [
+    {
+      amount: "25000",
+      asset: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      extra: { name: "USDC", version: "2" },
+      maxTimeoutSeconds: 60,
+      network: "eip155:84532",
+      payTo: "0x1111111111111111111111111111111111111111",
+      scheme: "exact",
+    },
+  ],
+  resource: { url: "http://127.0.0.1/protected-testnet" },
+  x402Version: 2,
+} satisfies PaymentRequired;
 async function jsonRequest(request: import("node:http").IncomingMessage) {
   const chunks: Buffer[] = [];
   for await (const chunk of request) chunks.push(Buffer.from(chunk));
@@ -47,6 +64,7 @@ describe("Leash fetch wrapper with real x402 and HTTP wires", () => {
   const signatures: `0x${string}`[] = [];
   const resultRequests: unknown[] = [];
   const protectedRequestBodies: string[] = [];
+  let stateDirectory = "";
   let origin = "";
   const server = createServer(async (request, response) => {
     const pathname = new URL(request.url ?? "/", "http://loopback").pathname;
@@ -61,29 +79,35 @@ describe("Leash fetch wrapper with real x402 and HTTP wires", () => {
       return;
     }
     if (pathname === "/api/agent/pay/result") {
-      resultRequests.push(await jsonRequest(request));
-      response.statusCode = 204;
-      response.end();
+      const body = await jsonRequest(request);
+      resultRequests.push(body);
+      response.setHeader("content-type", "application/json");
+      response.end(
+        JSON.stringify({ receiptId: body.receiptId, status: "settled", verified: true }),
+      );
       return;
     }
-    if (pathname === "/protected") {
+    if (pathname === "/protected" || pathname === "/protected-testnet") {
       protectedRequestBodies.push(await textRequest(request));
       const paymentHeader = request.headers["payment-signature"];
+      const testnet = pathname === "/protected-testnet";
+      const required = testnet ? testnetPaymentRequired : paymentRequired;
+      const network = testnet ? "eip155:84532" : "eip155:8453";
       if (typeof paymentHeader !== "string") {
         response.statusCode = 402;
-        response.setHeader("PAYMENT-REQUIRED", encodePaymentRequiredHeader(paymentRequired));
+        response.setHeader("PAYMENT-REQUIRED", encodePaymentRequiredHeader(required));
         response.end("payment required");
         return;
       }
       const payload = decodePaymentSignatureHeader(paymentHeader);
       expect(payload).toMatchObject({
-        accepted: { network: "eip155:8453" },
+        accepted: { network },
         payload: { signature: signatures.at(-1) },
       });
       response.setHeader(
         "PAYMENT-RESPONSE",
         encodePaymentResponseHeader({
-          network: "eip155:8453",
+          network,
           payer,
           success: true,
           transaction,
@@ -101,13 +125,16 @@ describe("Leash fetch wrapper with real x402 and HTTP wires", () => {
     const address = server.address();
     if (!address || typeof address === "string") throw new Error("Expected a TCP listener");
     origin = `http://127.0.0.1:${address.port}`;
+    stateDirectory = await mkdtemp(join(tmpdir(), "tab-payment-state-"));
     paymentRequired.resource.url = `${origin}/protected`;
+    testnetPaymentRequired.resource.url = `${origin}/protected-testnet`;
   });
 
   afterAll(async () => {
     await new Promise<void>((resolve, reject) =>
       server.close((error) => (error ? reject(error) : resolve())),
     );
+    await rm(stateDirectory, { force: true, recursive: true });
   });
 
   beforeEach(() => {
@@ -120,9 +147,13 @@ describe("Leash fetch wrapper with real x402 and HTTP wires", () => {
   it("pays, retries, reports settlement, and redacts receipt-origin secrets", async () => {
     const leashFetch = createLeashFetch({
       address: payer,
+      allowDevelopmentLoopback: true,
       apiBaseUrl: origin,
       apiKey: "leash_sk_integration",
       fetch: globalThis.fetch,
+      idempotencyKey: () => "mainnet-get-1",
+      paymentProfile: "mainnet",
+      paymentStateDirectory: stateDirectory,
     });
 
     const response = await leashFetch(`${origin}/protected?api_key=receipt-secret#client-fragment`);
@@ -173,9 +204,13 @@ describe("Leash fetch wrapper with real x402 and HTTP wires", () => {
     };
     const leashFetch = createLeashFetch({
       address: payer,
+      allowDevelopmentLoopback: true,
       apiBaseUrl: origin,
       apiKey: "leash_sk_integration",
       fetch: observingFetch,
+      idempotencyKey: () => "mainnet-post-1",
+      paymentProfile: "mainnet",
+      paymentStateDirectory: stateDirectory,
     });
 
     expect(request.bodyUsed).toBe(false);
@@ -188,6 +223,36 @@ describe("Leash fetch wrapper with real x402 and HTTP wires", () => {
     expect(signRequests[0]).toMatchObject({
       origin: { toolName: `POST ${origin}/protected` },
       resourceUrl: `${origin}/protected`,
+    });
+  });
+
+  it("uses only Base Sepolia Circle USDC in the explicit integration profile", async () => {
+    const leashFetch = createLeashFetch({
+      address: payer,
+      allowDevelopmentLoopback: true,
+      apiBaseUrl: origin,
+      apiKey: "leash_sk_integration",
+      fetch: globalThis.fetch,
+      idempotencyKey: () => "sepolia-get-1",
+      paymentProfile: "base_sepolia_integration",
+      paymentStateDirectory: stateDirectory,
+    });
+
+    const response = await leashFetch(`${origin}/protected-testnet`);
+
+    expect(response.status).toBe(200);
+    expect(signRequests).toHaveLength(1);
+    expect(signRequests[0]).toMatchObject({
+      asset: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      network: "eip155:84532",
+      signerRequest: {
+        domain: {
+          chainId: 84532,
+          name: "USDC",
+          verifyingContract: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+          version: "2",
+        },
+      },
     });
   });
 });

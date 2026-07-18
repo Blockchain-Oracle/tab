@@ -14,33 +14,60 @@ type ProvisionAgentContext = {
 
 export function ProvisionPanel({ agent }: { agent: ProvisionAgentContext | null }) {
   const [agentName, setAgentName] = useState(agent?.name ?? "");
+  const [currentAgent, setCurrentAgent] = useState(agent);
   const [pending, setPending] = useState(false);
-  const [guard, setGuard] = useState<{ code: string; message: string } | null>(null);
+  const [error, setError] = useState<{ code: string; message: string } | null>(null);
+  const [success, setSuccess] = useState<{ label?: string; testFunds: boolean } | null>(null);
 
-  async function checkProvisioningGuard() {
+  async function provisionWallet() {
     setPending(true);
-    setGuard(null);
+    setError(null);
+    setSuccess(null);
     try {
       const response = await fetch("/api/leash/provision", {
-        body: JSON.stringify({ ...(agent ? { agentId: agent.id } : {}), name: agentName.trim() }),
+        body: JSON.stringify({
+          ...(currentAgent ? { agentId: currentAgent.id } : {}),
+          name: agentName.trim(),
+        }),
         headers: { "content-type": "application/json" },
         method: "POST",
       });
       const body = (await response.json()) as {
+        agent?: { address?: unknown; id?: unknown; name?: unknown; paymentProfile?: unknown };
         error?: { code?: unknown; message?: unknown };
+        label?: unknown;
+        testFunds?: unknown;
       };
-      if (
-        response.ok ||
-        typeof body.error?.code !== "string" ||
-        typeof body.error.message !== "string"
-      ) {
-        throw new Error("The provisioning guard returned an invalid response.");
+      if (response.ok) {
+        if (
+          typeof body.agent?.address !== "string" ||
+          !/^0x[0-9a-fA-F]{40}$/.test(body.agent.address) ||
+          typeof body.agent.id !== "string" ||
+          typeof body.agent.name !== "string" ||
+          typeof body.testFunds !== "boolean" ||
+          (body.label !== undefined && typeof body.label !== "string")
+        ) {
+          throw new Error("The wallet provider returned an invalid response.");
+        }
+        setCurrentAgent({
+          agentAddress: body.agent.address,
+          id: body.agent.id,
+          name: body.agent.name,
+        });
+        setSuccess({
+          ...(typeof body.label === "string" ? { label: body.label } : {}),
+          testFunds: body.testFunds,
+        });
+        return;
       }
-      setGuard({ code: body.error.code, message: body.error.message });
-    } catch (error) {
-      setGuard({
-        code: "PROVISION_CHECK_FAILED",
-        message: error instanceof Error ? error.message : "The provisioning guard could not run.",
+      if (typeof body.error?.code !== "string" || typeof body.error.message !== "string") {
+        throw new Error("The wallet provider returned an invalid error response.");
+      }
+      setError({ code: body.error.code, message: body.error.message });
+    } catch (caught) {
+      setError({
+        code: "PROVISION_REQUEST_FAILED",
+        message: caught instanceof Error ? caught.message : "The wallet request could not run.",
       });
     } finally {
       setPending(false);
@@ -54,45 +81,45 @@ export function ProvisionPanel({ agent }: { agent: ProvisionAgentContext | null 
           <span />
           <span />
         </div>
-        <span className={styles.blockedChip}>BLOCKED · B-03</span>
+        <span className={styles.blockedChip}>MAGIC EXPRESS</span>
         <h1 id="provision-title">Provision an agent wallet</h1>
         <p>
-          Magic OIDC issuer setup and the first Express wallet provision must pass the live
-          integration spike before Tab can request a wallet.
+          Tab requests a TEE-backed Express Server Wallet for this agent and stores only the
+          provider-returned public address.
         </p>
         <div className={styles.agentContext}>
           <span>Agent address</span>
-          <strong>{agent?.agentAddress ?? "Not provisioned"}</strong>
-          {agent?.agentAddress ? (
-            <EvidenceCopyButton label="Copy existing agent address" value={agent.agentAddress} />
+          <strong>{currentAgent?.agentAddress ?? "Not provisioned"}</strong>
+          {currentAgent?.agentAddress ? (
+            <EvidenceCopyButton
+              label="Copy existing agent address"
+              value={currentAgent.agentAddress}
+            />
           ) : null}
           <small>
-            {agent?.agentAddress
+            {currentAgent?.agentAddress
               ? "Existing stored address — retained as evidence, not a newly provisioned wallet."
-              : "No address or balance exists to read. Provisioning requires OIDC setup."}
+              : "No wallet has been returned by Magic yet."}
           </small>
-          {!agent?.agentAddress ? (
-            <div className={styles.blockedBalance}>
-              <strong>$0.00</strong>
-              <span>
-                BLOCKED placeholder — not a live balance. Provisioning requires OIDC setup.
-              </span>
-            </div>
-          ) : null}
         </div>
-        <div className={styles.truthNote} id="provision-blocker">
-          <strong>This control has not requested a wallet.</strong>
-          <span>Tab will show an address only after the real provider returns one.</span>
-          {guard ? (
+        <div className={styles.truthNote} id="provision-status">
+          <strong>{success ? "Wallet provisioned" : "Provider-backed only"}</strong>
+          <span>
+            {success
+              ? "Magic returned this address for the agent's stable opaque identity."
+              : "Tab will show an address only after the real provider returns one."}
+          </span>
+          {success?.testFunds ? <span>{success.label}</span> : null}
+          {error ? (
             <span aria-live="polite" role="status">
-              <code>{guard.code}</code> · {guard.message}
+              <code>{error.code}</code> · {error.message}
             </span>
           ) : null}
         </div>
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            void checkProvisioningGuard();
+            void provisionWallet();
           }}
         >
           <label>
@@ -106,11 +133,13 @@ export function ProvisionPanel({ agent }: { agent: ProvisionAgentContext | null 
               value={agentName}
             />
           </label>
-          <button aria-describedby="provision-blocker" disabled={pending} type="submit">
-            {pending ? "Checking configuration…" : "Provision agent"}
+          <button aria-describedby="provision-status" disabled={pending} type="submit">
+            {pending ? "Provisioning…" : "Provision agent"}
           </button>
         </form>
-        <Link href={agent ? `/leash?agentId=${encodeURIComponent(agent.id)}` : "/leash"}>
+        <Link
+          href={currentAgent ? `/leash?agentId=${encodeURIComponent(currentAgent.id)}` : "/leash"}
+        >
           Return to overview
         </Link>
       </section>

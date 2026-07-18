@@ -1,0 +1,16 @@
+.git/
+.turbo/
+.thoughts/
+.vercel/
+Reference/
+node_modules/
+**/node_modules/
+**/.next/
+**/.turbo/
+**/coverage/
+**/*.log
+.env
+.env.*
+apps/agent/
+apps/mobile/
+docs/

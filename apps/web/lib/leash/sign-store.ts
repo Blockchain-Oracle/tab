@@ -40,6 +40,7 @@ function pendingResult(
   return {
     agentAddress,
     amountAtomic: parsed.amountAtomic,
+    authorizationNonce: parsed.authorizationNonce,
     kind: "pending" as const,
     network: parsed.network,
     receiptId,
@@ -74,7 +75,12 @@ export async function reserveSignRequest(
   const now = new Date(nowSeconds * 1_000);
   return db.transaction(async (transaction) => {
     const [agent] = await transaction
-      .select({ address: agents.agentAddress, id: agents.id, status: agents.status })
+      .select({
+        address: agents.agentAddress,
+        id: agents.id,
+        paymentProfile: agents.paymentProfile,
+        status: agents.status,
+      })
       .from(agents)
       .where(eq(agents.id, options.agentId))
       .for("update");
@@ -99,6 +105,7 @@ export async function reserveSignRequest(
     const parsed = parseSignRequest(decodeBody(options.body), {
       agentAddress: agent.address,
       nowSeconds,
+      paymentProfile: agent.paymentProfile,
     });
     const [cap] = await transaction
       .select({ amountUsdCents: caps.amountUsdCents, frequency: caps.frequency })
@@ -134,8 +141,14 @@ export async function reserveSignRequest(
             .set({
               intendedNetwork: existing.network,
               reason: "LEASH_CAP_EXCEEDED",
+              signedAt: null,
               settlementResponse: null,
               settledAt: null,
+              signingClaimedAt: null,
+              signingClaimToken: null,
+              signingDigest: null,
+              signingLeaseExpiresAt: null,
+              signingSignature: null,
               status: "blocked",
               txHash: null,
             })

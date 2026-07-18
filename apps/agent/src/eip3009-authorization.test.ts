@@ -45,6 +45,7 @@ describe("EIP-3009 USDC amount bound", () => {
       parseExactEip3009Authorization(authorization(maxAtomicUsdcAmount), {
         address: agentAddress,
         nowSeconds,
+        paymentProfile: "mainnet",
       }).amount,
     ).toBe(maxAtomicUsdcAmount.toString());
   });
@@ -54,6 +55,71 @@ describe("EIP-3009 USDC amount bound", () => {
       parseExactEip3009Authorization(authorization(maxAtomicUsdcAmount + 1n), {
         address: agentAddress,
         nowSeconds,
+        paymentProfile: "mainnet",
+      }),
+    ).toThrow(InvalidEip3009AuthorizationError);
+  });
+
+  it("accepts only the Base Sepolia Circle USDC domain in integration mode", () => {
+    const request = authorization(25_000n);
+    request.domain = {
+      chainId: 84532,
+      name: "USDC",
+      verifyingContract: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      version: "2",
+    };
+
+    const parsed = parseExactEip3009Authorization(request, {
+      address: agentAddress,
+      nowSeconds,
+      paymentProfile: "base_sepolia_integration",
+    });
+    expect(parsed).toMatchObject({
+      asset: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      network: "eip155:84532",
+      typedData: { domain: { chainId: 84532, name: "USDC", version: "2" } },
+    });
+  });
+
+  it("does not allow either payment profile to cross into the other", () => {
+    const testnet = authorization(25_000n);
+    testnet.domain = {
+      chainId: 84532,
+      name: "USDC",
+      verifyingContract: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      version: "2",
+    };
+
+    expect(() =>
+      parseExactEip3009Authorization(testnet, {
+        address: agentAddress,
+        nowSeconds,
+        paymentProfile: "mainnet",
+      }),
+    ).toThrow(InvalidEip3009AuthorizationError);
+    expect(() =>
+      parseExactEip3009Authorization(authorization(25_000n), {
+        address: agentAddress,
+        nowSeconds,
+        paymentProfile: "base_sepolia_integration",
+      }),
+    ).toThrow(InvalidEip3009AuthorizationError);
+  });
+
+  it("rejects the mainnet token name for Base Sepolia", () => {
+    const request = authorization(25_000n);
+    request.domain = {
+      chainId: 84532,
+      name: "USD Coin",
+      verifyingContract: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      version: "2",
+    };
+
+    expect(() =>
+      parseExactEip3009Authorization(request, {
+        address: agentAddress,
+        nowSeconds,
+        paymentProfile: "base_sepolia_integration",
       }),
     ).toThrow(InvalidEip3009AuthorizationError);
   });

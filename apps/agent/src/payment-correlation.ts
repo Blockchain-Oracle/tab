@@ -8,6 +8,18 @@ export class PaymentCorrelations {
     this.#entries.set(signature.toLowerCase(), { receiptId, validBeforeSeconds });
   }
 
+  restore(signature: string, receiptId: string, validBeforeSeconds: number) {
+    if (
+      !/^0x[0-9a-fA-F]{130}$/.test(signature) ||
+      !/^\S{1,256}$/.test(receiptId) ||
+      !Number.isSafeInteger(validBeforeSeconds) ||
+      validBeforeSeconds < 1
+    ) {
+      throw new Error("The persisted payment correlation is invalid.");
+    }
+    this.set(signature, receiptId, Math.max(validBeforeSeconds, this.nowSeconds() + 3_600));
+  }
+
   get(signature: string) {
     this.#prune();
     return this.#entries.get(signature.toLowerCase())?.receiptId ?? null;

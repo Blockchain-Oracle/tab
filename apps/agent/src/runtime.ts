@@ -4,8 +4,10 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 
 import { connectLeashAgent } from "./bootstrap.js";
 import type { LeashCliConfig } from "./cli-config.js";
+import { createDurableMcpPayment } from "./durable-mcp-payment.js";
 import { createPaidFetchServer } from "./paid-fetch-server.js";
 import { createLeashPaymentClient } from "./payment-client.js";
+import { defaultPaymentStateDirectory, PaymentEnvelopeStore } from "./payment-envelope-store.js";
 import { createLeashProxyServer } from "./proxy.js";
 import { LeashRemoteSigner } from "./remote-signer.js";
 import { connectStreamableHttpUpstream } from "./upstream.js";
@@ -30,40 +32,60 @@ export async function startLeashMcp(options: StartLeashMcpOptions): Promise<Leas
   });
 
   let signer: LeashRemoteSigner | undefined;
-  let upstream: Awaited<ReturnType<typeof connectStreamableHttpUpstream>> | undefined;
-  if (options.config.upstreamUrl) {
-    upstream = await connectStreamableHttpUpstream(options.config.upstreamUrl, fetch_);
-    if (agent.address) {
-      signer = new LeashRemoteSigner({
-        address: agent.address,
-        apiBaseUrl: options.config.apiBaseUrl,
-        apiKey: options.config.apiKey,
-        fetch: fetch_,
-      });
-    }
+  let upstreamConnection: Awaited<ReturnType<typeof connectStreamableHttpUpstream>> | undefined;
+  if (agent.address) {
+    signer = new LeashRemoteSigner({
+      address: agent.address,
+      apiBaseUrl: options.config.apiBaseUrl,
+      apiKey: options.config.apiKey,
+      fetch: fetch_,
+      paymentProfile: agent.paymentProfile,
+    });
   }
+  if (options.config.upstreamUrl) {
+    upstreamConnection = await connectStreamableHttpUpstream(options.config.upstreamUrl, {
+      allowDevelopmentLoopback: options.config.allowDevelopmentLoopback,
+      fetch: fetch_,
+    });
+  }
+  const upstream = upstreamConnection?.client;
 
   const server = upstream
     ? createLeashProxyServer({
-        ...(signer ? { paymentClient: createLeashPaymentClient(signer) } : {}),
+        ...(signer
+          ? {
+              payment: createDurableMcpPayment({
+                address: signer.address,
+                client: createLeashPaymentClient(signer, agent.paymentProfile),
+                paymentProfile: agent.paymentProfile,
+                signer,
+                store: new PaymentEnvelopeStore(signer.address, defaultPaymentStateDirectory()),
+              }),
+            }
+          : {}),
         upstream,
       })
     : createPaidFetchServer({
         address: agent.address,
+        allowDevelopmentLoopback: options.config.allowDevelopmentLoopback,
         apiBaseUrl: options.config.apiBaseUrl,
         apiKey: options.config.apiKey,
         fetch: fetch_,
+        paymentProfile: agent.paymentProfile,
+        ...(signer ? { signer } : {}),
       });
 
   let resourceClosePromise: Promise<void> | undefined;
   const closeResources = () => {
     resourceClosePromise ??= (async () => {
       if (signer) await signer.flushPaymentObservations();
-      if (upstream) await upstream.close();
+      if (upstreamConnection) await upstreamConnection.close();
     })();
     return resourceClosePromise;
   };
+  const closeServerResources = server.onclose;
   server.onclose = () => {
+    closeServerResources?.();
     void closeResources();
   };
 

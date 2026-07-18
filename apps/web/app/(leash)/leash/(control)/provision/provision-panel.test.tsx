@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ProvisionPanel } from "./provision-panel";
 
-describe("Provisioning gate", () => {
+describe("Magic Express provisioning", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it("shows naming and selected-agent context without inventing wallet state", () => {
@@ -21,7 +21,7 @@ describe("Provisioning gate", () => {
       />,
     );
 
-    expect(html).toContain("BLOCKED · B-03");
+    expect(html).toContain("MAGIC EXPRESS");
     expect(html).toContain("Provision agent");
     expect(html).not.toContain('disabled=""');
     expect(html).not.toContain("OIDC_ISSUER_NOT_CONFIGURED");
@@ -29,9 +29,8 @@ describe("Provisioning gate", () => {
     expect(html).toContain('value="Operations agent"');
     expect(html).toContain("Agent address");
     expect(html).toContain("Not provisioned");
-    expect(html).toContain("No address or balance exists to read");
-    expect(html).toContain("$0.00");
-    expect(html).toContain("BLOCKED placeholder — not a live balance");
+    expect(html).toContain("No wallet has been returned by Magic yet");
+    expect(html).not.toContain("$0.00");
     expect(html).not.toContain("0x0000");
     expect(html).toContain("<form");
   });
@@ -47,19 +46,24 @@ describe("Provisioning gate", () => {
     expect(html).not.toContain("$0.00");
   });
 
-  it("checks the runtime guard and renders its exact blocked response", async () => {
+  it("renders the real provider address and unmistakable test-funds label", async () => {
     (
       globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }
     ).IS_REACT_ACT_ENVIRONMENT = true;
+    const address = "0x2222222222222222222222222222222222222222";
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
-          error: {
-            code: "OIDC_ISSUER_NOT_CONFIGURED",
-            message: "Magic OIDC provisioning has not passed its live spike.",
+          agent: {
+            address,
+            id: "agent-id",
+            name: "Operations agent",
+            paymentProfile: "base_sepolia_integration",
           },
+          label: "Test funds — not real money",
+          testFunds: true,
         }),
-        { headers: { "content-type": "application/json" }, status: 503 },
+        { headers: { "content-type": "application/json" }, status: 200 },
       ),
     );
     vi.stubGlobal("fetch", fetchMock);
@@ -85,9 +89,9 @@ describe("Provisioning gate", () => {
       headers: { "content-type": "application/json" },
       method: "POST",
     });
-    expect(container.textContent).toContain("OIDC_ISSUER_NOT_CONFIGURED");
-    expect(container.textContent).toContain("has not passed its live spike");
-    expect(container.textContent).not.toContain("0x0000");
+    expect(container.textContent).toContain(address);
+    expect(container.textContent).toContain("Test funds — not real money");
+    expect(container.textContent).toContain("Wallet provisioned");
     await act(async () => root.unmount());
     container.remove();
   });

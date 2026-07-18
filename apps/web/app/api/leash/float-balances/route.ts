@@ -11,6 +11,8 @@ import {
   LeashAgentSelectionError,
   readOwnerAgentSelection,
 } from "../../../../lib/leash/owner-agents";
+import { BASE_SEPOLIA_INTEGRATION_PROFILE } from "../../../../lib/leash/payment-profile";
+import { TEST_FUNDS_LABEL } from "../../../../lib/leash/test-funds";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -47,9 +49,23 @@ export async function GET(request: NextRequest) {
       agentId,
       ownerId: owner.userId,
     });
-    const floats = await readLeashFloatBalances(selection.selected?.agentAddress ?? null);
+    const selected = selection.selected;
+    const paymentProfile = selected?.paymentProfile ?? null;
+    if (!selected || !paymentProfile) {
+      return leashError("LEASH_AGENT_NOT_FOUND", "The Leash agent was not found.", 404);
+    }
+    const floats = await readLeashFloatBalances(selected.agentAddress, paymentProfile);
+    const testFunds = paymentProfile === BASE_SEPOLIA_INTEGRATION_PROFILE;
     return NextResponse.json(
-      { agentId, floats, health: readHealth(floats), readAt: new Date().toISOString() },
+      {
+        agentId,
+        floats,
+        health: readHealth(floats),
+        paymentProfile,
+        readAt: new Date().toISOString(),
+        testFunds,
+        testFundsLabel: testFunds ? TEST_FUNDS_LABEL : null,
+      },
       { headers: LEASH_RESPONSE_HEADERS, status: 200 },
     );
   } catch (error) {

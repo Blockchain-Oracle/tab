@@ -21,7 +21,13 @@ export interface ReceiptItem {
   createdAt: string;
   explorer: { href: string; label: string } | null;
   id: string;
-  network: { id: string | null; label: string; target: boolean };
+  network: {
+    id: string | null;
+    label: string;
+    target: boolean;
+    testFunds?: boolean;
+    testFundsLabel?: string;
+  };
   origin: { clientName?: string; toolName?: string; transport: "http" | "mcp" } | null;
   payTo: string;
   reason: string | null;

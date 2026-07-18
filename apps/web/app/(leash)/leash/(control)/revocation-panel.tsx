@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import type { PaymentProfile } from "../../../../lib/leash/payment-profile";
 import { CANCEL_COPY_BY_SPIKE_OUTCOME, type RevocationAction } from "./revocation-copy";
 import { RevocationDialog } from "./revocation-dialog";
 import styles from "./revocation-panel.module.css";
@@ -20,7 +21,7 @@ const statusLabel: Record<Status, string> = {
 export function RevocationPanel({
   agent,
 }: {
-  agent: { id: string; name: string; status: Status };
+  agent: { id: string; name: string; paymentProfile: PaymentProfile; status: Status };
 }) {
   const router = useRouter();
   const fallbackFocusRef = useRef<HTMLHeadingElement>(null);

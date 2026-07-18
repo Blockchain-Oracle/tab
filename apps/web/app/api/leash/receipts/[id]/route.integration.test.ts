@@ -75,7 +75,12 @@ describe("GET /api/leash/receipts/:id with real PostgreSQL", () => {
           label: "View on Arbiscan",
         },
         id,
-        network: { id: "eip155:42161", label: "Arbitrum", target: false },
+        network: {
+          id: "eip155:42161",
+          label: "Arbitrum",
+          target: false,
+          testFunds: false,
+        },
         origin: { clientName: "Claude Code", toolName: "search", transport: "mcp" },
         payTo: "0x1111111111111111111111111111111111111111",
         reason: null,

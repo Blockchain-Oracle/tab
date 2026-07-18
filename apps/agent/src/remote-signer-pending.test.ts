@@ -78,6 +78,7 @@ async function signedReporter(fetch: typeof globalThis.fetch) {
       return fetch(input, init);
     },
     nowSeconds: () => nowSeconds,
+    paymentProfile: "mainnet",
     reportAttempts: 3,
     reportRetryDelayMs: 0,
     reportTimeoutMs: 50,

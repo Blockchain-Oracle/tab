@@ -1,11 +1,27 @@
+import {
+  BASE_SEPOLIA_INTEGRATION_PROFILE,
+  networksForPaymentProfile,
+  type PaymentProfile,
+} from "../../../../lib/leash/payment-profile";
+import { TEST_FUNDS_LABEL } from "../../../../lib/leash/test-funds";
+
 export type LiveRead =
   | { state: "loading" }
   | { health?: "partial" | "unavailable"; readAt?: string; state: "unavailable" }
   | { readAt: string; state: "available"; totalAtomic: string };
 
-type FloatRead = { balanceAtomic: string | null; label: string; network: string };
+type FloatRead = {
+  balanceAtomic: string | null;
+  label: string;
+  network: string;
+  testFunds: boolean;
+};
 
-export function parseLiveRead(value: unknown, agentId: string): LiveRead {
+export function parseLiveRead(
+  value: unknown,
+  agentId: string,
+  paymentProfile: PaymentProfile,
+): LiveRead {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     return { state: "unavailable" };
   }
@@ -14,27 +30,29 @@ export function parseLiveRead(value: unknown, agentId: string): LiveRead {
   const timestamp = new Date(readAt);
   const health = body.health;
   const floats = body.floats;
+  const testFunds = paymentProfile === BASE_SEPOLIA_INTEGRATION_PROFILE;
   if (
     body.agentId !== agentId ||
+    body.paymentProfile !== paymentProfile ||
+    body.testFunds !== testFunds ||
+    body.testFundsLabel !== (testFunds ? TEST_FUNDS_LABEL : null) ||
     Number.isNaN(timestamp.getTime()) ||
     timestamp.toISOString() !== readAt ||
     !["healthy", "partial", "unavailable"].includes(String(health))
   ) {
     return { state: "unavailable" };
   }
-  if (!Array.isArray(floats) || floats.length !== 2) {
+  const expected = networksForPaymentProfile(paymentProfile);
+  if (!Array.isArray(floats) || floats.length !== expected.length) {
     return { health: "unavailable", readAt, state: "unavailable" };
   }
-  const expected = [
-    ["Base", "eip155:8453"],
-    ["Arbitrum", "eip155:42161"],
-  ];
   const valid = floats.every((item, index) => {
     if (typeof item !== "object" || item === null || Array.isArray(item)) return false;
     const row = item as FloatRead;
     return (
-      row.label === expected[index]?.[0] &&
-      row.network === expected[index]?.[1] &&
+      row.label === expected[index]?.label &&
+      row.network === expected[index]?.network &&
+      row.testFunds === expected[index]?.testFunds &&
       (row.balanceAtomic === null || /^\d+$/.test(row.balanceAtomic))
     );
   });

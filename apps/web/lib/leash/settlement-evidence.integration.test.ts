@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 
 import { encodeAbiParameters, encodeEventTopics } from "viem";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
   InvalidSettlementObservationError,
   parseSettlementObservation,
@@ -10,6 +10,7 @@ import {
 import {
   agentAddress,
   authorizationValidBefore,
+  baseSepoliaUsdc,
   facilitator,
   failedObservedResult,
   nonce,
@@ -24,17 +25,49 @@ import {
 } from "./settlement-evidence.integration-support";
 
 describe("settlement observation and on-chain proof", () => {
+  const finalizedHash = `0x${"ef".repeat(32)}`;
+  const receiptBlockHash = `0x${"cd".repeat(32)}`;
+  const zeroHash = `0x${"00".repeat(32)}`;
   let rpcUrl = "";
   let receipt = validReceipt();
   let rpcTransaction = revertedTransaction();
+  let rpcChainId = "0x2105";
+  let canonicalReceiptBlockHash = receiptBlockHash;
+  let finalizedBlockNumber = 2;
   const rpcMethods: string[] = [];
-  function expected(overrides: { agentAddress?: string } = {}) {
+
+  function block(number: number, hash: string) {
+    return {
+      baseFeePerGas: "0x1",
+      difficulty: "0x0",
+      extraData: "0x",
+      gasLimit: "0x1c9c380",
+      gasUsed: "0x5208",
+      hash,
+      logsBloom: `0x${"00".repeat(256)}`,
+      miner: facilitator,
+      mixHash: zeroHash,
+      nonce: "0x0000000000000000",
+      number: `0x${number.toString(16)}`,
+      parentHash: zeroHash,
+      receiptsRoot: zeroHash,
+      sha3Uncles: zeroHash,
+      size: "0x1",
+      stateRoot: zeroHash,
+      timestamp: "0x77359400",
+      totalDifficulty: "0x0",
+      transactions: [],
+      transactionsRoot: zeroHash,
+      uncles: [],
+    };
+  }
+  function expected(overrides: { agentAddress?: string; network?: string } = {}) {
     return {
       agentAddress: overrides.agentAddress ?? agentAddress,
       amountAtomic: "25000",
       authorizationNonce: nonce,
       authorizationValidBefore,
-      network: "eip155:8453",
+      network: overrides.network ?? "eip155:8453",
       payTo,
       rpcUrl,
     };
@@ -49,7 +82,16 @@ describe("settlement observation and on-chain proof", () => {
       JSON.stringify({
         id: body.id,
         jsonrpc: "2.0",
-        result: body.method === "eth_getTransactionByHash" ? rpcTransaction : receipt,
+        result:
+          body.method === "eth_chainId"
+            ? rpcChainId
+            : body.method === "eth_getBlockByNumber"
+              ? body.params[0] === "finalized"
+                ? block(finalizedBlockNumber, finalizedHash)
+                : block(Number(BigInt(body.params[0])), canonicalReceiptBlockHash)
+              : body.method === "eth_getTransactionByHash"
+                ? rpcTransaction
+                : receipt,
       }),
     );
   });
@@ -59,6 +101,15 @@ describe("settlement observation and on-chain proof", () => {
     const address = server.address();
     if (!address || typeof address === "string") throw new Error("Expected a TCP listener");
     rpcUrl = `http://127.0.0.1:${address.port}`;
+  });
+
+  beforeEach(() => {
+    canonicalReceiptBlockHash = receiptBlockHash;
+    finalizedBlockNumber = 2;
+    receipt = validReceipt();
+    rpcTransaction = revertedTransaction();
+    rpcChainId = "0x2105";
+    rpcMethods.length = 0;
   });
 
   afterAll(async () => {
@@ -102,7 +153,13 @@ describe("settlement observation and on-chain proof", () => {
     const evidence = parseSettlementObservation(failedObservedResult());
 
     await expect(verifySettlementOnchain(evidence, expected())).resolves.toBe(true);
-    expect(rpcMethods.slice(-2)).toEqual(["eth_getTransactionReceipt", "eth_getTransactionByHash"]);
+    expect(rpcMethods).toEqual([
+      "eth_chainId",
+      "eth_getTransactionReceipt",
+      "eth_getBlockByNumber",
+      "eth_getBlockByNumber",
+      "eth_getTransactionByHash",
+    ]);
 
     for (const input of [
       validFailedInput({ payTo: "0x4444444444444444444444444444444444444444" }),
@@ -119,10 +176,82 @@ describe("settlement observation and on-chain proof", () => {
     const evidence = parseSettlementObservation(observedResult());
 
     await expect(verifySettlementOnchain(evidence, expected())).resolves.toBe(true);
-    expect(rpcMethods.at(-1)).toBe("eth_getTransactionReceipt");
+    expect(rpcMethods).toEqual([
+      "eth_chainId",
+      "eth_getTransactionReceipt",
+      "eth_getBlockByNumber",
+      "eth_getBlockByNumber",
+    ]);
+  });
+
+  it("keeps both successful and reverted observations pending until the receipt is finalized", async () => {
+    finalizedBlockNumber = 0;
+
+    await expect(
+      verifySettlementOnchain(parseSettlementObservation(observedResult()), expected()),
+    ).resolves.toBe(false);
+
+    receipt = { ...validReceipt(), logs: [], status: "0x0" };
+    await expect(
+      verifySettlementOnchain(parseSettlementObservation(failedObservedResult()), expected()),
+    ).resolves.toBe(false);
+    expect(rpcMethods).not.toContain("eth_getTransactionByHash");
+  });
+
+  it("keeps a stale receipt pending when its block hash is no longer canonical", async () => {
+    canonicalReceiptBlockHash = `0x${"34".repeat(32)}`;
+
+    await expect(
+      verifySettlementOnchain(parseSettlementObservation(observedResult()), expected()),
+    ).resolves.toBe(false);
+    receipt = { ...validReceipt(), logs: [], status: "0x0" };
+    await expect(
+      verifySettlementOnchain(parseSettlementObservation(failedObservedResult()), expected()),
+    ).resolves.toBe(false);
+  });
+
+  it("proves Circle USDC on Base Sepolia only after the RPC reports chain 84532", async () => {
+    rpcChainId = "0x14a34";
+    receipt = validReceipt(baseSepoliaUsdc);
+    const paymentResponse = {
+      ...observedResult().paymentResponse,
+      network: "eip155:84532",
+    };
+
+    await expect(
+      verifySettlementOnchain(
+        parseSettlementObservation(observedResult({ paymentResponse })),
+        expected({ network: "eip155:84532" }),
+      ),
+    ).resolves.toBe(true);
+    expect(rpcMethods).toEqual([
+      "eth_chainId",
+      "eth_getTransactionReceipt",
+      "eth_getBlockByNumber",
+      "eth_getBlockByNumber",
+    ]);
+  });
+
+  it("fails closed before reading a receipt when the trusted RPC reports another chain", async () => {
+    rpcChainId = "0x2105";
+    receipt = validReceipt(baseSepoliaUsdc);
+    const paymentResponse = {
+      ...observedResult().paymentResponse,
+      network: "eip155:84532",
+    };
+    const before = rpcMethods.length;
+
+    await expect(
+      verifySettlementOnchain(
+        parseSettlementObservation(observedResult({ paymentResponse })),
+        expected({ network: "eip155:84532" }),
+      ),
+    ).resolves.toBe(false);
+    expect(rpcMethods.slice(before)).toEqual(["eth_chainId"]);
   });
 
   it("keeps a proven match when a later unrelated USDC log is present", async () => {
+    rpcChainId = "0x2105";
     receipt = validReceipt();
     receipt.logs.push(
       rpcLog(
@@ -142,6 +271,7 @@ describe("settlement observation and on-chain proof", () => {
   });
 
   it("keeps a shaped resource claim unproven without its matching nonce-use log", async () => {
+    rpcChainId = "0x2105";
     const withoutAuthorization = validReceipt();
     withoutAuthorization.logs = withoutAuthorization.logs.slice(0, 1);
     receipt = withoutAuthorization;

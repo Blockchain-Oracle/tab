@@ -1,4 +1,4 @@
-import { and, eq, gt, isNotNull, or } from "drizzle-orm";
+import { and, eq, gt, isNotNull, ne, or } from "drizzle-orm";
 
 import { receipts } from "../db/schema";
 
@@ -8,7 +8,11 @@ function validEvaluationTime(value: Date) {
 }
 
 export function revertedReceiptEvidence() {
-  return and(eq(receipts.status, "failed"), isNotNull(receipts.txHash));
+  return and(
+    eq(receipts.status, "failed"),
+    isNotNull(receipts.txHash),
+    ne(receipts.reason, "AUTHORIZATION_EXPIRED"),
+  );
 }
 
 export function unsettledReceiptCommitted() {

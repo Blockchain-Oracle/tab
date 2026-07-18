@@ -13,7 +13,9 @@ import {
   formatUsdCents,
 } from "../../../../lib/leash/leash-format";
 import type { OwnerAgent } from "../../../../lib/leash/owner-agents";
+import { BASE_SEPOLIA_INTEGRATION_PROFILE } from "../../../../lib/leash/payment-profile";
 import type { listOwnerReceipts } from "../../../../lib/leash/receipt-store";
+import { TEST_FUNDS_LABEL } from "../../../../lib/leash/test-funds";
 import { CycleResetLine } from "./cycle-reset-line";
 import { classifyFloatHealth } from "./float-health";
 import styles from "./leash-overview.module.css";
@@ -75,6 +77,9 @@ export function LeashOverview({
             >
               {halted ? "Halted — cap reached" : statusCopy[agent.status]}
             </span>
+            {agent.paymentProfile === BASE_SEPOLIA_INTEGRATION_PROFILE ? (
+              <span className={styles.statusChip}>{TEST_FUNDS_LABEL}</span>
+            ) : null}
             <OverviewLiveHealth agentId={agent.id} />
           </div>
         </div>
@@ -89,6 +94,7 @@ export function LeashOverview({
       <OverviewStateNotices
         hasAddress={agent.agentAddress !== null}
         notifications={notifications}
+        paymentProfile={agent.paymentProfile}
         policy={policy}
         query={query}
         status={agent.status}

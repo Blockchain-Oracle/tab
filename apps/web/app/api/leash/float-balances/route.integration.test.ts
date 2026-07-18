@@ -31,7 +31,11 @@ afterAll(async () => {
   await connection.client.end();
 });
 
-async function provision(label: string, agentAddress?: string) {
+async function provision(
+  label: string,
+  agentAddress?: string,
+  paymentProfile: "mainnet" | "base_sepolia_integration" = "mainnet",
+) {
   const email = `${label}-${randomUUID()}@example.test`;
   const [owner] = await connection.db
     .insert(users)
@@ -44,6 +48,7 @@ async function provision(label: string, agentAddress?: string) {
       agentAddress,
       name: `${label} agent`,
       ownerId: owner.id,
+      paymentProfile,
       signerSubject: `leash:${randomUUID()}`,
     })
     .returning({ id: agents.id });
@@ -81,21 +86,69 @@ describe("GET /api/leash/float-balances with real PostgreSQL ownership", () => {
     const address = "0x1111111111111111111111111111111111111111";
     const owner = await provision("live", address);
     readFloats.mockResolvedValue([
-      { balanceAtomic: "1000000", label: "Base", network: "eip155:8453" },
-      { balanceAtomic: "250000", label: "Arbitrum", network: "eip155:42161" },
+      { balanceAtomic: "1000000", label: "Base", network: "eip155:8453", testFunds: false },
+      {
+        balanceAtomic: "250000",
+        label: "Arbitrum",
+        network: "eip155:42161",
+        testFunds: false,
+      },
     ]);
     const response = await GET(request(`?agentId=${owner.agentId}`, owner.token));
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store");
-    expect(readFloats).toHaveBeenCalledWith(address);
+    expect(readFloats).toHaveBeenCalledWith(address, "mainnet");
     await expect(response.json()).resolves.toEqual({
       agentId: owner.agentId,
       floats: [
-        { balanceAtomic: "1000000", label: "Base", network: "eip155:8453" },
-        { balanceAtomic: "250000", label: "Arbitrum", network: "eip155:42161" },
+        {
+          balanceAtomic: "1000000",
+          label: "Base",
+          network: "eip155:8453",
+          testFunds: false,
+        },
+        {
+          balanceAtomic: "250000",
+          label: "Arbitrum",
+          network: "eip155:42161",
+          testFunds: false,
+        },
       ],
       health: "healthy",
+      paymentProfile: "mainnet",
       readAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      testFunds: false,
+      testFundsLabel: null,
+    });
+  });
+
+  it("reads only the persisted Base Sepolia profile and labels every value as test funds", async () => {
+    const address = "0x2222222222222222222222222222222222222222";
+    const owner = await provision("testnet", address, "base_sepolia_integration");
+    readFloats.mockResolvedValue([
+      {
+        balanceAtomic: "1000",
+        label: "Base Sepolia",
+        network: "eip155:84532",
+        testFunds: true,
+      },
+    ]);
+
+    const response = await GET(request(`?agentId=${owner.agentId}`, owner.token));
+    expect(readFloats).toHaveBeenCalledWith(address, "base_sepolia_integration");
+    await expect(response.json()).resolves.toMatchObject({
+      floats: [
+        {
+          balanceAtomic: "1000",
+          label: "Base Sepolia",
+          network: "eip155:84532",
+          testFunds: true,
+        },
+      ],
+      health: "healthy",
+      paymentProfile: "base_sepolia_integration",
+      testFunds: true,
+      testFundsLabel: "Test funds — not real money",
     });
   });
 

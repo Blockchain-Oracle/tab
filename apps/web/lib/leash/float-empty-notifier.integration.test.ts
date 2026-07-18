@@ -13,6 +13,7 @@ if (!databaseUrl) throw new Error("DATABASE_URL is required for float-empty noti
 const connection = createDatabase(databaseUrl, 4);
 const baseUsdc = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const arbitrumUsdc = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
+const baseSepoliaUsdc = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
 const payTo = "0x1111111111111111111111111111111111111111";
 
 beforeEach(async () => {
@@ -45,7 +46,7 @@ async function provision() {
   const agentId = agent.id;
   const cycleId = cycle.id;
 
-  async function receipt(network: "eip155:8453" | "eip155:42161", asset: string) {
+  async function receipt(network: "eip155:8453" | "eip155:42161" | "eip155:84532", asset: string) {
     const [row] = await connection.db
       .insert(receipts)
       .values({
@@ -69,6 +70,7 @@ async function provision() {
     agentId,
     arbitrumReceiptId: await receipt("eip155:42161", arbitrumUsdc),
     baseReceiptId: await receipt("eip155:8453", baseUsdc),
+    baseSepoliaReceiptId: await receipt("eip155:84532", baseSepoliaUsdc),
     cycleId,
   };
 }
@@ -111,8 +113,43 @@ describe("float-empty notifier multi-chain dedupe", () => {
       `float_empty:${identity.cycleId}:eip155:8453`,
     ]);
     expect(rows.map((row) => row.metadata)).toEqual([
-      { availableAtomic: "200000", network: "eip155:42161", reservedAtomic: "700000" },
-      { availableAtomic: "100000", network: "eip155:8453", reservedAtomic: "600000" },
+      {
+        availableAtomic: "200000",
+        network: "eip155:42161",
+        reservedAtomic: "700000",
+        testFunds: false,
+        testFundsLabel: null,
+      },
+      {
+        availableAtomic: "100000",
+        network: "eip155:8453",
+        reservedAtomic: "600000",
+        testFunds: false,
+        testFundsLabel: null,
+      },
     ]);
+  });
+
+  it("marks a Base Sepolia empty-float alert as test funds", async () => {
+    const identity = await provision();
+    const notification = await connection.db.transaction((transaction) =>
+      emitFloatEmpty(transaction, {
+        agentId: identity.agentId,
+        availableAtomic: "0",
+        cycleId: identity.cycleId,
+        network: "eip155:84532",
+        now: new Date("2026-07-17T00:02:00.000Z"),
+        receiptId: identity.baseSepoliaReceiptId,
+        reservedAtomic: "1000",
+      }),
+    );
+
+    expect(notification.metadata).toEqual({
+      availableAtomic: "0",
+      network: "eip155:84532",
+      reservedAtomic: "1000",
+      testFunds: true,
+      testFundsLabel: "Test funds — not real money",
+    });
   });
 });

@@ -169,6 +169,48 @@
       "when": 1784299396701,
       "tag": "0023_failed_transaction_evidence",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1784334404618,
+      "tag": "0024_plain_the_twelve",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1784335569978,
+      "tag": "0025_medical_killraven",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1784336543637,
+      "tag": "0026_steep_patriot",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1784341871278,
+      "tag": "0027_chief_night_nurse",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1784343411111,
+      "tag": "0028_x402_verified_settlement",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1784357841623,
+      "tag": "0029_new_nick_fury",
+      "breakpoints": true
     }
   ]
 }

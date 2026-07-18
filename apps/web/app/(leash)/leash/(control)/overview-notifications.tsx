@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { TEST_FUNDS_LABEL } from "../../../../lib/leash/test-funds";
 import styles from "./overview-notifications.module.css";
 
 export type NotificationPreview = {
@@ -24,6 +25,7 @@ function notificationTitle(type: string) {
 }
 
 function notificationDestination(notification: NotificationPreview) {
+  if (notification.metadata.testFundsLabel === TEST_FUNDS_LABEL) return TEST_FUNDS_LABEL;
   const resourceUrl = notification.metadata.resourceUrl;
   if (typeof resourceUrl === "string" && resourceUrl.startsWith("mcp:")) return resourceUrl;
   return notification.resourceHost ?? "Cap policy event";

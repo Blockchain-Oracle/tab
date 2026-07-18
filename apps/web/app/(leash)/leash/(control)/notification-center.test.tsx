@@ -45,6 +45,25 @@ const result: NotificationResultView = {
       tier: "2",
       type: "unusual_domain",
     },
+    {
+      agentId,
+      createdAt: "2026-07-17T08:00:00.000Z",
+      cta: null,
+      cycleId: "22222222-2222-4222-8222-222222222222",
+      id: "77777777-7777-4777-8777-777777777777",
+      metadata: {
+        network: "eip155:84532",
+        testFunds: true,
+        testFundsLabel: "Test funds — not real money",
+      },
+      readAt: null,
+      receiptId: "88888888-8888-4888-8888-888888888888",
+      resolvedAt: null,
+      resourceHost: null,
+      sticky: false,
+      tier: "2",
+      type: "float_empty",
+    },
   ],
   unreadCount: 1,
 };
@@ -64,6 +83,7 @@ describe("Leash notification center", () => {
     expect(html).toContain("Mark all read");
     expect(html).toContain("Load older");
     expect(html).toContain("Active &amp; resolved");
+    expect(html).toContain("Test funds — not real money");
   });
 
   it("uses an instructive empty state without seeded alerts", () => {

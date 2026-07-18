@@ -8,6 +8,7 @@ const agentAddress = "0x2222222222222222222222222222222222222222";
 
 describe("live USDC float balance through viem", () => {
   let rpcUrl = "";
+  let reportedChainId = 8_453;
   const calls: Array<{ method: string; params: unknown[] }> = [];
   const server = createServer(async (request, response) => {
     const chunks: Buffer[] = [];
@@ -19,7 +20,10 @@ describe("live USDC float balance through viem", () => {
       JSON.stringify({
         id: body.id,
         jsonrpc: "2.0",
-        result: `0x${BigInt(50_000).toString(16).padStart(64, "0")}`,
+        result:
+          body.method === "eth_chainId"
+            ? `0x${reportedChainId.toString(16)}`
+            : `0x${BigInt(50_000).toString(16).padStart(64, "0")}`,
       }),
     );
   });
@@ -38,11 +42,15 @@ describe("live USDC float balance through viem", () => {
   });
 
   it("reads Base native USDC balanceOf from the configured RPC", async () => {
+    reportedChainId = 8_453;
     await expect(
       readFloatBalance({ address: agentAddress, network: "eip155:8453", rpcUrl }),
     ).resolves.toBe(BigInt(50_000));
-    expect(calls).toHaveLength(1);
-    expect(calls[0]).toMatchObject({
+    expect(calls.slice(-2)).toEqual([
+      { method: "eth_chainId", params: undefined },
+      expect.objectContaining({ method: "eth_call" }),
+    ]);
+    expect(calls.at(-1)).toMatchObject({
       method: "eth_call",
       params: [
         {
@@ -52,6 +60,32 @@ describe("live USDC float balance through viem", () => {
         "latest",
       ],
     });
+  });
+
+  it("reads only Circle USDC on Base Sepolia after verifying chain ID", async () => {
+    reportedChainId = 84_532;
+    await expect(
+      readFloatBalance({ address: agentAddress, network: "eip155:84532", rpcUrl }),
+    ).resolves.toBe(BigInt(50_000));
+    expect(calls.at(-1)).toMatchObject({
+      method: "eth_call",
+      params: [
+        {
+          data: expect.stringMatching(/^0x70a08231/),
+          to: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+        },
+        "latest",
+      ],
+    });
+  });
+
+  it("fails closed on a trusted RPC chain mismatch before reading balance", async () => {
+    reportedChainId = 1;
+    const before = calls.length;
+    await expect(
+      readFloatBalance({ address: agentAddress, network: "eip155:84532", rpcUrl }),
+    ).rejects.toMatchObject({ code: "RPC_CHAIN_MISMATCH" });
+    expect(calls.slice(before)).toEqual([{ method: "eth_chainId", params: undefined }]);
   });
 
   it("rejects unsupported networks before making an RPC call", async () => {

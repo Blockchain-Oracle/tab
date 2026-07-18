@@ -5,11 +5,12 @@ import {
 } from "@tab/sdk/ua";
 
 import { readFloatBalance } from "./float-balance";
-
-const FLOAT_NETWORKS = [
-  { label: "Base", network: "eip155:8453" },
-  { label: "Arbitrum", network: "eip155:42161" },
-] as const;
+import {
+  BASE_SEPOLIA_INTEGRATION_PROFILE,
+  type LeashPaymentNetwork,
+  networksForPaymentProfile,
+  type PaymentProfile,
+} from "./payment-profile";
 
 type ParticleEnvironment = Partial<
   Record<"PARTICLE_APP_ID" | "PARTICLE_CLIENT_KEY" | "PARTICLE_PROJECT_ID", string | undefined>
@@ -32,34 +33,39 @@ const productionDependencies: Dependencies = {
 
 export type LeashFloatBalanceRead = {
   balanceAtomic: string | null;
-  label: (typeof FLOAT_NETWORKS)[number]["label"];
-  network: (typeof FLOAT_NETWORKS)[number]["network"];
+  label: string;
+  network: LeashPaymentNetwork;
+  testFunds: boolean;
 };
 
 export type LeashUnifiedBalanceRead =
   | { state: "not_provisioned" }
   | { state: "configuration_unavailable" }
+  | { state: "not_applicable_testnet" }
   | { state: "read_unavailable" }
   | { balanceUsd: number; depositAddress: string; state: "available" };
 
 export type LeashFundsSnapshot = {
   agentAddress: string | null;
   floats: LeashFloatBalanceRead[] | null;
+  paymentProfile: PaymentProfile;
   unified: LeashUnifiedBalanceRead;
 };
 
 export async function readLeashFloatBalances(
   agentAddress: string | null,
+  paymentProfile: PaymentProfile,
   dependencies: Pick<Dependencies, "readFloatBalance"> = productionDependencies,
 ) {
+  const networks = networksForPaymentProfile(paymentProfile);
   if (!agentAddress) return null;
   return Promise.all(
-    FLOAT_NETWORKS.map(async ({ label, network }) => {
+    networks.map(async ({ label, network, testFunds }) => {
       try {
         const balance = await dependencies.readFloatBalance({ address: agentAddress, network });
-        return { balanceAtomic: balance.toString(), label, network };
+        return { balanceAtomic: balance.toString(), label, network, testFunds };
       } catch {
-        return { balanceAtomic: null, label, network };
+        return { balanceAtomic: null, label, network, testFunds };
       }
     }),
   );
@@ -76,10 +82,14 @@ function particleConfig(env: ParticleEnvironment): ParticleClientConfig | null {
 
 async function readUnifiedBalance(
   agentAddress: string | null,
+  paymentProfile: PaymentProfile,
   env: ParticleEnvironment,
   dependencies: Dependencies,
 ): Promise<LeashUnifiedBalanceRead> {
   if (!agentAddress) return { state: "not_provisioned" };
+  if (paymentProfile === BASE_SEPOLIA_INTEGRATION_PROFILE) {
+    return { state: "not_applicable_testnet" };
+  }
   const config = particleConfig(env);
   if (!config) return { state: "configuration_unavailable" };
   try {
@@ -93,6 +103,7 @@ async function readUnifiedBalance(
 
 export async function readLeashFundsSnapshot(
   agentAddress: string | null,
+  paymentProfile: PaymentProfile,
   options: {
     dependencies?: Dependencies;
     env?: ParticleEnvironment;
@@ -105,8 +116,8 @@ export async function readLeashFundsSnapshot(
     PARTICLE_PROJECT_ID: process.env.PARTICLE_PROJECT_ID,
   };
   const [floats, unified] = await Promise.all([
-    readLeashFloatBalances(agentAddress, dependencies),
-    readUnifiedBalance(agentAddress, env, dependencies),
+    readLeashFloatBalances(agentAddress, paymentProfile, dependencies),
+    readUnifiedBalance(agentAddress, paymentProfile, env, dependencies),
   ]);
-  return { agentAddress, floats, unified };
+  return { agentAddress, floats, paymentProfile, unified };
 }

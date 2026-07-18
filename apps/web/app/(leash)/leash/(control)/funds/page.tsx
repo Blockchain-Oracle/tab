@@ -28,7 +28,10 @@ export default async function FundsPage({ searchParams }: FundsPageProps) {
   }
   if (!selection.selected) return <NoAgentState />;
 
-  const snapshot = await readLeashFundsSnapshot(selection.selected.agentAddress);
+  const snapshot = await readLeashFundsSnapshot(
+    selection.selected.agentAddress,
+    selection.selected.paymentProfile,
+  );
   return (
     <>
       <AgentPicker agents={selection.agents} selectedId={selection.selected.id} />

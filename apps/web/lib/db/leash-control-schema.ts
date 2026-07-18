@@ -30,7 +30,15 @@ export const capResetReason = pgEnum("cap_reset_reason", [
   "manual",
   "frequency_change",
 ]);
-export const leashNetwork = pgEnum("leash_network", ["eip155:8453", "eip155:42161"]);
+export const agentPaymentProfile = pgEnum("agent_payment_profile", [
+  "mainnet",
+  "base_sepolia_integration",
+]);
+export const leashNetwork = pgEnum("leash_network", [
+  "eip155:8453",
+  "eip155:42161",
+  "eip155:84532",
+]);
 
 export const agents = pgTable(
   "agents",
@@ -41,6 +49,7 @@ export const agents = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     status: agentStatus("status").default("provisioned").notNull(),
+    paymentProfile: agentPaymentProfile("payment_profile").default("mainnet").notNull(),
     signerSubject: text("signer_subject"),
     signerSubjectRevokedAt: timestamp("signer_subject_revoked_at", { withTimezone: true }),
     credentialDestroyedAt: timestamp("credential_destroyed_at", { withTimezone: true }),
@@ -89,6 +98,20 @@ export const agents = pgTable(
         and lower(${table.agentAddress}) <> '0x0000000000000000000000000000000000000000')`,
     ),
     check("agents_connection_count_check", sql`${table.connectionCount} >= 0`),
+  ],
+);
+
+export const agentProvisionAttempts = pgTable(
+  "agent_provision_attempts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    ownerId: uuid("owner_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("agent_provision_attempts_owner_created_idx").on(table.ownerId, table.createdAt.desc()),
   ],
 );
 

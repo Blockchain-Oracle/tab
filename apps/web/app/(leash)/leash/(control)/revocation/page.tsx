@@ -31,7 +31,12 @@ export default async function RevocationPage({ searchParams }: RevocationPagePro
     <>
       <AgentPicker agents={selection.agents} selectedId={agent.id} />
       <RevocationPanel
-        agent={{ id: agent.id, name: agent.name, status: agent.status }}
+        agent={{
+          id: agent.id,
+          name: agent.name,
+          paymentProfile: agent.paymentProfile,
+          status: agent.status,
+        }}
         key={agent.id}
       />
     </>

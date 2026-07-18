@@ -4,6 +4,7 @@ import {
   check,
   foreignKey,
   index,
+  integer,
   jsonb,
   numeric,
   pgEnum,
@@ -52,6 +53,13 @@ export const receipts = pgTable(
     authorizationValidBefore: timestamp("authorization_valid_before", {
       withTimezone: true,
     }).notNull(),
+    signingClaimToken: varchar("signing_claim_token", { length: 64 }),
+    signingClaimedAt: timestamp("signing_claimed_at", { withTimezone: true }),
+    signingLeaseExpiresAt: timestamp("signing_lease_expires_at", { withTimezone: true }),
+    signingDigest: varchar("signing_digest", { length: 66 }),
+    signingSignature: varchar("signing_signature", { length: 132 }),
+    signingAttempts: integer("signing_attempts").default(0).notNull(),
+    signedAt: timestamp("signed_at", { withTimezone: true }),
     origin: jsonb("origin").$type<ReceiptOrigin>(),
     settlementResponse: jsonb("settlement_response").$type<Record<string, unknown>>(),
     txHash: varchar("tx_hash", { length: 66 }),
@@ -107,7 +115,9 @@ export const receipts = pgTable(
       sql`(${table.network} = 'eip155:8453'
           and lower(${table.asset}) = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913')
         or (${table.network} = 'eip155:42161'
-          and lower(${table.asset}) = '0xaf88d065e77c8cc2239327c5edb3a432268e5831')`,
+          and lower(${table.asset}) = '0xaf88d065e77c8cc2239327c5edb3a432268e5831')
+        or (${table.network} = 'eip155:84532'
+          and lower(${table.asset}) = '0x036cbd53842c5426634e7929541ec2318f3dcf7e')`,
     ),
     check(
       "receipts_authorization_check",
@@ -123,6 +133,27 @@ export const receipts = pgTable(
     check(
       "receipts_tx_hash_check",
       sql`${table.txHash} is null or ${table.txHash} ~ '^0x[0-9a-fA-F]{64}$'`,
+    ),
+    check(
+      "receipts_signing_claim_check",
+      sql`${table.signingAttempts} >= 0 and (
+        (${table.signingClaimToken} is null and ${table.signingClaimedAt} is null
+          and ${table.signingLeaseExpiresAt} is null)
+        or (${table.status} = 'pending'
+          and ${table.signingClaimToken} ~ '^[0-9a-f]{64}$'
+          and ${table.signingClaimedAt} is not null
+          and ${table.signingLeaseExpiresAt} > ${table.signingClaimedAt}
+          and ${table.signingDigest} ~ '^0x[0-9a-f]{64}$')
+      ) and (
+        (${table.signingSignature} is null and ${table.signedAt} is null)
+        or (${table.status} in ('pending', 'settled', 'failed')
+          and ${table.signingClaimToken} is null
+          and ${table.signingClaimedAt} is null
+          and ${table.signingLeaseExpiresAt} is null
+          and ${table.signingDigest} ~ '^0x[0-9a-f]{64}$'
+          and ${table.signingSignature} ~ '^0x[0-9a-fA-F]{130}$'
+          and ${table.signedAt} is not null)
+      )`,
     ),
     check(
       "receipts_state_check",

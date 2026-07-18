@@ -48,7 +48,7 @@ export default async function LeashOverviewPage({ searchParams }: OverviewPagePr
       tier: undefined,
       type: undefined,
     }),
-    readLeashFloatBalances(agent.agentAddress),
+    readLeashFloatBalances(agent.agentAddress, agent.paymentProfile),
     listOwnerReceipts(database, {
       agentId: agent.id,
       cursor: undefined,

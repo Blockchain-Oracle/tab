@@ -1,7 +1,7 @@
-import type { PaymentResponseContext } from "@x402/core/client";
 import type { ClientEvmSigner } from "@x402/evm";
 import { isAddress, isAddressEqual, recoverTypedDataAddress } from "viem";
 
+import { validateControlPlaneOrigin } from "./control-plane-origin.js";
 import {
   InvalidEip3009AuthorizationError,
   parseExactEip3009Authorization,
@@ -9,7 +9,12 @@ import {
 } from "./eip3009-authorization.js";
 import { currentPaymentOrigin, currentPaymentResourceUrl } from "./origin-context.js";
 import { PaymentCorrelations } from "./payment-correlation.js";
+import { PaymentObservationReporter } from "./payment-observation-reporter.js";
+import { currentPaymentSignal } from "./payment-signal.js";
+import { postRemoteSignerJson, RemoteSignerError } from "./remote-signer-http.js";
 import { redactPaymentResourceUrl } from "./resource-url.js";
+
+export { RemoteSignerError } from "./remote-signer-http.js";
 
 export interface PaymentOrigin {
   clientName: string;
@@ -24,43 +29,17 @@ interface RemoteSignerOptions {
   fetch?: typeof globalThis.fetch;
   nowSeconds?: () => number;
   origin?: () => PaymentOrigin | undefined;
+  paymentProfile: import("./payment-profile.js").PaymentProfile;
   resourceUrl?: () => string | undefined;
   reportAttempts?: number;
   reportRetryDelayMs?: number;
   reportTimeoutMs?: number;
+  signal?: () => AbortSignal | undefined;
+  signTimeoutMs?: number;
 }
 
-export class RemoteSignerError extends Error {
-  constructor(
-    readonly code: string,
-    message: string,
-    readonly status: number,
-  ) {
-    super(message);
-    this.name = "RemoteSignerError";
-  }
-}
-
-function jsonBody(value: unknown) {
-  return JSON.stringify(value, (_key, field) =>
-    typeof field === "bigint" ? field.toString() : field,
-  );
-}
-
-async function responseError(response: Response) {
-  try {
-    const body = (await response.json()) as { error?: { code?: unknown; message?: unknown } };
-    if (typeof body.error?.code === "string" && typeof body.error.message === "string") {
-      return new RemoteSignerError(body.error.code, body.error.message, response.status);
-    }
-  } catch {
-    // The status still fails closed below when an upstream body is not JSON.
-  }
-  return new RemoteSignerError(
-    "SIGNER_REQUEST_FAILED",
-    "The signer request failed.",
-    response.status,
-  );
+function record(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 export class LeashRemoteSigner implements ClientEvmSigner {
@@ -69,40 +48,55 @@ export class LeashRemoteSigner implements ClientEvmSigner {
   readonly #correlations: PaymentCorrelations;
   readonly #endpoint: URL;
   readonly #fetch: typeof globalThis.fetch;
-  readonly #inFlightObservations = new Set<Promise<void>>();
   readonly #nowSeconds: () => number;
+  readonly #observationReporter: PaymentObservationReporter;
   readonly #origin: (() => PaymentOrigin | undefined) | undefined;
-  readonly #reportAttempts: number;
-  readonly #reportRetryDelayMs: number;
-  readonly #reportTimeoutMs: number;
+  readonly #paymentProfile: import("./payment-profile.js").PaymentProfile;
+  readonly #reconcileEndpoint: URL;
   readonly #resourceUrl: (() => string | undefined) | undefined;
-  readonly #resultEndpoint: URL;
+  readonly #signal: () => AbortSignal | undefined;
+  readonly #signTimeoutMs: number;
 
   constructor(options: RemoteSignerOptions) {
     if (!isAddress(options.address)) throw new Error("Leash signer address is invalid");
     if (!options.apiKey) throw new Error("LEASH_API_KEY is required");
     this.address = options.address;
     this.#apiKey = options.apiKey;
-    this.#endpoint = new URL("/api/agent/sign", options.apiBaseUrl);
+    const apiBaseUrl = validateControlPlaneOrigin(options.apiBaseUrl);
+    this.#endpoint = new URL("/api/agent/sign", apiBaseUrl);
     this.#fetch = options.fetch ?? globalThis.fetch;
     this.#nowSeconds = options.nowSeconds ?? (() => Math.floor(Date.now() / 1_000));
     this.#correlations = new PaymentCorrelations(this.#nowSeconds);
     this.#origin = options.origin ?? currentPaymentOrigin;
+    this.#paymentProfile = options.paymentProfile;
     this.#resourceUrl = options.resourceUrl ?? currentPaymentResourceUrl;
-    this.#reportAttempts = options.reportAttempts ?? 3;
-    this.#reportRetryDelayMs = options.reportRetryDelayMs ?? 250;
-    this.#reportTimeoutMs = options.reportTimeoutMs ?? 2_000;
+    const reportAttempts = options.reportAttempts ?? 3;
+    const reportRetryDelayMs = options.reportRetryDelayMs ?? 250;
+    const reportTimeoutMs = options.reportTimeoutMs ?? 7_500;
+    this.#reconcileEndpoint = new URL("/api/agent/pay/reconcile", apiBaseUrl);
+    this.#signal = options.signal ?? currentPaymentSignal;
+    this.#signTimeoutMs = options.signTimeoutMs ?? 10_000;
     if (
-      !Number.isSafeInteger(this.#reportAttempts) ||
-      this.#reportAttempts < 1 ||
-      !Number.isSafeInteger(this.#reportRetryDelayMs) ||
-      this.#reportRetryDelayMs < 0 ||
-      !Number.isSafeInteger(this.#reportTimeoutMs) ||
-      this.#reportTimeoutMs < 1
+      !Number.isSafeInteger(reportAttempts) ||
+      reportAttempts < 1 ||
+      !Number.isSafeInteger(reportRetryDelayMs) ||
+      reportRetryDelayMs < 0 ||
+      !Number.isSafeInteger(reportTimeoutMs) ||
+      reportTimeoutMs < 1 ||
+      !Number.isSafeInteger(this.#signTimeoutMs) ||
+      this.#signTimeoutMs < 1
     ) {
       throw new Error("Leash result-report timeout is invalid");
     }
-    this.#resultEndpoint = new URL("/api/agent/pay/result", options.apiBaseUrl);
+    this.#observationReporter = new PaymentObservationReporter({
+      apiKey: this.#apiKey,
+      attempts: reportAttempts,
+      correlations: this.#correlations,
+      endpoint: new URL("/api/agent/pay/result", apiBaseUrl),
+      fetch: this.#fetch,
+      retryDelayMs: reportRetryDelayMs,
+      timeoutMs: reportTimeoutMs,
+    });
   }
 
   async signTypedData(signerRequest: SignerRequest): Promise<`0x${string}`> {
@@ -111,6 +105,7 @@ export class LeashRemoteSigner implements ClientEvmSigner {
       authorization = parseExactEip3009Authorization(signerRequest, {
         address: this.address,
         nowSeconds: this.#nowSeconds(),
+        paymentProfile: this.#paymentProfile,
       });
     } catch (error) {
       if (!(error instanceof InvalidEip3009AuthorizationError)) throw error;
@@ -120,8 +115,10 @@ export class LeashRemoteSigner implements ClientEvmSigner {
     const rawResourceUrl = this.#resourceUrl?.();
     const resourceUrl =
       rawResourceUrl === undefined ? undefined : redactPaymentResourceUrl(rawResourceUrl);
-    const response = await this.#fetch(this.#endpoint, {
-      body: jsonBody({
+    const paymentSignal = this.#signal();
+    const body = (await postRemoteSignerJson({
+      apiKey: this.#apiKey,
+      body: {
         amount: authorization.amount,
         asset: authorization.asset,
         network: authorization.network,
@@ -129,13 +126,12 @@ export class LeashRemoteSigner implements ClientEvmSigner {
         payTo: authorization.payTo,
         ...(resourceUrl ? { resourceUrl } : {}),
         signerRequest: authorization.typedData,
-      }),
-      headers: { authorization: `Bearer ${this.#apiKey}`, "content-type": "application/json" },
-      method: "POST",
-    });
-    if (!response.ok) throw await responseError(response);
-
-    const body = (await response.json()) as { receiptId?: unknown; signature?: unknown };
+      },
+      endpoint: this.#endpoint,
+      fetch: this.#fetch,
+      ...(paymentSignal ? { signal: paymentSignal } : {}),
+      timeoutMs: this.#signTimeoutMs,
+    })) as { receiptId?: unknown; signature?: unknown };
     if (
       typeof body.receiptId !== "string" ||
       typeof body.signature !== "string" ||
@@ -173,125 +169,38 @@ export class LeashRemoteSigner implements ClientEvmSigner {
     return this.#correlations.get(signature);
   }
 
-  async #sendObservationAttempt(body: unknown) {
-    const controller = new AbortController();
-    let timeout: ReturnType<typeof setTimeout> | undefined;
-    const deadline = new Promise<null>((resolve) => {
-      timeout = setTimeout(() => {
-        controller.abort();
-        resolve(null);
-      }, this.#reportTimeoutMs);
-    });
+  restorePaymentCorrelation(signature: string, receiptId: string, validBeforeSeconds: number) {
+    this.#correlations.restore(signature, receiptId, validBeforeSeconds);
+  }
+
+  async reconcileExpiredPayment(receiptId: string) {
+    if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(receiptId)) return false;
     try {
-      const response = await Promise.race([
-        this.#fetch(this.#resultEndpoint, {
-          body: JSON.stringify(body),
-          headers: { authorization: `Bearer ${this.#apiKey}`, "content-type": "application/json" },
-          method: "POST",
-          signal: controller.signal,
-        }),
-        deadline,
-      ]);
-      if (!response) return { retry: true, verified: false };
-      if (!response.ok) {
-        return {
-          retry: response.status === 429 || response.status >= 500,
-          verified: false,
-        };
-      }
-      if (response.status === 204) return { retry: false, verified: false };
-      try {
-        const acknowledgement = (await response.json()) as {
-          receiptId?: unknown;
-          status?: unknown;
-          verified?: unknown;
-        };
-        const acknowledgedReceipt =
-          typeof acknowledgement.receiptId === "string" ? acknowledgement.receiptId : undefined;
-        return {
-          retry:
-            response.status === 202 &&
-            acknowledgement.status === "pending" &&
-            acknowledgement.verified === false &&
-            acknowledgedReceipt !== undefined,
-          verified:
-            response.status === 200 &&
-            acknowledgement.verified === true &&
-            (acknowledgement.status === "settled" || acknowledgement.status === "failed") &&
-            acknowledgedReceipt !== undefined,
-          verifiedReceiptId: acknowledgedReceipt,
-          verifiedStatus: acknowledgement.status,
-        };
-      } catch {
-        return { retry: false, verified: false };
-      }
-    } catch {
-      return { retry: true, verified: false };
-    } finally {
-      if (timeout) clearTimeout(timeout);
-    }
-  }
-
-  async #sendObservation(body: unknown, receiptId: string, signature: string) {
-    for (let attempt = 0; attempt < this.#reportAttempts; attempt += 1) {
-      const result = await this.#sendObservationAttempt(body);
-      if (result.verified && result.verifiedReceiptId === receiptId) {
-        if (result.verifiedStatus === "settled") {
-          this.#correlations.deleteIf(signature, receiptId);
-        }
-        return;
-      }
-      if (!result.retry || attempt === this.#reportAttempts - 1) return;
-      await new Promise<void>((resolve) =>
-        setTimeout(resolve, this.#reportRetryDelayMs * (attempt + 1)),
+      const signal = this.#signal();
+      const acknowledgement = await postRemoteSignerJson({
+        apiKey: this.#apiKey,
+        body: { receiptId },
+        endpoint: this.#reconcileEndpoint,
+        fetch: this.#fetch,
+        ...(signal ? { signal } : {}),
+        timeoutMs: this.#signTimeoutMs,
+      });
+      return (
+        record(acknowledgement) &&
+        acknowledgement.receiptId === receiptId &&
+        acknowledgement.status === "failed" &&
+        acknowledgement.verified === true
       );
+    } catch {
+      return false;
     }
   }
 
-  reportPaymentObservation(context: PaymentResponseContext): Promise<void> {
-    const settlement = context.settleResponse;
-    const signature = context.paymentPayload.payload.signature;
-    if (
-      typeof settlement?.success !== "boolean" ||
-      (!settlement.success &&
-        (typeof settlement.errorReason !== "string" || !/\S/.test(settlement.errorReason))) ||
-      typeof signature !== "string" ||
-      settlement.network !== context.requirements.network ||
-      !isAddress(settlement.payer ?? "") ||
-      settlement.payer?.toLowerCase() !== this.address.toLowerCase() ||
-      !/^0x[0-9a-fA-F]{64}$/.test(settlement.transaction)
-    ) {
-      return Promise.resolve();
-    }
-    const receiptId = this.#correlations.get(signature);
-    if (!receiptId) return Promise.resolve();
-
-    const task = this.#sendObservation(
-      {
-        outcome: "observed",
-        paymentResponse: {
-          ...(settlement.success
-            ? {}
-            : {
-                ...(settlement.errorMessage ? { errorMessage: settlement.errorMessage } : {}),
-                errorReason: settlement.errorReason,
-              }),
-          network: settlement.network,
-          payer: settlement.payer,
-          success: settlement.success,
-          transaction: settlement.transaction,
-        },
-        receiptId,
-      },
-      receiptId,
-      signature,
-    );
-    this.#inFlightObservations.add(task);
-    void task.finally(() => this.#inFlightObservations.delete(task));
-    return Promise.resolve();
+  reportPaymentObservation(context: import("@x402/core/client").PaymentResponseContext) {
+    return this.#observationReporter.report(context, this.address);
   }
 
   async flushPaymentObservations() {
-    await Promise.allSettled([...this.#inFlightObservations]);
+    await this.#observationReporter.flush();
   }
 }

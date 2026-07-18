@@ -1,3 +1,7 @@
+import { rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -7,13 +11,19 @@ import { MCP_PAYMENT_META_KEY, MCP_PAYMENT_RESPONSE_META_KEY } from "@x402/mcp";
 import { privateKeyToAccount } from "viem/accounts";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  createDurableMcpPayment,
+  MCP_PAYMENT_IDEMPOTENCY_META_KEY,
+} from "./durable-mcp-payment.js";
 import { createLeashPaymentClient } from "./payment-client.js";
+import { PaymentEnvelopeStore } from "./payment-envelope-store.js";
 import { createLeashProxyServer } from "./proxy.js";
 import { LeashRemoteSigner } from "./remote-signer.js";
 
 const payerAccount = privateKeyToAccount(`0x${"11".repeat(32)}`);
 const payer = payerAccount.address;
 const transaction = `0x${"cd".repeat(32)}`;
+const stateDirectory = join(tmpdir(), `tab-proxy-${process.pid}-${Date.now()}`);
 const paymentRequired = {
   accepts: [
     {
@@ -42,7 +52,7 @@ describe("Leash MCP proxy with real SDK transports", () => {
   const signBodies: unknown[] = [];
   const resultBodies: unknown[] = [];
   const paidMetadata: unknown[] = [];
-  let resultStatus = 204;
+  let resultStatus = 200;
   const remoteFetch = vi.fn(async (input: Request | string | URL, init?: RequestInit) => {
     const path = new URL(input.toString()).pathname;
     if (path === "/api/agent/sign") {
@@ -52,9 +62,10 @@ describe("Leash MCP proxy with real SDK transports", () => {
       return Response.json({ receiptId: `receipt-mcp-${signBodies.length}`, signature });
     }
     if (path === "/api/agent/pay/result") {
-      resultBodies.push(JSON.parse(String(init?.body)));
-      return resultStatus === 204
-        ? new Response(null, { status: 204 })
+      const body = JSON.parse(String(init?.body));
+      resultBodies.push(body);
+      return resultStatus === 200
+        ? Response.json({ receiptId: body.receiptId, status: "settled", verified: true })
         : Response.json(
             { error: { code: "OUTAGE", message: "offline" } },
             { status: resultStatus },
@@ -67,10 +78,17 @@ describe("Leash MCP proxy with real SDK transports", () => {
     apiBaseUrl: "https://tab.example.test",
     apiKey: "leash_sk_integration",
     fetch: remoteFetch,
+    paymentProfile: "mainnet",
     reportRetryDelayMs: 1,
   });
   const proxy = createLeashProxyServer({
-    paymentClient: createLeashPaymentClient(signer),
+    payment: createDurableMcpPayment({
+      address: payer,
+      client: createLeashPaymentClient(signer, "mainnet"),
+      paymentProfile: "mainnet",
+      signer,
+      store: new PaymentEnvelopeStore(payer, stateDirectory),
+    }),
     upstream: upstreamClient,
   });
 
@@ -118,19 +136,23 @@ describe("Leash MCP proxy with real SDK transports", () => {
     await proxy.close();
     await upstreamClient.close();
     await upstreamServer.close();
+    await rm(stateDirectory, { force: true, recursive: true });
   });
 
   beforeEach(() => {
     paidMetadata.length = 0;
     resultBodies.length = 0;
-    resultStatus = 204;
+    resultStatus = 200;
     signBodies.length = 0;
   });
 
   it("forwards tools, pays once, and preserves request/result metadata", async () => {
     await expect(downstream.listTools()).resolves.toMatchObject({ tools: [{ name: "search" }] });
     const result = await downstream.callTool({
-      _meta: { traceId: "trace-1" },
+      _meta: {
+        [MCP_PAYMENT_IDEMPOTENCY_META_KEY]: "proxy-payment-1",
+        traceId: "trace-1",
+      },
       arguments: { query: "x402" },
       name: "search",
     });
@@ -165,6 +187,7 @@ describe("Leash MCP proxy with real SDK transports", () => {
     resultStatus = 503;
 
     const result = await downstream.callTool({
+      _meta: { [MCP_PAYMENT_IDEMPOTENCY_META_KEY]: "proxy-outage-1" },
       arguments: { query: "outage" },
       name: "search",
     });
@@ -177,5 +200,13 @@ describe("Leash MCP proxy with real SDK transports", () => {
     expect(signBodies).toHaveLength(1);
     expect(paidMetadata).toHaveLength(1);
     expect(resultBodies).toHaveLength(3);
+  });
+
+  it("does not sign a paid challenge without a caller idempotency key", async () => {
+    await expect(
+      downstream.callTool({ arguments: { query: "missing-key" }, name: "search" }),
+    ).rejects.toThrow(/idempotency key is required/i);
+    expect(signBodies).toHaveLength(0);
+    expect(paidMetadata).toHaveLength(0);
   });
 });

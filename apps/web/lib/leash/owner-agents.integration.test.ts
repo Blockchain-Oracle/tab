@@ -31,10 +31,15 @@ async function owner(label: string) {
   return row;
 }
 
-async function agent(ownerId: string, name: string, createdAt: Date) {
+async function agent(
+  ownerId: string,
+  name: string,
+  createdAt: Date,
+  paymentProfile: "mainnet" | "base_sepolia_integration" = "mainnet",
+) {
   const [row] = await connection.db
     .insert(agents)
-    .values({ createdAt, name, ownerId, signerSubject: `leash:${randomUUID()}` })
+    .values({ createdAt, name, ownerId, paymentProfile, signerSubject: `leash:${randomUUID()}` })
     .returning({ id: agents.id });
   if (!row) throw new Error("Expected agent");
   return row;
@@ -75,5 +80,22 @@ describe("owner agent selection with real PostgreSQL", () => {
         readOwnerAgentSelection(connection.db, { agentId, ownerId: first.id }),
       ).rejects.toBeInstanceOf(LeashAgentSelectionError);
     }
+  });
+
+  it("returns each persisted payment profile without deriving it from runtime configuration", async () => {
+    const first = await owner("profiles");
+    await agent(
+      first.id,
+      "Sepolia worker",
+      new Date("2026-07-16T00:00:00Z"),
+      "base_sepolia_integration",
+    );
+    await agent(first.id, "Mainnet worker", new Date("2026-07-15T00:00:00Z"));
+
+    const selection = await readOwnerAgentSelection(connection.db, { ownerId: first.id });
+    expect(selection.agents.map(({ name, paymentProfile }) => ({ name, paymentProfile }))).toEqual([
+      { name: "Sepolia worker", paymentProfile: "base_sepolia_integration" },
+      { name: "Mainnet worker", paymentProfile: "mainnet" },
+    ]);
   });
 });

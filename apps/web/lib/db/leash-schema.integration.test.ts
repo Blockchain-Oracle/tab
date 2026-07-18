@@ -1,96 +1,16 @@
 import { randomBytes, randomUUID } from "node:crypto";
 
-import postgres from "postgres";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) throw new Error("DATABASE_URL is required for Leash schema tests");
-
-const sql = postgres(databaseUrl, { max: 1 });
-const payTo = "0x1111111111111111111111111111111111111111";
-const baseUsdc = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
-const arbitrumUsdc = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
-
-async function createOwnerAgent(label: string, agentAddress: string | null = null) {
-  const [owner] = await sql<{ id: string }[]>`
-    insert into users (email, magic_issuer)
-    values (${`${label}-${randomUUID()}@example.test`}, ${`did:ethr:${randomUUID()}`})
-    returning id
-  `;
-  if (!owner) throw new Error("Expected an owner row");
-  const [agent] = await sql<{ id: string }[]>`
-    insert into agents (owner_id, name, status, signer_subject, agent_address)
-    values (
-      ${owner.id}, ${`Agent ${label}`}, 'provisioned',
-      ${`leash:${randomUUID()}`}, ${agentAddress}
-    )
-    returning id
-  `;
-  if (!agent) throw new Error("Expected an agent row");
-  return { agentId: agent.id, ownerId: owner.id };
-}
-
-async function createCycle(agentId: string) {
-  const [cycle] = await sql<{ id: string }[]>`
-    insert into cap_cycles (agent_id, started_at)
-    values (${agentId}, now() - interval '1 minute')
-    returning id
-  `;
-  if (!cycle) throw new Error("Expected a cap cycle row");
-  return cycle.id;
-}
-
-function authorization() {
-  return {
-    fingerprint: randomBytes(32).toString("hex"),
-    nonce: `0x${randomBytes(32).toString("hex")}`,
-  };
-}
-
-function insertReceipt(
-  agentId: string,
-  cycleId: string,
-  values: {
-    amountAtomic?: string;
-    asset?: string;
-    fingerprint?: string;
-    network?: string;
-    nonce?: string;
-    reason?: string | null;
-    status?: string;
-  } = {},
-) {
-  const auth = authorization();
-  const status = values.status ?? "pending";
-  const settled = status === "settled";
-  const txHash = settled ? `0x${"a".repeat(64)}` : null;
-  const blocked = status === "blocked";
-  const network = values.network ?? "eip155:8453";
-  const asset = values.asset ?? (network === "eip155:42161" ? arbitrumUsdc : baseUsdc);
-  const reason = Object.hasOwn(values, "reason")
-    ? (values.reason ?? null)
-    : blocked
-      ? "CAP_EXCEEDED"
-      : null;
-  return sql`
-    insert into receipts (
-      agent_id, cycle_id, status, amount_atomic, amount_usd, asset, network,
-      pay_to, authorization_nonce, request_fingerprint, authorization_valid_before,
-      origin, reason, intended_network, tx_hash, settlement_response, settled_at
-    ) values (
-      ${agentId}, ${cycleId}, ${status}, ${values.amountAtomic ?? "1000000"}, '1.000000',
-      ${asset}, ${network}, ${payTo},
-      ${values.nonce ?? auth.nonce}, ${values.fingerprint ?? auth.fingerprint},
-      now() + interval '5 minutes', ${sql.json({ clientName: "integration", toolName: "pay", transport: "mcp" })},
-      ${reason},
-      ${blocked ? network : null},
-      ${txHash},
-      ${settled ? sql.json({ success: true, transaction: txHash }) : null},
-      ${settled ? new Date() : null}
-    )
-    returning id
-  `;
-}
+import {
+  authorization,
+  baseSepoliaUsdc,
+  baseUsdc,
+  createCycle,
+  createOwnerAgent,
+  insertReceipt,
+  sql,
+} from "./leash-schema.integration-support";
 
 describe("Phase 6 Leash PostgreSQL schema", () => {
   beforeEach(async () => {
@@ -108,7 +28,7 @@ describe("Phase 6 Leash PostgreSQL schema", () => {
       where table_schema = 'public'
         and table_name in (
           'agents', 'leash_keys', 'caps', 'cap_cycles',
-          'receipts', 'floats', 'agent_events'
+          'receipts', 'floats', 'agent_events', 'x402_resource_settlements'
         )
       order by table_name
     `;
@@ -121,6 +41,7 @@ describe("Phase 6 Leash PostgreSQL schema", () => {
       "floats",
       "leash_keys",
       "receipts",
+      "x402_resource_settlements",
     ]);
   });
 
@@ -141,6 +62,51 @@ describe("Phase 6 Leash PostgreSQL schema", () => {
       insert into agents (owner_id, name, status, signer_subject)
       values (${randomUUID()}, 'Orphan', 'provisioned', ${`leash:${randomUUID()}`})
     `).rejects.toMatchObject({ code: "23503" });
+  });
+
+  it("defaults existing agents to mainnet and persists an explicit isolated testnet profile", async () => {
+    const mainnet = await createOwnerAgent("mainnet-profile");
+    const [owner] = await sql<{ id: string }[]>`
+      insert into users (email, magic_issuer)
+      values (${`integration-${randomUUID()}@example.test`}, ${`did:ethr:${randomUUID()}`})
+      returning id
+    `;
+    if (!owner) throw new Error("Expected owner");
+    const [integration] = await sql<{ id: string }[]>`
+      insert into agents (owner_id, name, status, signer_subject, payment_profile)
+      values (
+        ${owner.id}, 'Integration agent', 'provisioned',
+        ${`leash:${randomUUID()}`}, 'base_sepolia_integration'
+      )
+      returning id
+    `;
+    if (!integration) throw new Error("Expected integration agent");
+
+    const rows = await sql<{ id: string; payment_profile: string }[]>`
+      select id, payment_profile from agents
+      where id in (${mainnet.agentId}, ${integration.id})
+      order by payment_profile
+    `;
+    expect(rows).toEqual([
+      { id: mainnet.agentId, payment_profile: "mainnet" },
+      { id: integration.id, payment_profile: "base_sepolia_integration" },
+    ]);
+    const integrationCycle = await createCycle(integration.id);
+    await expect(
+      insertReceipt(integration.id, integrationCycle, {
+        asset: baseSepoliaUsdc,
+        network: "eip155:84532",
+      }),
+    ).resolves.toHaveLength(1);
+    await expect(
+      insertReceipt(integration.id, integrationCycle, {
+        asset: baseUsdc,
+        network: "eip155:84532",
+      }),
+    ).rejects.toMatchObject({ code: "23514" });
+    await expect(
+      sql`update agents set payment_profile = 'unknown' where id = ${integration.id}`,
+    ).rejects.toMatchObject({ code: "22P02" });
   });
 
   it("enforces one active Leash key, a positive cap, and one active cycle", async () => {
@@ -228,53 +194,5 @@ describe("Phase 6 Leash PostgreSQL schema", () => {
     await expect(
       insertReceipt(agentId, cycleId, { nonce: `0x${"AB".repeat(32)}` }),
     ).rejects.toMatchObject({ code: "23514" });
-  });
-
-  it.each(["failed", "blocked"])("requires a reason for %s receipts", async (status) => {
-    const { agentId } = await createOwnerAgent(`${status}-reason`);
-    const cycleId = await createCycle(agentId);
-
-    await expect(insertReceipt(agentId, cycleId, { reason: null, status })).rejects.toMatchObject({
-      code: "23514",
-    });
-  });
-
-  it("prevents receipts from borrowing another agent's cycle", async () => {
-    const first = await createOwnerAgent("cycle-first");
-    const second = await createOwnerAgent("cycle-second");
-    const firstCycle = await createCycle(first.agentId);
-    await expect(insertReceipt(second.agentId, firstCycle)).rejects.toMatchObject({
-      code: "23503",
-    });
-  });
-
-  it("stores only Base and Arbitrum native-USDC float snapshots and owned audit events", async () => {
-    const { agentId } = await createOwnerAgent("floats-events");
-    await sql`
-      insert into floats (agent_id, network, asset, token_address, balance_atomic, balance_usd)
-      values
-        (${agentId}, 'eip155:8453', 'USDC', ${baseUsdc}, 0, 0),
-        (${agentId}, 'eip155:42161', 'USDC', ${arbitrumUsdc}, 1000000, 1)
-    `;
-    await expect(sql`
-      insert into floats (agent_id, network, asset, token_address, balance_atomic, balance_usd)
-      values (${agentId}, 'eip155:137', 'USDC', ${baseUsdc}, 1, 1)
-    `).rejects.toMatchObject({ code: "22P02" });
-    await expect(sql`
-      update floats set token_address = ${arbitrumUsdc}
-      where agent_id = ${agentId} and network = 'eip155:8453'
-    `).rejects.toMatchObject({ code: "23514" });
-    await expect(sql`
-      update floats set balance_atomic = -1 where agent_id = ${agentId}
-    `).rejects.toMatchObject({ code: "23514" });
-
-    await sql`
-      insert into agent_events (agent_id, type, actor_surface, metadata)
-      values (${agentId}, 'connect', 'agent', ${sql.json({ clientName: "integration" })})
-    `;
-    await expect(sql`
-      insert into agent_events (agent_id, type, actor_surface)
-      values (${randomUUID()}, 'sign', 'system')
-    `).rejects.toMatchObject({ code: "23503" });
   });
 });

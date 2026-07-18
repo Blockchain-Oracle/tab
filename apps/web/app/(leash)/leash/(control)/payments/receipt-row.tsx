@@ -54,6 +54,7 @@ export function ReceiptRow({
         <span className={receipt.network.target ? styles.target : styles.network}>
           {receipt.network.label}
           {receipt.network.target ? " (target)" : ""}
+          {receipt.network.testFunds ? ` · ${receipt.network.testFundsLabel}` : ""}
         </span>
         <div className={styles.transaction}>
           {explorer && receipt.txHash ? (

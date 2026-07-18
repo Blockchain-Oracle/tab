@@ -1,5 +1,7 @@
 import type { LeashFundsSnapshot } from "../../../../../lib/leash/fund-balances";
 import { formatUsdAtomic } from "../../../../../lib/leash/leash-format";
+import { BASE_SEPOLIA_INTEGRATION_PROFILE } from "../../../../../lib/leash/payment-profile";
+import { TEST_FUNDS_LABEL } from "../../../../../lib/leash/test-funds";
 import type { FloatHealth } from "../float-health";
 import styles from "./funds-panel.module.css";
 
@@ -13,6 +15,7 @@ const usd = new Intl.NumberFormat("en-US", {
 function unifiedValue(snapshot: LeashFundsSnapshot) {
   if (snapshot.unified.state === "available") return usd.format(snapshot.unified.balanceUsd);
   if (snapshot.unified.state === "not_provisioned") return "Not provisioned";
+  if (snapshot.unified.state === "not_applicable_testnet") return "Separate mainnet spike";
   return "Unavailable";
 }
 
@@ -26,6 +29,8 @@ function unifiedNote(snapshot: LeashFundsSnapshot) {
       return "Particle could not verify this balance right now.";
     case "not_provisioned":
       return "A real agent address is required before Particle can verify a UA.";
+    case "not_applicable_testnet":
+      return "Particle mainnet balance is separate from this testnet profile.";
   }
 }
 
@@ -50,6 +55,7 @@ export function FundsBalanceGrid({
   health: FloatHealth;
   snapshot: LeashFundsSnapshot;
 }) {
+  const testFunds = snapshot.paymentProfile === BASE_SEPOLIA_INTEGRATION_PROFILE;
   return (
     <div className={styles.balanceGrid}>
       <article className={styles.floatCard}>
@@ -64,7 +70,9 @@ export function FundsBalanceGrid({
             ? "At least one chain read failed, so no total is shown."
             : health.state === "not_provisioned"
               ? "No signing address exists to read."
-              : "Sum of the live Base and Arbitrum balanceOf reads."}
+              : testFunds
+                ? "Live Circle USDC balanceOf read on Base Sepolia."
+                : "Sum of the live Base and Arbitrum balanceOf reads."}
         </p>
         {thresholdCopy(health) ? <code>{thresholdCopy(health)}</code> : null}
         {health.state === "low" ? <p>The fixed $5 floor is active.</p> : null}
@@ -74,8 +82,8 @@ export function FundsBalanceGrid({
       </article>
       <article className={styles.unifiedCard}>
         <div className={styles.cardLabel}>
-          <span>Owner unified balance</span>
-          <b>Includes floats</b>
+          <span>{testFunds ? "Particle UA mainnet balance" : "Owner unified balance"}</span>
+          <b>{testFunds ? "Separate" : "Includes floats"}</b>
         </div>
         <strong>{unifiedValue(snapshot)}</strong>
         <p>{unifiedNote(snapshot)}</p>
@@ -90,7 +98,7 @@ export function FundsBalanceGrid({
             <strong>
               {float.balanceAtomic === null ? "Unavailable" : formatUsdAtomic(float.balanceAtomic)}
             </strong>
-            <p>Native USDC</p>
+            <p>{float.testFunds ? TEST_FUNDS_LABEL : "Native USDC"}</p>
             <code>{float.network}</code>
           </article>
         ))

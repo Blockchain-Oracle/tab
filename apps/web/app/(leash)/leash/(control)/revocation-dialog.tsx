@@ -3,6 +3,11 @@
 import { type KeyboardEvent, type RefObject, useEffect, useRef, useState } from "react";
 
 import { formatUsdAtomic } from "../../../../lib/leash/leash-format";
+import {
+  BASE_SEPOLIA_INTEGRATION_PROFILE,
+  type PaymentProfile,
+} from "../../../../lib/leash/payment-profile";
+import { TEST_FUNDS_LABEL } from "../../../../lib/leash/test-funds";
 import { type RevocationAction, revocationDialogCopy } from "./revocation-copy";
 import styles from "./revocation-dialog.module.css";
 import { type LiveRead, parseLiveRead, readLabel } from "./revocation-live-read";
@@ -21,7 +26,7 @@ export function RevocationDialog({
   onClose,
   onSubmit,
 }: {
-  agent: { id: string; name: string };
+  agent: { id: string; name: string; paymentProfile: PaymentProfile };
   error: string | null;
   fallbackFocus: RefObject<HTMLElement | null>;
   kind: RevocationAction;
@@ -66,7 +71,7 @@ export function RevocationDialog({
     })
       .then(async (response) => {
         if (!response.ok) return { state: "unavailable" } as LiveRead;
-        return parseLiveRead(await response.json(), agent.id);
+        return parseLiveRead(await response.json(), agent.id, agent.paymentProfile);
       })
       .then((read) => {
         if (isCurrent()) setLiveRead(read);
@@ -80,7 +85,7 @@ export function RevocationDialog({
       window.clearTimeout(timeout);
       controller.abort();
     };
-  }, [agent.id, kind, readAttempt]);
+  }, [agent.id, agent.paymentProfile, kind, readAttempt]);
 
   function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (event.key === "Escape") {
@@ -110,6 +115,7 @@ export function RevocationDialog({
 
   const copy = revocationDialogCopy(kind, agent.name);
   const destructive = kind === "cancel" || kind === "nuclear";
+  const testFunds = agent.paymentProfile === BASE_SEPOLIA_INTEGRATION_PROFILE;
   const liveReadReady = !destructive || liveRead.state === "available";
   return (
     <div className={styles.backdrop}>
@@ -132,9 +138,12 @@ export function RevocationDialog({
         {kind === "nuclear" || kind === "cancel" ? (
           <div className={styles.balanceWarning}>
             <span>LIVE REMAINING FLOAT</span>
+            {testFunds ? <small>{TEST_FUNDS_LABEL}</small> : null}
             <strong>
               {liveRead.state === "loading"
-                ? "Refreshing Base + Arbitrum…"
+                ? testFunds
+                  ? "Refreshing Base Sepolia test funds…"
+                  : "Refreshing Base + Arbitrum…"
                 : liveRead.state === "available"
                   ? formatUsdAtomic(liveRead.totalAtomic)
                   : "Live read unavailable"}

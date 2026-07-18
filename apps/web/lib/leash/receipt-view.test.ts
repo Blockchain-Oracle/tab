@@ -79,6 +79,29 @@ describe("receipt API view", () => {
     });
   });
 
+  it("labels Base Sepolia receipts as test funds and links only to its explorer", () => {
+    expect(
+      receiptView(
+        receipt({
+          asset: "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+          network: "eip155:84532",
+        }),
+      ),
+    ).toMatchObject({
+      explorer: {
+        href: `https://sepolia.basescan.org/tx/${hash}`,
+        label: "View on Base Sepolia Basescan",
+      },
+      network: {
+        id: "eip155:84532",
+        label: "Base Sepolia",
+        target: false,
+        testFunds: true,
+        testFundsLabel: "Test funds — not real money",
+      },
+    });
+  });
+
   it("links a real failed transaction hash without calling the receipt settled", () => {
     expect(
       receiptView(

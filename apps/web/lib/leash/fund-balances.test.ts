@@ -15,7 +15,7 @@ describe("Leash live fund projection", () => {
     const createUniversalAccountClient = vi.fn();
 
     await expect(
-      readLeashFundsSnapshot(null, {
+      readLeashFundsSnapshot(null, "mainnet", {
         dependencies: {
           createUniversalAccountClient,
           readAccountSnapshot: vi.fn(),
@@ -26,6 +26,7 @@ describe("Leash live fund projection", () => {
     ).resolves.toEqual({
       agentAddress: null,
       floats: null,
+      paymentProfile: "mainnet",
       unified: { state: "not_provisioned" },
     });
     expect(readFloatBalance).not.toHaveBeenCalled();
@@ -38,14 +39,41 @@ describe("Leash live fund projection", () => {
       return BigInt(1_250_000);
     });
 
-    await expect(readLeashFloatBalances(agentAddress, { readFloatBalance })).resolves.toEqual([
-      { balanceAtomic: "1250000", label: "Base", network: "eip155:8453" },
-      { balanceAtomic: null, label: "Arbitrum", network: "eip155:42161" },
+    await expect(
+      readLeashFloatBalances(agentAddress, "mainnet", { readFloatBalance }),
+    ).resolves.toEqual([
+      { balanceAtomic: "1250000", label: "Base", network: "eip155:8453", testFunds: false },
+      {
+        balanceAtomic: null,
+        label: "Arbitrum",
+        network: "eip155:42161",
+        testFunds: false,
+      },
     ]);
     expect(readFloatBalance).toHaveBeenCalledTimes(2);
     expect(readFloatBalance).not.toHaveBeenCalledWith(
       expect.objectContaining({ network: "eip155:137" }),
     );
+  });
+
+  it("reads only Base Sepolia for the explicit integration profile", async () => {
+    const readFloatBalance = vi.fn().mockResolvedValue(BigInt(1_000));
+
+    await expect(
+      readLeashFloatBalances(agentAddress, "base_sepolia_integration", { readFloatBalance }),
+    ).resolves.toEqual([
+      {
+        balanceAtomic: "1000",
+        label: "Base Sepolia",
+        network: "eip155:84532",
+        testFunds: true,
+      },
+    ]);
+    expect(readFloatBalance).toHaveBeenCalledTimes(1);
+    expect(readFloatBalance).toHaveBeenCalledWith({
+      address: agentAddress,
+      network: "eip155:84532",
+    });
   });
 
   it("verifies the stored agent address through the Particle UA V2 snapshot", async () => {
@@ -56,7 +84,7 @@ describe("Leash live fund projection", () => {
       depositAddress: agentAddress,
     });
 
-    const result = await readLeashFundsSnapshot(agentAddress, {
+    const result = await readLeashFundsSnapshot(agentAddress, "mainnet", {
       dependencies: {
         createUniversalAccountClient,
         readAccountSnapshot,
@@ -95,12 +123,39 @@ describe("Leash live fund projection", () => {
     };
 
     await expect(
-      readLeashFundsSnapshot(agentAddress, { dependencies, env: {} }),
+      readLeashFundsSnapshot(agentAddress, "mainnet", { dependencies, env: {} }),
     ).resolves.toMatchObject({ unified: { state: "configuration_unavailable" } });
     expect(createUniversalAccountClient).not.toHaveBeenCalled();
 
     await expect(
-      readLeashFundsSnapshot(agentAddress, { dependencies, env: particle }),
+      readLeashFundsSnapshot(agentAddress, "mainnet", { dependencies, env: particle }),
     ).resolves.toMatchObject({ unified: { state: "read_unavailable" } });
+  });
+
+  it("does not query Particle mainnet state for a Base Sepolia integration agent", async () => {
+    const createUniversalAccountClient = vi.fn();
+    const readAccountSnapshot = vi.fn();
+    const readFloatBalance = vi.fn().mockResolvedValue(BigInt(1_000));
+
+    await expect(
+      readLeashFundsSnapshot(agentAddress, "base_sepolia_integration", {
+        dependencies: { createUniversalAccountClient, readAccountSnapshot, readFloatBalance },
+        env: particle,
+      }),
+    ).resolves.toEqual({
+      agentAddress,
+      floats: [
+        {
+          balanceAtomic: "1000",
+          label: "Base Sepolia",
+          network: "eip155:84532",
+          testFunds: true,
+        },
+      ],
+      paymentProfile: "base_sepolia_integration",
+      unified: { state: "not_applicable_testnet" },
+    });
+    expect(createUniversalAccountClient).not.toHaveBeenCalled();
+    expect(readAccountSnapshot).not.toHaveBeenCalled();
   });
 });

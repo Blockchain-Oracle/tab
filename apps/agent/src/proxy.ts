@@ -1,16 +1,18 @@
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import type { x402Client } from "@x402/core/client";
 import type { SettleResponse } from "@x402/core/types";
 import { MCP_PAYMENT_META_KEY, MCP_PAYMENT_RESPONSE_META_KEY } from "@x402/mcp";
 
 import { detectMcpPaymentRequired } from "./detect.js";
+import type { DurableMcpPayment, McpPaymentContext } from "./durable-mcp-payment.js";
 import { SignerNotConfiguredError } from "./errors.js";
 import { withPaymentOrigin, withPaymentResourceUrl } from "./origin-context.js";
+import { parsePaymentSettlementObservation } from "./payment-settlement-observation.js";
+import { withPaymentSignal } from "./payment-signal.js";
 
 interface LeashProxyOptions {
-  paymentClient?: x402Client;
+  payment?: DurableMcpPayment;
   upstream: Client;
 }
 
@@ -18,18 +20,12 @@ function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function settlementFromResult(result: unknown): SettleResponse | null {
+export function readMcpSettlementMetadata(
+  result: unknown,
+  expected: { amount?: string; network?: string } = {},
+): SettleResponse | null {
   if (!record(result) || !record(result._meta)) return null;
-  const settlement = result._meta[MCP_PAYMENT_RESPONSE_META_KEY];
-  if (
-    !record(settlement) ||
-    typeof settlement.success !== "boolean" ||
-    typeof settlement.network !== "string" ||
-    typeof settlement.transaction !== "string"
-  ) {
-    return null;
-  }
-  return settlement as SettleResponse;
+  return parsePaymentSettlementObservation(result._meta[MCP_PAYMENT_RESPONSE_META_KEY], expected);
 }
 
 export function createLeashProxyServer(options: LeashProxyOptions) {
@@ -42,58 +38,69 @@ export function createLeashProxyServer(options: LeashProxyOptions) {
     options.upstream.listTools(request.params, { signal: extra.signal }),
   );
 
-  server.setRequestHandler(CallToolRequestSchema, (request, extra) =>
-    withPaymentOrigin(
+  async function paidCall(
+    params: Parameters<Client["callTool"]>[0],
+    context: McpPaymentContext,
+    signal: AbortSignal,
+  ) {
+    const paidResult = await options.upstream.callTool(
       {
-        clientName: server.getClientVersion()?.name ?? "Unknown client",
-        toolName: request.params.name,
-        transport: "mcp",
+        ...params,
+        _meta: {
+          ...params._meta,
+          [MCP_PAYMENT_META_KEY]: context.payload,
+        },
       },
-      async () => {
-        let challenge = null;
-        let initialResult: Awaited<ReturnType<Client["callTool"]>> | undefined;
-        try {
-          initialResult = await options.upstream.callTool(request.params, undefined, {
-            signal: extra.signal,
-          });
-          challenge = detectMcpPaymentRequired(initialResult);
-        } catch (error) {
-          challenge = detectMcpPaymentRequired(error);
-          if (!challenge) throw error;
-        }
-        if (!challenge) {
-          if (!initialResult) throw new Error("Upstream tool returned no result");
-          return initialResult;
-        }
-        const paymentClient = options.paymentClient;
-        if (!paymentClient) throw new SignerNotConfiguredError();
+      undefined,
+      { signal },
+    );
+    const settlement = readMcpSettlementMetadata(paidResult, {
+      amount: context.payload.accepted.amount,
+      network: context.payload.accepted.network,
+    });
+    if (settlement) await options.payment?.observe(context, settlement);
+    return paidResult;
+  }
 
-        const paymentPayload = await withPaymentResourceUrl(challenge.resource.url, () =>
-          paymentClient.createPaymentPayload(challenge),
-        );
-        const paidResult = await options.upstream.callTool(
-          {
-            ...request.params,
-            _meta: {
-              ...request.params._meta,
-              [MCP_PAYMENT_META_KEY]: paymentPayload,
-            },
-          },
-          undefined,
-          { signal: extra.signal },
-        );
-        const settlement = settlementFromResult(paidResult);
-        if (settlement) {
-          await paymentClient.handlePaymentResponse({
-            paymentPayload,
-            requirements: paymentPayload.accepted,
-            settleResponse: settlement,
-          });
-        }
-        return paidResult;
-      },
-    ),
-  );
+  server.setRequestHandler(CallToolRequestSchema, (request, extra) => {
+    const signal = AbortSignal.any([extra.signal, AbortSignal.timeout(30_000)]);
+    return withPaymentSignal(signal, () =>
+      withPaymentOrigin(
+        {
+          clientName: server.getClientVersion()?.name ?? "Unknown client",
+          toolName: request.params.name,
+          transport: "mcp",
+        },
+        async () => {
+          const pending = await options.payment?.load(request.params);
+          if (pending) return paidCall(request.params, pending, signal);
+
+          let challenge = null;
+          let initialResult: Awaited<ReturnType<Client["callTool"]>> | undefined;
+          try {
+            initialResult = await options.upstream.callTool(request.params, undefined, {
+              signal,
+            });
+            challenge = detectMcpPaymentRequired(initialResult);
+          } catch (error) {
+            challenge = detectMcpPaymentRequired(error);
+            if (!challenge) throw error;
+          }
+          if (!challenge) {
+            if (!initialResult) throw new Error("Upstream tool returned no result");
+            return initialResult;
+          }
+          const payment = options.payment;
+          if (!payment) throw new SignerNotConfiguredError();
+
+          const context = await withPaymentResourceUrl(challenge.resource.url, () =>
+            payment.create(request.params, challenge),
+          );
+          return paidCall(request.params, context, signal);
+        },
+      ),
+    );
+  });
 
   return server;
 }

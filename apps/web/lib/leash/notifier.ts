@@ -2,6 +2,8 @@ import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import type { Database } from "../db/client";
 import { notifications } from "../db/schema";
+import type { LeashPaymentNetwork } from "./payment-profile";
+import { TEST_FUNDS_LABEL } from "./test-funds";
 
 type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
 type Notification = typeof notifications.$inferSelect;
@@ -24,7 +26,7 @@ interface FloatEmptyNotificationOptions {
   agentId: string;
   availableAtomic: string;
   cycleId: string;
-  network: "eip155:8453" | "eip155:42161";
+  network: LeashPaymentNetwork;
   now: Date;
   receiptId: string;
   reservedAtomic: string;
@@ -200,6 +202,7 @@ export async function emitFloatEmpty(
   options: FloatEmptyNotificationOptions,
 ) {
   const eventKey = `float_empty:${options.cycleId}:${options.network}`;
+  const testFunds = options.network === "eip155:84532";
   return insertOrFind(
     transaction,
     "float-empty",
@@ -215,6 +218,8 @@ export async function emitFloatEmpty(
             availableAtomic: options.availableAtomic,
             network: options.network,
             reservedAtomic: options.reservedAtomic,
+            testFunds,
+            testFundsLabel: testFunds ? TEST_FUNDS_LABEL : null,
           },
           receiptId: options.receiptId,
           sticky: false,

@@ -1,7 +1,15 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "declarationMap": false,
+    "sourceMap": false,
     "tsBuildInfoFile": "./tsconfig.build.tsbuildinfo"
   },
-  "exclude": ["node_modules", "dist", "src/**/*.test.ts", "src/**/*.integration.test.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/**/*.test.ts",
+    "src/**/*.integration.test.ts",
+    "src/**/*.test-support.ts"
+  ]
 }

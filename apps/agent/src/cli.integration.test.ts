@@ -73,7 +73,7 @@ describe("leash-mcp stdio CLI", () => {
       connectBodies.push(JSON.parse(Buffer.concat(chunks).toString("utf8")));
       expect(request.headers.authorization).toBe(`Bearer ${apiKey}`);
       response.setHeader("content-type", "application/json");
-      response.end(JSON.stringify({ agent: { address: null } }));
+      response.end(JSON.stringify({ agent: { address: null }, paymentProfile: "mainnet" }));
       return;
     }
     if (request.url === "/mcp") {
@@ -136,6 +136,7 @@ describe("leash-mcp stdio CLI", () => {
       cwd: process.cwd(),
       env: definedEnvironment({
         ...process.env,
+        LEASH_ALLOW_DEVELOPMENT_LOOPBACK: "1",
         LEASH_API_BASE_URL: origin,
         LEASH_API_KEY: apiKey,
       }),
@@ -150,7 +151,7 @@ describe("leash-mcp stdio CLI", () => {
         tools: [{ name: "paid_fetch" }],
       });
       const result = await client.callTool({
-        arguments: { url: `${origin}/free` },
+        arguments: { idempotencyKey: "stdio-free-1", url: `${origin}/free` },
         name: "paid_fetch",
       });
       expect(textResult(result)).toMatchObject({ body: "stdio result", status: 200 });
@@ -171,6 +172,7 @@ describe("leash-mcp stdio CLI", () => {
       cwd: process.cwd(),
       env: definedEnvironment({
         ...process.env,
+        LEASH_ALLOW_DEVELOPMENT_LOOPBACK: "1",
         LEASH_API_BASE_URL: origin,
         LEASH_API_KEY: apiKey,
       }),

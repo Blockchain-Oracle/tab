@@ -1,13 +1,10 @@
+import { decodeFunctionData, getAddress, isAddress } from "viem";
+import { arbitrum, base, baseSepolia } from "viem/chains";
+
 import {
-  createPublicClient,
-  decodeEventLog,
-  decodeFunctionData,
-  getAddress,
-  http,
-  isAddress,
-  type Log,
-} from "viem";
-import { arbitrum, base } from "viem/chains";
+  readFinalizedSettlementTransaction,
+  verifySuccessfulSettlementProof,
+} from "./x402-settlement-proof";
 
 const SETTLEMENT_NETWORKS = {
   "eip155:42161": {
@@ -20,29 +17,12 @@ const SETTLEMENT_NETWORKS = {
     env: "BASE_RPC_URL",
     token: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
   },
+  "eip155:84532": {
+    chain: baseSepolia,
+    env: "BASE_SEPOLIA_RPC_URL",
+    token: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  },
 } as const;
-
-const SETTLEMENT_EVENTS = [
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: true, name: "from", type: "address" },
-      { indexed: true, name: "to", type: "address" },
-      { indexed: false, name: "value", type: "uint256" },
-    ],
-    name: "Transfer",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: true, name: "authorizer", type: "address" },
-      { indexed: true, name: "nonce", type: "bytes32" },
-    ],
-    name: "AuthorizationUsed",
-    type: "event",
-  },
-] as const;
 
 const EIP3009_TRANSFERS = [
   {
@@ -172,19 +152,6 @@ export function parseSettlementObservation(value: unknown) {
   };
 }
 
-function decodedLog(log: Log) {
-  try {
-    return decodeEventLog({
-      abi: SETTLEMENT_EVENTS,
-      data: log.data,
-      strict: true,
-      topics: log.topics,
-    });
-  } catch {
-    return null;
-  }
-}
-
 function matchesRevertedAuthorization(
   transaction: { input: `0x${string}`; to: string | null },
   token: string,
@@ -239,43 +206,33 @@ export async function verifySettlementOnchain(
   }
   const config = SETTLEMENT_NETWORKS[evidence.network];
   const rpcUrl = expected.rpcUrl ?? process.env[config.env] ?? config.chain.rpcUrls.default.http[0];
-  const client = createPublicClient({ chain: config.chain, transport: http(rpcUrl) });
-  let transactionReceipt: Awaited<ReturnType<typeof client.getTransactionReceipt>>;
-  try {
-    transactionReceipt = await client.getTransactionReceipt({ hash: evidence.transaction });
-  } catch {
+  if (evidence.success) {
+    const proof = await verifySuccessfulSettlementProof({
+      amountAtomic: expected.amountAtomic,
+      asset: config.token,
+      network: evidence.network,
+      nonce: expected.authorizationNonce,
+      payee: expected.payTo,
+      payer: expected.agentAddress,
+      rpcUrl,
+      transactionHash: evidence.transaction,
+    });
+    return proof.status === "verified";
+  }
+  const finalized = await readFinalizedSettlementTransaction({
+    network: evidence.network,
+    rpcUrl,
+    transactionHash: evidence.transaction,
+  });
+  if (finalized.status !== "finalized") return false;
+  const transactionReceipt = finalized.receipt;
+  if (
+    !transactionReceipt.to ||
+    !isAddress(transactionReceipt.to) ||
+    getAddress(transactionReceipt.to) !== getAddress(config.token)
+  ) {
     return false;
   }
-  if (!transactionReceipt.to || getAddress(transactionReceipt.to) !== getAddress(config.token)) {
-    return false;
-  }
-  if (!evidence.success) {
-    if (transactionReceipt.status !== "reverted") return false;
-    try {
-      const transaction = await client.getTransaction({ hash: evidence.transaction });
-      return matchesRevertedAuthorization(transaction, config.token, expected);
-    } catch {
-      return false;
-    }
-  }
-  if (transactionReceipt.status !== "success") return false;
-
-  let transferred = false;
-  let authorizationUsed = false;
-  for (const log of transactionReceipt.logs) {
-    if (getAddress(log.address) !== getAddress(config.token)) continue;
-    const decoded = decodedLog(log);
-    if (decoded?.eventName === "Transfer") {
-      transferred ||=
-        getAddress(decoded.args.from) === getAddress(expected.agentAddress) &&
-        getAddress(decoded.args.to) === getAddress(expected.payTo) &&
-        decoded.args.value === BigInt(expected.amountAtomic);
-    }
-    if (decoded?.eventName === "AuthorizationUsed") {
-      authorizationUsed ||=
-        getAddress(decoded.args.authorizer) === getAddress(expected.agentAddress) &&
-        decoded.args.nonce.toLowerCase() === expected.authorizationNonce.toLowerCase();
-    }
-  }
-  return transferred && authorizationUsed;
+  if (transactionReceipt.status !== "reverted") return false;
+  return matchesRevertedAuthorization(finalized.transaction, config.token, expected);
 }

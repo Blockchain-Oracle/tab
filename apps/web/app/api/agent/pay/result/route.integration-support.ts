@@ -8,6 +8,33 @@ export const nonce = `0x${"12".repeat(32)}` as const;
 export const authorizationValidBefore = new Date(2_000_000_000_000);
 export const transaction = `0x${"ab".repeat(32)}` as const;
 const blockHash = `0x${"cd".repeat(32)}`;
+const zeroHash = `0x${"00".repeat(32)}`;
+
+export function rpcBlock(number: number, hash = blockHash) {
+  return {
+    baseFeePerGas: "0x1",
+    difficulty: "0x0",
+    extraData: "0x",
+    gasLimit: "0x1c9c380",
+    gasUsed: "0x5208",
+    hash,
+    logsBloom: `0x${"00".repeat(256)}`,
+    miner: facilitator,
+    mixHash: zeroHash,
+    nonce: "0x0000000000000000",
+    number: `0x${number.toString(16)}`,
+    parentHash: zeroHash,
+    receiptsRoot: zeroHash,
+    sha3Uncles: zeroHash,
+    size: "0x1",
+    stateRoot: zeroHash,
+    timestamp: "0x77359400",
+    totalDifficulty: "0x0",
+    transactions: [],
+    transactionsRoot: zeroHash,
+    uncles: [],
+  };
+}
 
 const events = [
   {

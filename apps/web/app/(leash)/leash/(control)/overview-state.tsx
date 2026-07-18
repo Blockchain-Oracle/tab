@@ -3,6 +3,10 @@ import Link from "next/link";
 import type { CapPolicyView } from "../../../../lib/leash/cap-view";
 import { formatBasisPoints, formatUsdAtomic } from "../../../../lib/leash/leash-format";
 import type { OwnerAgent } from "../../../../lib/leash/owner-agents";
+import {
+  BASE_SEPOLIA_INTEGRATION_PROFILE,
+  type PaymentProfile,
+} from "../../../../lib/leash/payment-profile";
 import type { FloatHealth } from "./float-health";
 import type { NotificationPreview } from "./overview-notifications";
 import styles from "./overview-state.module.css";
@@ -64,6 +68,7 @@ export function OverviewStateNotices({
   floatHealth,
   hasAddress,
   notifications,
+  paymentProfile,
   policy,
   query,
   status,
@@ -71,6 +76,7 @@ export function OverviewStateNotices({
   floatHealth: FloatHealth;
   hasAddress: boolean;
   notifications: NotificationPreview[];
+  paymentProfile: PaymentProfile;
   policy: CapPolicyView | null;
   query: string;
   status: Status;
@@ -138,7 +144,9 @@ export function OverviewStateNotices({
             </strong>
             <p>
               {floatEmpty
-                ? "Live Base and Arbitrum reads both returned zero."
+                ? paymentProfile === BASE_SEPOLIA_INTEGRATION_PROFILE
+                  ? "Live Base Sepolia test-fund read returned zero."
+                  : "Live Base and Arbitrum reads both returned zero."
                 : floatLow && floatHealth.totalAtomic !== null
                   ? `${formatUsdAtomic(floatHealth.totalAtomic.toString())} remains, below the fixed $5 floor. Percentage threshold is unavailable until a real top-up event exists.`
                   : "This warning comes from a stored real float event; the current live read is unavailable."}

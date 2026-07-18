@@ -22,6 +22,7 @@ function toolJson(result: unknown) {
 
 describe("standalone paid_fetch MCP tool", () => {
   const requests: Array<{ body: string; header: string | undefined; method: string }> = [];
+  let privateRedirectHits = 0;
   let origin = "";
   const httpServer = createServer(async (request, response) => {
     const chunks: Buffer[] = [];
@@ -40,15 +41,36 @@ describe("standalone paid_fetch MCP tool", () => {
       response.end("x".repeat(300_000));
       return;
     }
+    if (request.url === "/redirect-private") {
+      const address = httpServer.address();
+      if (!address || typeof address === "string") throw new Error("Expected a TCP listener");
+      response.statusCode = 302;
+      response.setHeader("location", `http://0.0.0.0:${address.port}/private-secret`);
+      response.end();
+      return;
+    }
+    if (request.url === "/private-secret") {
+      privateRedirectHits += 1;
+      response.end("must not be returned");
+      return;
+    }
+    if (request.url === "/aborted-body") {
+      response.writeHead(200, { "content-type": "text/plain" });
+      response.write("partial-secret-body");
+      response.socket?.destroy();
+      return;
+    }
     response.statusCode = 201;
     response.setHeader("x-origin", "loopback");
     response.end("free response");
   });
   const server = createPaidFetchServer({
     address: null,
+    allowDevelopmentLoopback: true,
     apiBaseUrl: "https://tab.example.test",
     apiKey: `leash_sk_${"c".repeat(43)}`,
     fetch: globalThis.fetch,
+    paymentProfile: "mainnet",
   });
   const client = new Client({ name: "integration-host", version: "1.0.0" });
 
@@ -75,7 +97,7 @@ describe("standalone paid_fetch MCP tool", () => {
         {
           inputSchema: {
             additionalProperties: false,
-            required: ["url"],
+            required: ["idempotencyKey", "url"],
             type: "object",
           },
           name: "paid_fetch",
@@ -90,6 +112,7 @@ describe("standalone paid_fetch MCP tool", () => {
       arguments: {
         body: "hello",
         headers: { "x-test": "forwarded" },
+        idempotencyKey: "free-post-1",
         method: "POST",
         url: `${origin}/free`,
       },
@@ -108,7 +131,7 @@ describe("standalone paid_fetch MCP tool", () => {
 
   it("allows free traffic but fails honestly on 402 without a signer address", async () => {
     const result = await client.callTool({
-      arguments: { url: `${origin}/paid` },
+      arguments: { idempotencyKey: "paid-1", url: `${origin}/paid` },
       name: "paid_fetch",
     });
 
@@ -121,15 +144,45 @@ describe("standalone paid_fetch MCP tool", () => {
     });
   });
 
+  it("does not follow a free-response redirect to a forbidden target", async () => {
+    privateRedirectHits = 0;
+    const result = await client.callTool({
+      arguments: { idempotencyKey: "redirect-1", url: `${origin}/redirect-private` },
+      name: "paid_fetch",
+    });
+
+    expect(result.isError).toBe(true);
+    expect(toolJson(result)).toEqual({
+      error: { code: "FETCH_FAILED", message: "The fetch request failed." },
+    });
+    expect(privateRedirectHits).toBe(0);
+  });
+
+  it("maps a response stream failure to the secret-safe fetch error", async () => {
+    const result = await client.callTool({
+      arguments: { idempotencyKey: "aborted-1", url: `${origin}/aborted-body` },
+      name: "paid_fetch",
+    });
+
+    expect(result.isError).toBe(true);
+    expect(toolJson(result)).toEqual({
+      error: { code: "FETCH_FAILED", message: "The fetch request failed." },
+    });
+  });
+
   it("truncates oversized bodies and rejects non-HTTP or non-schema input", async () => {
     const large = toolJson(
-      await client.callTool({ arguments: { url: `${origin}/large` }, name: "paid_fetch" }),
+      await client.callTool({
+        arguments: { idempotencyKey: "large-1", url: `${origin}/large` },
+        name: "paid_fetch",
+      }),
     );
     expect(large.truncated).toBe(true);
     expect(String(large.body).length).toBeLessThanOrEqual(262_144);
 
     for (const arguments_ of [
       { url: "file:///tmp/secret" },
+      { idempotencyKey: "bad space", url: `${origin}/free` },
       { extra: true, url: `${origin}/free` },
       { body: "not allowed", method: "GET", url: `${origin}/free` },
     ]) {

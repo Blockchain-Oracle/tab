@@ -2,12 +2,9 @@ import { createHash } from "node:crypto";
 
 import { getAddress, isAddress } from "viem";
 
+import { networksForPaymentProfile, type PaymentProfile } from "./payment-profile";
 import { canonicalResourceIdentity } from "./resource-identity";
 
-const BASE_NETWORK = "eip155:8453";
-const ARBITRUM_NETWORK = "eip155:42161";
-const BASE_USDC = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
-const ARBITRUM_USDC = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
 const MAX_AUTHORIZATION_LIFETIME_SECONDS = 600;
 // Mirrors numeric(20,0) cap cents at 10,000 atomic USDC units per cent.
 const MAX_CAP_USD_CENTS = BigInt(10) ** BigInt(20) - BigInt(1);
@@ -72,17 +69,17 @@ function address(value: unknown) {
   return getAddress(value);
 }
 
-function supportedNetwork(value: unknown) {
-  if (value === BASE_NETWORK)
-    return { asset: getAddress(BASE_USDC), chainId: "8453", network: BASE_NETWORK } as const;
-  if (value === ARBITRUM_NETWORK) {
-    return {
-      asset: getAddress(ARBITRUM_USDC),
-      chainId: "42161",
-      network: ARBITRUM_NETWORK,
-    } as const;
-  }
-  throw new InvalidSignRequestError();
+function supportedNetwork(value: unknown, paymentProfile: PaymentProfile) {
+  const selected = networksForPaymentProfile(paymentProfile).find(
+    (configuration) => configuration.network === value,
+  );
+  if (!selected) throw new InvalidSignRequestError();
+  return {
+    asset: getAddress(selected.asset),
+    chainId: String(selected.chainId),
+    domainName: selected.domainName,
+    network: selected.network,
+  };
 }
 
 function safeHttpToolName(value: unknown) {
@@ -166,7 +163,7 @@ function resource(value: unknown) {
 
 export function parseSignRequest(
   value: unknown,
-  options: { agentAddress: string; nowSeconds?: number },
+  options: { agentAddress: string; nowSeconds?: number; paymentProfile: PaymentProfile },
 ) {
   const body = exactRecord(value, [
     "amount",
@@ -177,7 +174,7 @@ export function parseSignRequest(
     "resourceUrl",
     "signerRequest",
   ]);
-  const network = supportedNetwork(body.network);
+  const network = supportedNetwork(body.network, options.paymentProfile);
   const amountAtomic = unsigned(body.amount);
   const amount = BigInt(amountAtomic);
   if (amount === BigInt(0) || amount > MAX_USDC_AMOUNT_ATOMIC) {
@@ -204,7 +201,7 @@ export function parseSignRequest(
     "version",
   ]);
   if (
-    domain.name !== "USD Coin" ||
+    domain.name !== network.domainName ||
     domain.version !== "2" ||
     unsigned(domain.chainId) !== network.chainId ||
     address(domain.verifyingContract) !== asset

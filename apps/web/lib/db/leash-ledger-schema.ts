@@ -50,7 +50,9 @@ export const floats = pgTable(
       sql`(${table.network} = 'eip155:8453'
           and lower(${table.tokenAddress}) = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913')
         or (${table.network} = 'eip155:42161'
-          and lower(${table.tokenAddress}) = '0xaf88d065e77c8cc2239327c5edb3a432268e5831')`,
+          and lower(${table.tokenAddress}) = '0xaf88d065e77c8cc2239327c5edb3a432268e5831')
+        or (${table.network} = 'eip155:84532'
+          and lower(${table.tokenAddress}) = '0x036cbd53842c5426634e7929541ec2318f3dcf7e')`,
     ),
   ],
 );

@@ -1,6 +1,14 @@
 import { getAddress, type TypedData } from "viem";
 
-import { ARBITRUM_NETWORK, ARBITRUM_USDC, BASE_NETWORK, BASE_USDC } from "./routing.js";
+import type { PaymentProfile } from "./payment-profile.js";
+import {
+  ARBITRUM_NETWORK,
+  ARBITRUM_USDC,
+  BASE_NETWORK,
+  BASE_SEPOLIA_NETWORK,
+  BASE_SEPOLIA_USDC,
+  BASE_USDC,
+} from "./routing.js";
 
 const MAX_AUTHORIZATION_LIFETIME_SECONDS = 600;
 // Mirrors numeric(20,0) cap cents at 10,000 atomic USDC units per cent.
@@ -58,32 +66,49 @@ function address(value: unknown) {
   }
 }
 
-function network(chainIdValue: unknown) {
+function network(chainIdValue: unknown, paymentProfile: PaymentProfile) {
   const chainId =
     typeof chainIdValue === "number" && Number.isSafeInteger(chainIdValue)
       ? String(chainIdValue)
       : unsigned(chainIdValue);
-  if (chainId === "8453") {
-    return { asset: getAddress(BASE_USDC), chainId: 8453, network: BASE_NETWORK };
+  if (paymentProfile === "mainnet" && chainId === "8453") {
+    return { asset: getAddress(BASE_USDC), chainId: 8453, name: "USD Coin", network: BASE_NETWORK };
   }
-  if (chainId === "42161") {
-    return { asset: getAddress(ARBITRUM_USDC), chainId: 42161, network: ARBITRUM_NETWORK };
+  if (paymentProfile === "mainnet" && chainId === "42161") {
+    return {
+      asset: getAddress(ARBITRUM_USDC),
+      chainId: 42161,
+      name: "USD Coin",
+      network: ARBITRUM_NETWORK,
+    };
+  }
+  if (paymentProfile === "base_sepolia_integration" && chainId === "84532") {
+    return {
+      asset: getAddress(BASE_SEPOLIA_USDC),
+      chainId: 84532,
+      name: "USDC",
+      network: BASE_SEPOLIA_NETWORK,
+    };
   }
   throw new InvalidEip3009AuthorizationError();
 }
 
 export function parseExactEip3009Authorization(
   value: SignerRequest,
-  options: { address: `0x${string}`; nowSeconds: number },
+  options: { address: `0x${string}`; nowSeconds: number; paymentProfile: PaymentProfile },
 ) {
   const request = exactRecord(value, ["domain", "message", "primaryType", "types"]);
   if (request.primaryType !== "TransferWithAuthorization") {
     throw new InvalidEip3009AuthorizationError();
   }
   const domain = exactRecord(request.domain, ["chainId", "name", "verifyingContract", "version"]);
-  const selectedNetwork = network(domain.chainId);
+  const selectedNetwork = network(domain.chainId, options.paymentProfile);
   const asset = address(domain.verifyingContract);
-  if (domain.name !== "USD Coin" || domain.version !== "2" || asset !== selectedNetwork.asset) {
+  if (
+    domain.name !== selectedNetwork.name ||
+    domain.version !== "2" ||
+    asset !== selectedNetwork.asset
+  ) {
     throw new InvalidEip3009AuthorizationError();
   }
   const types = exactRecord(request.types, ["TransferWithAuthorization"]);
@@ -126,7 +151,7 @@ export function parseExactEip3009Authorization(
     typedData: {
       domain: {
         chainId: selectedNetwork.chainId,
-        name: "USD Coin",
+        name: selectedNetwork.name,
         verifyingContract: asset,
         version: "2",
       },

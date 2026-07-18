@@ -11,9 +11,20 @@ describe("Leash funds surface", () => {
     const snapshot = {
       agentAddress: address,
       floats: [
-        { balanceAtomic: "1250000", label: "Base", network: "eip155:8453" },
-        { balanceAtomic: null, label: "Arbitrum", network: "eip155:42161" },
+        {
+          balanceAtomic: "1250000",
+          label: "Base",
+          network: "eip155:8453",
+          testFunds: false,
+        },
+        {
+          balanceAtomic: null,
+          label: "Arbitrum",
+          network: "eip155:42161",
+          testFunds: false,
+        },
       ],
+      paymentProfile: "mainnet",
       unified: { balanceUsd: 8.5, depositAddress: address, state: "available" },
     } satisfies LeashFundsSnapshot;
 
@@ -42,6 +53,7 @@ describe("Leash funds surface", () => {
     const snapshot = {
       agentAddress: null,
       floats: null,
+      paymentProfile: "mainnet",
       unified: { state: "not_provisioned" },
     } satisfies LeashFundsSnapshot;
 
@@ -60,9 +72,15 @@ describe("Leash funds surface", () => {
     const snapshot = {
       agentAddress: address,
       floats: [
-        { balanceAtomic: "0", label: "Base", network: "eip155:8453" },
-        { balanceAtomic: "0", label: "Arbitrum", network: "eip155:42161" },
+        { balanceAtomic: "0", label: "Base", network: "eip155:8453", testFunds: false },
+        {
+          balanceAtomic: "0",
+          label: "Arbitrum",
+          network: "eip155:42161",
+          testFunds: false,
+        },
       ],
+      paymentProfile: "mainnet",
       unified: { state: "configuration_unavailable" },
     } satisfies LeashFundsSnapshot;
 
@@ -78,9 +96,15 @@ describe("Leash funds surface", () => {
     const snapshot = {
       agentAddress: address,
       floats: [
-        { balanceAtomic: "1", label: "Base", network: "eip155:8453" },
-        { balanceAtomic: "2", label: "Arbitrum", network: "eip155:42161" },
+        { balanceAtomic: "1", label: "Base", network: "eip155:8453", testFunds: false },
+        {
+          balanceAtomic: "2",
+          label: "Arbitrum",
+          network: "eip155:42161",
+          testFunds: false,
+        },
       ],
+      paymentProfile: "mainnet",
       unified: { balanceUsd: 1, depositAddress: address, state: "available" },
     } satisfies LeashFundsSnapshot;
 
@@ -99,9 +123,20 @@ describe("Leash funds surface", () => {
     const snapshot = {
       agentAddress: address,
       floats: [
-        { balanceAtomic: "4000000", label: "Base", network: "eip155:8453" },
-        { balanceAtomic: "2000000", label: "Arbitrum", network: "eip155:42161" },
+        {
+          balanceAtomic: "4000000",
+          label: "Base",
+          network: "eip155:8453",
+          testFunds: false,
+        },
+        {
+          balanceAtomic: "2000000",
+          label: "Arbitrum",
+          network: "eip155:42161",
+          testFunds: false,
+        },
       ],
+      paymentProfile: "mainnet",
       unified: { balanceUsd: 6, depositAddress: address, state: "available" },
     } satisfies LeashFundsSnapshot;
 
@@ -117,9 +152,15 @@ describe("Leash funds surface", () => {
     const snapshot = {
       agentAddress: address,
       floats: [
-        { balanceAtomic: "0", label: "Base", network: "eip155:8453" },
-        { balanceAtomic: "0", label: "Arbitrum", network: "eip155:42161" },
+        { balanceAtomic: "0", label: "Base", network: "eip155:8453", testFunds: false },
+        {
+          balanceAtomic: "0",
+          label: "Arbitrum",
+          network: "eip155:42161",
+          testFunds: false,
+        },
       ],
+      paymentProfile: "mainnet",
       unified: { state: "configuration_unavailable" },
     } satisfies LeashFundsSnapshot;
     const html = renderToStaticMarkup(
@@ -130,5 +171,32 @@ describe("Leash funds surface", () => {
     expect(html).toContain("Leash withdrawal is unavailable after nuclear destruction");
     expect(html).toContain("EMPTY");
     expect(html).not.toContain("Send native USDC");
+  });
+
+  it("keeps Base Sepolia integration balances unmistakably separate from real money", () => {
+    const snapshot = {
+      agentAddress: address,
+      floats: [
+        {
+          balanceAtomic: "1000",
+          label: "Base Sepolia",
+          network: "eip155:84532",
+          testFunds: true,
+        },
+      ],
+      paymentProfile: "base_sepolia_integration",
+      unified: { state: "not_applicable_testnet" },
+    } satisfies LeashFundsSnapshot;
+
+    const html = renderToStaticMarkup(
+      <FundsPanel agentName="Integration agent" agentStatus="provisioned" snapshot={snapshot} />,
+    );
+
+    expect(html).toContain("Test funds — not real money");
+    expect(html).toContain("Base Sepolia");
+    expect(html).toContain("eip155:84532");
+    expect(html).toContain("Send Circle Base Sepolia USDC test funds to this address.");
+    expect(html).toContain("Particle mainnet balance is separate from this testnet profile.");
+    expect(html).not.toContain("Send native USDC on Base or Arbitrum");
   });
 });

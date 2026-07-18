@@ -12,6 +12,8 @@ import {
   createRevocationHarness,
   deferredResponse,
   destroyRevocationHarness,
+  integrationAgent,
+  integrationLiveRead,
   liveRead,
   type RevocationHarness,
   writeInput,
@@ -155,5 +157,23 @@ describe("Leash revocation live evidence", () => {
       "Revocation service unavailable.",
     );
     expect(button(dialog, "Confirm pause").disabled).toBe(false);
+  });
+
+  it("labels a Base Sepolia destructive preflight as test funds, never as mainnet", async () => {
+    const read = deferredResponse();
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(read.promise));
+    await act(async () => harness.root.render(<RevocationPanel agent={integrationAgent} />));
+    await act(async () => button(harness.container, "Destroy credential").click());
+    const dialog = harness.container.querySelector('[role="alertdialog"]');
+    if (!dialog) throw new Error("Nuclear confirmation not found");
+
+    expect(dialog.textContent).toContain("Refreshing Base Sepolia test funds");
+    expect(dialog.textContent).not.toContain("Refreshing Base + Arbitrum");
+    await act(async () => {
+      read.resolve(new Response(JSON.stringify(integrationLiveRead), { status: 200 }));
+      await read.promise;
+      await Promise.resolve();
+    });
+    expect(dialog.textContent).toContain("Test funds — not real money");
   });
 });

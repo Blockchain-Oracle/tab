@@ -136,6 +136,7 @@ export async function revokeOwnerAgent(
       .values({
         actorSurface: input.actorSurface,
         agentId: agent.id,
+        createdAt: sql`statement_timestamp()`,
         metadata: { action: input.action, fromStatus: agent.status, toStatus: nextStatus },
         type: "revoke",
       })

@@ -30,6 +30,7 @@ describe("Connect MCP configuration", () => {
       },
     });
     expect(parseRenderedConfiguration(configuration)).toEqual({
+      allowDevelopmentLoopback: false,
       apiBaseUrl: "https://tab.example.test/",
       apiKey: realKey,
       upstreamUrl: null,

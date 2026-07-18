@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { readOwnerLeashKey } from "../../../../lib/auth/leash-key";
 import { formatUsdAtomic } from "../../../../lib/leash/leash-format";
 import type { OwnerAgent } from "../../../../lib/leash/owner-agents";
+import { BASE_SEPOLIA_INTEGRATION_PROFILE } from "../../../../lib/leash/payment-profile";
 import { EvidenceCopyButton } from "./evidence-copy-button";
 import type { FloatHealth } from "./float-health";
 import styles from "./overview-cards.module.css";
@@ -65,7 +66,13 @@ export function OverviewCards({
               : "Live read unavailable"
             : formatUsdAtomic(health.totalAtomic.toString())}
         </strong>
-        <p>{agent.agentAddress ? "Native USDC floats" : "No signing address exists"}</p>
+        <p>
+          {agent.agentAddress
+            ? agent.paymentProfile === BASE_SEPOLIA_INTEGRATION_PROFILE
+              ? "Base Sepolia test funds"
+              : "Native USDC floats"
+            : "No signing address exists"}
+        </p>
         {floats ? (
           <ul className={styles.floatList}>
             {floats.map((read) => (

@@ -7,6 +7,7 @@ import {
   InvalidConnectRequestError,
   parseConnectRequest,
 } from "../../../../lib/leash/connect";
+import { readSignRequestBody, SignRequestBodyError } from "../sign/sign-request-body";
 
 const NO_STORE = { "cache-control": "no-store" };
 
@@ -28,9 +29,12 @@ export async function POST(request: NextRequest) {
 
   let input: ReturnType<typeof parseConnectRequest>;
   try {
-    input = parseConnectRequest(await request.text());
+    input = parseConnectRequest(await readSignRequestBody(request));
   } catch (parseError) {
-    if (parseError instanceof InvalidConnectRequestError) {
+    if (
+      parseError instanceof InvalidConnectRequestError ||
+      parseError instanceof SignRequestBodyError
+    ) {
       return error("INVALID_CONNECT_REQUEST", "The connect request is invalid.", 400);
     }
     throw parseError;
@@ -48,6 +52,7 @@ export async function POST(request: NextRequest) {
         transport: connected.transport,
         version: connected.clientVersion,
       },
+      paymentProfile: connected.paymentProfile,
     },
     { headers: NO_STORE, status: 200 },
   );

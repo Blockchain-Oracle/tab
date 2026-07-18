@@ -26,8 +26,14 @@ async function failLockedReceipt(
     .set({
       intendedNetwork: blockedByCap ? receipt.network : null,
       reason: failure,
+      signedAt: null,
       settlementResponse: null,
       settledAt: null,
+      signingClaimedAt: null,
+      signingClaimToken: null,
+      signingDigest: null,
+      signingLeaseExpiresAt: null,
+      signingSignature: null,
       status: blockedByCap ? "blocked" : "failed",
       txHash: null,
     })

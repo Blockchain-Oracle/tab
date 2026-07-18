@@ -1,4 +1,6 @@
 import type { LeashFundsSnapshot } from "../../../../../lib/leash/fund-balances";
+import { BASE_SEPOLIA_INTEGRATION_PROFILE } from "../../../../../lib/leash/payment-profile";
+import { TEST_FUNDS_LABEL } from "../../../../../lib/leash/test-funds";
 import { EvidenceCopyButton } from "../evidence-copy-button";
 import { classifyFloatHealth } from "../float-health";
 import { FundsBalanceGrid } from "./funds-balance-grid";
@@ -26,7 +28,8 @@ const blockedActions = [
 
 function readState(snapshot: LeashFundsSnapshot) {
   const complete =
-    snapshot.unified.state === "available" &&
+    (snapshot.unified.state === "available" ||
+      snapshot.unified.state === "not_applicable_testnet") &&
     snapshot.floats?.every((float) => float.balanceAtomic !== null);
   if (complete) return { className: styles.readChip, label: "LIVE READS" };
   return {
@@ -47,12 +50,18 @@ export function FundsPanel({
   const reads = readState(snapshot);
   const health = classifyFloatHealth(snapshot.floats, snapshot.agentAddress !== null);
   const terminal = agentStatus === "cancelled" || agentStatus === "nuked";
+  const testFunds = snapshot.paymentProfile === BASE_SEPOLIA_INTEGRATION_PROFILE;
   return (
     <main className={styles.page}>
       <header className={styles.header}>
         <p className={styles.eyebrow}>FLOAT TREASURY</p>
         <h1>Funds</h1>
         <p>Live balances for {agentName}. Reads never move money.</p>
+        {testFunds ? (
+          <p role="status">
+            <strong>{TEST_FUNDS_LABEL}</strong> · Base Sepolia integration profile
+          </p>
+        ) : null}
       </header>
 
       <section aria-labelledby="funding-address-title">
@@ -79,7 +88,9 @@ export function FundsPanel({
               ? "A real provider address is required before funds can be sent or read."
               : terminal
                 ? "Do not deposit. This address is retained only for receipt and balance evidence."
-                : "Send native USDC on Base or Arbitrum to this address."}
+                : testFunds
+                  ? "Send Circle Base Sepolia USDC test funds to this address."
+                  : "Send native USDC on Base or Arbitrum to this address."}
           </p>
         </article>
       </section>
@@ -98,7 +109,11 @@ export function FundsPanel({
         <div className={styles.sectionHeading}>
           <div>
             <h2 id="balances-title">Available liquidity</h2>
-            <p>Unified balance includes floats; chain balances are not added again.</p>
+            <p>
+              {testFunds
+                ? "Base Sepolia is isolated from the separate Particle mainnet balance."
+                : "Unified balance includes floats; chain balances are not added again."}
+            </p>
           </div>
           <span className={reads.className}>{reads.label}</span>
         </div>

@@ -15,6 +15,7 @@ import {
   baseUsdc,
   nonce,
   payTo,
+  rpcBlock,
   rpcReceipt,
   rpcTransaction,
   transaction,
@@ -24,6 +25,7 @@ const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required for pay-result route tests");
 const connection = createDatabase(databaseUrl, 2);
 const originalRpcUrl = process.env.BASE_RPC_URL;
+const finalizedHash = `0x${"ef".repeat(32)}`;
 
 async function provision() {
   const [user] = await connection.db
@@ -105,6 +107,7 @@ function request(secret: string | null, body: unknown) {
 }
 
 describe("POST /api/agent/pay/result", () => {
+  let finalizedBlockNumber = 2;
   let includeAuthorization = false;
   let reverted = false;
   const server = createServer(async (incoming, response) => {
@@ -117,9 +120,15 @@ describe("POST /api/agent/pay/result", () => {
         id: body.id,
         jsonrpc: "2.0",
         result:
-          body.method === "eth_getTransactionByHash"
-            ? rpcTransaction()
-            : rpcReceipt(includeAuthorization, !reverted),
+          body.method === "eth_chainId"
+            ? "0x2105"
+            : body.method === "eth_getBlockByNumber"
+              ? body.params[0] === "finalized"
+                ? rpcBlock(finalizedBlockNumber, finalizedHash)
+                : rpcBlock(Number(BigInt(body.params[0])))
+              : body.method === "eth_getTransactionByHash"
+                ? rpcTransaction()
+                : rpcReceipt(includeAuthorization, !reverted),
       }),
     );
   });
@@ -132,6 +141,7 @@ describe("POST /api/agent/pay/result", () => {
   });
 
   beforeEach(async () => {
+    finalizedBlockNumber = 2;
     includeAuthorization = false;
     reverted = false;
     await connection.client`truncate table users cascade`;
@@ -185,6 +195,21 @@ describe("POST /api/agent/pay/result", () => {
     expect(stored).toEqual({ status: "settled", txHash: transaction });
   });
 
+  it("returns 202 until a successful receipt is in the finalized canonical chain", async () => {
+    const pending = await provision();
+    includeAuthorization = true;
+    finalizedBlockNumber = 0;
+
+    const early = await POST(request(pending.secret, observation(pending.receiptId)));
+    expect(early.status).toBe(202);
+    await expect(early.json()).resolves.toMatchObject({ status: "pending", verified: false });
+
+    finalizedBlockNumber = 2;
+    const finalized = await POST(request(pending.secret, observation(pending.receiptId)));
+    expect(finalized.status).toBe(200);
+    await expect(finalized.json()).resolves.toMatchObject({ status: "settled", verified: true });
+  });
+
   it("records a mined reverted authorization call as failed with its real hash", async () => {
     const pending = await provision();
     reverted = true;
@@ -204,5 +229,20 @@ describe("POST /api/agent/pay/result", () => {
       status: "failed",
       txHash: transaction,
     });
+  });
+
+  it("returns 202 for a reverted authorization call until its block is finalized", async () => {
+    const pending = await provision();
+    reverted = true;
+    finalizedBlockNumber = 0;
+
+    const early = await POST(request(pending.secret, failedObservation(pending.receiptId)));
+    expect(early.status).toBe(202);
+    await expect(early.json()).resolves.toMatchObject({ status: "pending", verified: false });
+
+    finalizedBlockNumber = 2;
+    const finalized = await POST(request(pending.secret, failedObservation(pending.receiptId)));
+    expect(finalized.status).toBe(200);
+    await expect(finalized.json()).resolves.toMatchObject({ status: "failed", verified: true });
   });
 });

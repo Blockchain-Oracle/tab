@@ -10,6 +10,7 @@ import {
   InvalidSettlementObservationError,
   parseSettlementObservation,
 } from "../../../../../lib/leash/settlement-evidence";
+import { readSignRequestBody, SignRequestBodyError } from "../../sign/sign-request-body";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
     const principal = await authenticateLeashKey(database, request.headers.get("authorization"));
     let body: unknown;
     try {
-      body = await request.json();
+      body = JSON.parse(await readSignRequestBody(request));
     } catch {
       return apiError(
         "INVALID_SETTLEMENT_OBSERVATION",
@@ -54,6 +55,13 @@ export async function POST(request: NextRequest) {
     }
     if (error instanceof InvalidSettlementObservationError) {
       return apiError(error.code, error.message, 400);
+    }
+    if (error instanceof SignRequestBodyError) {
+      return apiError(
+        "INVALID_SETTLEMENT_OBSERVATION",
+        "The settlement observation is invalid.",
+        400,
+      );
     }
     if (error instanceof SettlementResultConflictError) {
       return apiError(error.code, error.message, error.status);

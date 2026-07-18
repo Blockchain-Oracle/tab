@@ -19,6 +19,7 @@ const agent = {
   id: "11111111-1111-4111-8111-111111111111",
   lastSeenAt: null,
   name: "Ledger agent",
+  paymentProfile: "mainnet",
   status: "provisioned",
   transport: null,
 } satisfies OwnerAgent;
@@ -246,5 +247,28 @@ describe("Leash overview cap evidence", () => {
     expect(html).toContain('dateTime="2026-07-17T10:00:00.000Z"');
     expect(html).toContain("Manage connection");
     expect(html).toContain("Add funds");
+  });
+
+  it("labels an integration agent and describes only its Base Sepolia test float", () => {
+    const html = renderToStaticMarkup(
+      <LeashOverview
+        agent={{
+          ...agent,
+          agentAddress: "0x1111111111111111111111111111111111111111",
+          paymentProfile: "base_sepolia_integration",
+        }}
+        floats={[{ balanceAtomic: "0", label: "Base Sepolia", network: "eip155:84532" }]}
+        keySummary={null}
+        notifications={[]}
+        policy={null}
+        receipts={[]}
+        unreadCount={0}
+      />,
+    );
+
+    expect(html).toContain("Test funds — not real money");
+    expect(html).toContain("Base Sepolia test funds");
+    expect(html).toContain("Live Base Sepolia test-fund read returned zero.");
+    expect(html).not.toContain("Live Base and Arbitrum reads both returned zero.");
   });
 });

@@ -1,7 +1,10 @@
+import { validatePaymentTarget } from "./payment-target-policy.js";
+
 const MAX_BODY_BYTES = 1_048_576;
 const MAX_HEADERS = 32;
 const MAX_RESPONSE_BYTES = 262_144;
 const MAX_URL_LENGTH = 2_048;
+const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const METHODS = new Set(["DELETE", "GET", "HEAD", "PATCH", "POST", "PUT"]);
 const FORBIDDEN_HEADERS = new Set(["connection", "content-length", "host", "transfer-encoding"]);
 
@@ -14,16 +17,22 @@ export const PAID_FETCH_INPUT_SCHEMA = {
       maxProperties: MAX_HEADERS,
       type: "object" as const,
     },
+    idempotencyKey: {
+      maxLength: 128,
+      pattern: IDEMPOTENCY_KEY_PATTERN.source,
+      type: "string" as const,
+    },
     method: { enum: [...METHODS], type: "string" as const },
     url: { maxLength: MAX_URL_LENGTH, type: "string" as const },
   },
-  required: ["url"],
+  required: ["idempotencyKey", "url"],
   type: "object" as const,
 };
 
 export interface ParsedFetchRequest {
   body?: string;
   headers?: Record<string, string>;
+  idempotencyKey: string;
   method: string;
   url: string;
 }
@@ -54,11 +63,20 @@ function parseHeaders(value: unknown) {
   return headers;
 }
 
-export function parsePaidFetchRequest(value: unknown): ParsedFetchRequest {
+export function parsePaidFetchRequest(
+  value: unknown,
+  options: { allowDevelopmentLoopback?: boolean } = {},
+): ParsedFetchRequest {
   if (!record(value)) throw new Error("request");
   const keys = Object.keys(value);
-  if (keys.some((key) => !["body", "headers", "method", "url"].includes(key))) {
+  if (keys.some((key) => !["body", "headers", "idempotencyKey", "method", "url"].includes(key))) {
     throw new Error("request");
+  }
+  if (
+    typeof value.idempotencyKey !== "string" ||
+    !IDEMPOTENCY_KEY_PATTERN.test(value.idempotencyKey)
+  ) {
+    throw new Error("idempotencyKey");
   }
   if (
     typeof value.url !== "string" ||
@@ -97,8 +115,9 @@ export function parsePaidFetchRequest(value: unknown): ParsedFetchRequest {
   return {
     ...(value.body === undefined ? {} : { body: value.body }),
     ...(headers === undefined ? {} : { headers }),
+    idempotencyKey: value.idempotencyKey,
     method,
-    url: url.toString(),
+    url: validatePaymentTarget(url.toString(), options),
   };
 }
 

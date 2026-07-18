@@ -5,8 +5,9 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
+import { PaymentTargetPolicyError } from "./payment-target-policy.js";
 import { connectStreamableHttpUpstream } from "./upstream.js";
 
 describe("real Streamable HTTP upstream client", () => {
@@ -57,16 +58,32 @@ describe("real Streamable HTTP upstream client", () => {
       }
       return response;
     };
-    const client = await connectStreamableHttpUpstream(endpoint, inspectingFetch);
+    const connection = await connectStreamableHttpUpstream(endpoint, {
+      allowDevelopmentLoopback: true,
+      fetch: inspectingFetch,
+    });
     try {
-      await expect(client.listTools()).resolves.toMatchObject({ tools: [{ name: "echo" }] });
+      await expect(connection.client.listTools()).resolves.toMatchObject({
+        tools: [{ name: "echo" }],
+      });
       await expect(
-        client.callTool({ arguments: { value: "real-wire" }, name: "echo" }),
+        connection.client.callTool({ arguments: { value: "real-wire" }, name: "echo" }),
       ).resolves.toMatchObject({
         content: [{ text: JSON.stringify({ value: "real-wire" }), type: "text" }],
       });
     } finally {
-      await client.close();
+      await connection.close();
     }
+  });
+
+  it("rejects a public upstream name that resolves to a private address before transport", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>();
+    await expect(
+      connectStreamableHttpUpstream("https://upstream.example/mcp", {
+        fetch,
+        lookup: async () => [{ address: "10.0.0.8", family: 4 }],
+      }),
+    ).rejects.toBeInstanceOf(PaymentTargetPolicyError);
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

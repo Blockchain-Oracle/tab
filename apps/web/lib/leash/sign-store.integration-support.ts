@@ -69,7 +69,7 @@ export async function provision(
       ownerId: owner.id,
     });
   }
-  return { agentId: agent.id, cycleId: cycle.id, keyId: key.id };
+  return { agentId: agent.id, cycleId: cycle.id, keyId: key.id, ownerId: owner.id };
 }
 
 export function signBody(amount = "250000", nonce = randomBytes(32).toString("hex")) {

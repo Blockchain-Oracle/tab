@@ -1,6 +1,10 @@
+import { validateControlPlaneOrigin } from "./control-plane-origin.js";
+import { validatePaymentTarget } from "./payment-target-policy.js";
+
 const LEASH_KEY_PATTERN = /^leash_sk_[A-Za-z0-9_-]{43}$/;
 
 export interface LeashCliConfig {
+  allowDevelopmentLoopback: boolean;
   apiBaseUrl: string;
   apiKey: string;
   upstreamUrl: string | null;
@@ -15,33 +19,25 @@ export class CliConfigurationError extends Error {
   }
 }
 
-function httpUrl(value: string, field: string) {
-  let url: URL;
+function httpUrl(value: string, field: string, allowDevelopmentLoopback: boolean) {
   try {
-    url = new URL(value);
+    return validatePaymentTarget(value, { allowDevelopmentLoopback });
   } catch {
-    throw new CliConfigurationError(`${field} must be an absolute HTTP URL.`);
+    throw new CliConfigurationError(`${field} must use HTTPS, except for loopback development.`);
   }
-  if (
-    (url.protocol !== "http:" && url.protocol !== "https:") ||
-    url.username.length > 0 ||
-    url.password.length > 0 ||
-    url.hash.length > 0
-  ) {
-    throw new CliConfigurationError(`${field} must be an absolute HTTP URL.`);
-  }
-  return url;
 }
 
 function apiBaseUrl(value: string | undefined) {
   if (!value || value.trim() !== value) {
     throw new CliConfigurationError("LEASH_API_BASE_URL is required.");
   }
-  const url = httpUrl(value, "LEASH_API_BASE_URL");
-  if (url.pathname !== "/" || url.search.length > 0) {
-    throw new CliConfigurationError("LEASH_API_BASE_URL must be an origin without a path.");
+  try {
+    return validateControlPlaneOrigin(value);
+  } catch {
+    throw new CliConfigurationError(
+      "LEASH_API_BASE_URL must be an HTTPS origin, except for loopback development.",
+    );
   }
-  return url.toString();
 }
 
 function apiKey(value: string | undefined) {
@@ -51,21 +47,31 @@ function apiKey(value: string | undefined) {
   return value;
 }
 
-function upstreamUrl(arguments_: readonly string[]) {
+function developmentLoopback(value: string | undefined) {
+  if (value === undefined || value === "0") return false;
+  if (value === "1") return true;
+  throw new CliConfigurationError("LEASH_ALLOW_DEVELOPMENT_LOOPBACK must be 0 or 1.");
+}
+
+function upstreamUrl(arguments_: readonly string[], allowDevelopmentLoopback: boolean) {
   if (arguments_.length === 0) return null;
   if (arguments_.length !== 2 || arguments_[0] !== "--upstream" || !arguments_[1]) {
     throw new CliConfigurationError("Usage: leash-mcp [--upstream <absolute-http-url>]");
   }
-  return httpUrl(arguments_[1], "--upstream").toString();
+  return httpUrl(arguments_[1], "--upstream", allowDevelopmentLoopback);
 }
 
 export function parseLeashCliConfig(
   arguments_: readonly string[],
   environment: Readonly<Record<string, string | undefined>>,
 ): LeashCliConfig {
+  const allowDevelopmentLoopback = developmentLoopback(
+    environment.LEASH_ALLOW_DEVELOPMENT_LOOPBACK,
+  );
   return {
+    allowDevelopmentLoopback,
     apiBaseUrl: apiBaseUrl(environment.LEASH_API_BASE_URL),
     apiKey: apiKey(environment.LEASH_API_KEY),
-    upstreamUrl: upstreamUrl(arguments_),
+    upstreamUrl: upstreamUrl(arguments_, allowDevelopmentLoopback),
   };
 }

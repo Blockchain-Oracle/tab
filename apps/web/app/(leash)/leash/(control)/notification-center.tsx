@@ -9,6 +9,7 @@ import type {
   NotificationItemView,
   NotificationResultView,
 } from "../../../../lib/leash/notification-view";
+import { TEST_FUNDS_LABEL } from "../../../../lib/leash/test-funds";
 import styles from "./notification-center.module.css";
 import {
   loadAndCommitNotificationFilters,
@@ -42,6 +43,9 @@ function stringMetadata(item: NotificationItemView, key: string) {
 }
 
 function detail(item: NotificationItemView) {
+  if (item.type === "float_empty" && item.metadata.testFundsLabel === TEST_FUNDS_LABEL) {
+    return `${copy[item.type][1]} ${TEST_FUNDS_LABEL}.`;
+  }
   if (item.type === "cap_blocked") {
     const attempted = stringMetadata(item, "attemptedAtomic");
     return attempted

@@ -1,19 +1,32 @@
-import { wrapFetchWithPayment } from "@x402/fetch";
-
+import { createDurablePaymentFetch } from "./durable-payment-fetch.js";
 import {
   currentPaymentOrigin,
   withPaymentOrigin,
   withPaymentResourceUrl,
 } from "./origin-context.js";
+import type { readPaymentAuthorizationState } from "./payment-authorization-state.js";
 import { createLeashPaymentClient } from "./payment-client.js";
+import { defaultPaymentStateDirectory, PaymentEnvelopeStore } from "./payment-envelope-store.js";
+import { currentPaymentIdempotencyKey } from "./payment-idempotency.js";
+import type { PaymentProfile } from "./payment-profile.js";
+import { createPinnedPaymentFetch, type PaymentTargetLookup } from "./payment-target-network.js";
+import { safePaymentRequestInit, validatePaymentTarget } from "./payment-target-policy.js";
 import { LeashRemoteSigner } from "./remote-signer.js";
 
 interface LeashFetchOptions {
   address: `0x${string}`;
+  allowDevelopmentLoopback?: boolean;
   apiBaseUrl: string;
   apiKey: string;
-  clientName?: string;
+  authorizationState?: typeof readPaymentAuthorizationState;
+  clientName?: string | (() => string);
   fetch?: typeof globalThis.fetch;
+  idempotencyKey?: () => string | undefined;
+  nowSeconds?: () => number;
+  paymentProfile: PaymentProfile;
+  paymentStateDirectory?: string;
+  lookup?: PaymentTargetLookup;
+  signer?: LeashRemoteSigner;
 }
 
 type FetchInput = Request | string | URL;
@@ -41,22 +54,55 @@ function requestName(input: FetchInput, init?: RequestInit) {
 
 export function createLeashFetch(options: LeashFetchOptions) {
   const baseFetch = options.fetch ?? globalThis.fetch;
-  const signer = new LeashRemoteSigner({
-    address: options.address,
-    apiBaseUrl: options.apiBaseUrl,
-    apiKey: options.apiKey,
+  const allowDevelopmentLoopback = options.allowDevelopmentLoopback === true;
+  const targetPolicy = createPinnedPaymentFetch({
+    allowDevelopmentLoopback,
     fetch: baseFetch,
-    origin: currentPaymentOrigin,
+    ...(options.lookup ? { lookup: options.lookup } : {}),
   });
-  const paidFetch = wrapFetchWithPayment(baseFetch, createLeashPaymentClient(signer));
+  const signer =
+    options.signer ??
+    new LeashRemoteSigner({
+      address: options.address,
+      apiBaseUrl: options.apiBaseUrl,
+      apiKey: options.apiKey,
+      fetch: baseFetch,
+      origin: currentPaymentOrigin,
+      paymentProfile: options.paymentProfile,
+    });
+  const paidFetch = createDurablePaymentFetch({
+    address: options.address,
+    ...(options.authorizationState ? { authorizationState: options.authorizationState } : {}),
+    client: createLeashPaymentClient(signer, options.paymentProfile),
+    fetch: targetPolicy.fetch,
+    idempotencyKey: options.idempotencyKey ?? currentPaymentIdempotencyKey,
+    ...(options.nowSeconds ? { nowSeconds: options.nowSeconds } : {}),
+    paymentProfile: options.paymentProfile,
+    signer,
+    store: new PaymentEnvelopeStore(
+      options.address,
+      options.paymentStateDirectory ?? defaultPaymentStateDirectory(),
+    ),
+  });
 
-  return (input: FetchInput, init?: RequestInit) =>
-    withPaymentOrigin(
+  const leashFetch = (input: FetchInput, init?: RequestInit) => {
+    validatePaymentTarget(requestUrl(input), {
+      allowDevelopmentLoopback,
+    });
+    return withPaymentOrigin(
       {
-        clientName: options.clientName ?? "leash-fetch",
+        clientName:
+          typeof options.clientName === "function"
+            ? options.clientName()
+            : (options.clientName ?? "leash-fetch"),
         toolName: requestName(input, init),
         transport: "http",
       },
-      () => withPaymentResourceUrl(requestUrl(input), () => paidFetch(input, init)),
+      () =>
+        withPaymentResourceUrl(requestUrl(input), () =>
+          paidFetch(input, safePaymentRequestInit(init)),
+        ),
     );
+  };
+  return Object.assign(leashFetch, { close: () => targetPolicy.close() });
 }

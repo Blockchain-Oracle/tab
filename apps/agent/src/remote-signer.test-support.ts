@@ -97,6 +97,7 @@ export function signerWithFetch(fetch: typeof globalThis.fetch) {
     apiKey: "leash_sk_secret",
     fetch,
     nowSeconds: () => nowSeconds,
+    paymentProfile: "mainnet",
     resourceUrl: credentialedResourceUrl,
     reportRetryDelayMs: 1,
     reportTimeoutMs: 10,

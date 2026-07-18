@@ -129,6 +129,35 @@ describe("Leash remote signer authorization gate", () => {
   });
 });
 
+describe("Leash expired authorization reconciliation", () => {
+  it("accepts only an exact verified server acknowledgement", async () => {
+    const requests: Array<{ body: unknown; redirect: RequestInit["redirect"] }> = [];
+    const signer = signerWithFetch(async (input, init) => {
+      expect(new URL(input.toString()).pathname).toBe("/api/agent/pay/reconcile");
+      requests.push({ body: JSON.parse(String(init?.body)), redirect: init?.redirect });
+      return Response.json({ receiptId: "receipt-expired", status: "failed", verified: true });
+    });
+
+    await expect(signer.reconcileExpiredPayment("receipt-expired")).resolves.toBe(true);
+    expect(requests).toEqual([{ body: { receiptId: "receipt-expired" }, redirect: "error" }]);
+  });
+
+  it("fails closed on pending, malformed, unavailable, or mismatched acknowledgements", async () => {
+    for (const response of [
+      Response.json(
+        { receiptId: "receipt-expired", status: "pending", verified: false },
+        { status: 202 },
+      ),
+      Response.json({ receiptId: "another-receipt", status: "failed", verified: true }),
+      Response.json({ receiptId: "receipt-expired", status: "failed", verified: "yes" }),
+      Response.json({ error: { code: "OUTAGE" } }, { status: 503 }),
+    ]) {
+      const signer = signerWithFetch(async () => response.clone());
+      await expect(signer.reconcileExpiredPayment("receipt-expired")).resolves.toBe(false);
+    }
+  });
+});
+
 describe("Leash payment observation reporting", () => {
   it("treats forged-but-shaped resource metadata as observed and keeps its receipt", async () => {
     const signerRequest = validSignerRequest();
@@ -138,14 +167,16 @@ describe("Leash payment observation reporting", () => {
       if (new URL(input.toString()).pathname === "/api/agent/sign") {
         return Response.json({ receiptId: "receipt-observed", signature });
       }
+      expect(init?.redirect).toBe("error");
       resultBodies.push(JSON.parse(String(init?.body)));
       return new Response(null, { status: 204 });
     });
     await signer.signTypedData(signerRequest);
 
-    await expect(
-      signer.reportPaymentObservation(paymentContext(signature)),
-    ).resolves.toBeUndefined();
+    await expect(signer.reportPaymentObservation(paymentContext(signature))).resolves.toEqual({
+      status: "ignored",
+      verified: false,
+    });
     await signer.flushPaymentObservations();
 
     expect(resultBodies).toEqual([
@@ -220,9 +251,10 @@ describe("Leash payment observation reporting", () => {
     });
     await signer.signTypedData(signerRequest);
 
-    await expect(
-      signer.reportPaymentObservation(paymentContext(signature)),
-    ).resolves.toBeUndefined();
+    await expect(signer.reportPaymentObservation(paymentContext(signature))).resolves.toEqual({
+      status: "ignored",
+      verified: false,
+    });
     await signer.flushPaymentObservations();
 
     expect(signer.receiptIdForSignature(signature)).toBe("receipt-outage");
@@ -245,7 +277,7 @@ describe("Leash payment observation reporting", () => {
     expect(signer.receiptIdForSignature(signature)).toBeNull();
   });
 
-  it("returns immediately when reporting hangs and bounds the background attempt", async () => {
+  it("bounds reporting when the result request ignores cancellation", async () => {
     const signerRequest = validSignerRequest();
     const signature = await signWith(account, signerRequest);
     const signer = signerWithFetch(async (input) => {
@@ -256,9 +288,10 @@ describe("Leash payment observation reporting", () => {
     });
     await signer.signTypedData(signerRequest);
 
-    await expect(
-      signer.reportPaymentObservation(paymentContext(signature)),
-    ).resolves.toBeUndefined();
+    await expect(signer.reportPaymentObservation(paymentContext(signature))).resolves.toEqual({
+      status: "ignored",
+      verified: false,
+    });
     await signer.flushPaymentObservations();
 
     expect(signer.receiptIdForSignature(signature)).toBe("receipt-timeout");

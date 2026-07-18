@@ -11,12 +11,15 @@
     "db:migrate": "node --env-file-if-exists=.env.local ./node_modules/drizzle-kit/bin.cjs migrate",
     "typecheck": "tsc --noEmit",
     "test": "node --env-file-if-exists=.env.test.local ./node_modules/vitest/vitest.mjs run --passWithNoTests",
-    "lint": "biome check ."
+    "lint": "biome check .",
+    "verify:magic-preflight": "node scripts/verify-magic-preflight.mjs"
   },
   "dependencies": {
     "@magic-sdk/admin": "latest",
     "@tab/sdk": "workspace:*",
     "@vercel/blob": "2.6.1",
+    "@x402/core": "~2.17.0",
+    "@x402/evm": "~2.17.0",
     "@x402/fetch": "~2.17.0",
     "@x402/next": "~2.17.0",
     "@x402/paywall": "~2.17.0",

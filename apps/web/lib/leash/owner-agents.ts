@@ -22,6 +22,7 @@ const ownerAgent = {
   id: agents.id,
   lastSeenAt: agents.lastSeenAt,
   name: agents.name,
+  paymentProfile: agents.paymentProfile,
   status: agents.status,
   transport: agents.transport,
 };

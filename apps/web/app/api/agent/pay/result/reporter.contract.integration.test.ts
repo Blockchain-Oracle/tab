@@ -12,13 +12,14 @@ import { createDatabase } from "../../../../../lib/db/client";
 import { agents, capCycles, receipts, users } from "../../../../../lib/db/schema";
 import { closeServerDatabase } from "../../../../../lib/db/server";
 import { POST } from "./route";
+import { rpcBlock } from "./route.integration-support";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required for reporter contract tests");
 const connection = createDatabase(databaseUrl, 2);
 const account = privateKeyToAccount(`0x${"11".repeat(32)}`);
 const payTo = "0x1111111111111111111111111111111111111111";
-const baseUsdc = "0x833589fCD6EDb6E08f4c7C32D4f71b54bdA02913";
+const baseUsdc = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const nonce = `0x${"12".repeat(32)}` as const;
 const transaction = `0x${"ab".repeat(32)}` as const;
 const blockHash = `0x${"cd".repeat(32)}`;
@@ -114,7 +115,16 @@ describe("agent reporter -> web settlement route contract", () => {
     const body = JSON.parse(await requestBody(request));
     response.setHeader("content-type", "application/json");
     response.end(
-      JSON.stringify({ id: body.id, jsonrpc: "2.0", result: rpcReceipt(includeAuthorization) }),
+      JSON.stringify({
+        id: body.id,
+        jsonrpc: "2.0",
+        result:
+          body.method === "eth_chainId"
+            ? "0x2105"
+            : body.method === "eth_getBlockByNumber"
+              ? rpcBlock(body.params[0] === "finalized" ? 2 : Number(BigInt(body.params[0])))
+              : rpcReceipt(includeAuthorization),
+      }),
     );
   });
   const apiServer = createServer(async (request, response) => {
@@ -224,6 +234,7 @@ describe("agent reporter -> web settlement route contract", () => {
       apiBaseUrl: apiOrigin,
       apiKey: key.secret,
       fetch: globalThis.fetch,
+      paymentProfile: "mainnet",
       reportRetryDelayMs: 1,
     });
     const signerRequest = {

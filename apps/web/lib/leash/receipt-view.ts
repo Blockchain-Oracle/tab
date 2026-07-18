@@ -1,7 +1,7 @@
 import type { ReceiptOrigin } from "../db/schema";
 import { formatUsdAtomic } from "./leash-format";
+import { type LeashPaymentNetwork, paymentNetworkConfiguration } from "./payment-profile";
 
-type Network = "eip155:8453" | "eip155:42161";
 type Status = "pending" | "settled" | "failed" | "blocked";
 
 export interface ReceiptViewSource {
@@ -12,8 +12,8 @@ export interface ReceiptViewSource {
   committedAtomicBefore: string | null;
   createdAt: Date;
   id: string;
-  intendedNetwork: Network | null;
-  network: Network;
+  intendedNetwork: LeashPaymentNetwork | null;
+  network: LeashPaymentNetwork;
   origin: ReceiptOrigin | null;
   payTo: string;
   reason: string | null;
@@ -24,18 +24,11 @@ export interface ReceiptViewSource {
   txHash: string | null;
 }
 
-const networks = {
-  "eip155:42161": {
-    explorer: "https://arbiscan.io/tx/",
-    explorerLabel: "View on Arbiscan",
-    label: "Arbitrum",
-  },
-  "eip155:8453": {
-    explorer: "https://basescan.org/tx/",
-    explorerLabel: "View on Basescan",
-    label: "Base",
-  },
-} as const;
+function explorerLabel(network: LeashPaymentNetwork) {
+  if (network === "eip155:42161") return "View on Arbiscan";
+  if (network === "eip155:84532") return "View on Base Sepolia Basescan";
+  return "View on Basescan";
+}
 
 function originView(origin: ReceiptOrigin | null) {
   if (!origin || (origin.transport !== "http" && origin.transport !== "mcp")) return null;
@@ -52,10 +45,13 @@ export function receiptView(receipt: ReceiptViewSource) {
     receipt.status === "blocked" && receipt.intendedNetwork
       ? receipt.intendedNetwork
       : receipt.network;
-  const network = networks[networkId];
+  const network = paymentNetworkConfiguration(networkId);
   const explorer =
     (receipt.status === "settled" || receipt.status === "failed") && receipt.txHash
-      ? { href: `${network.explorer}${receipt.txHash}`, label: network.explorerLabel }
+      ? {
+          href: `${network.explorerOrigin}/tx/${receipt.txHash}`,
+          label: explorerLabel(networkId),
+        }
       : null;
   const capContext =
     receipt.capAtomicAtAttempt !== null && receipt.committedAtomicBefore !== null
@@ -76,7 +72,13 @@ export function receiptView(receipt: ReceiptViewSource) {
     createdAt: receipt.createdAt.toISOString(),
     explorer,
     id: receipt.id,
-    network: { id: networkId, label: network.label, target },
+    network: {
+      id: networkId,
+      label: network.label,
+      target,
+      testFunds: network.testFunds,
+      ...(network.testFunds ? { testFundsLabel: "Test funds — not real money" } : {}),
+    },
     origin: originView(receipt.origin),
     payTo: receipt.payTo,
     reason: receipt.reason,

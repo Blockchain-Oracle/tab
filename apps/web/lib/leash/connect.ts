@@ -102,6 +102,7 @@ export async function connectAgent(db: Database, input: ConnectAgentInput) {
         connectionCount: agents.connectionCount,
         firstSeenAt: agents.firstSeenAt,
         lastSeenAt: agents.lastSeenAt,
+        paymentProfile: agents.paymentProfile,
         transport: agents.transport,
       });
     if (!connected?.firstSeenAt || !connected.lastSeenAt) {
@@ -127,6 +128,7 @@ export async function connectAgent(db: Database, input: ConnectAgentInput) {
       connectionCount: connected.connectionCount,
       firstSeenAt: connected.firstSeenAt,
       lastSeenAt: connected.lastSeenAt,
+      paymentProfile: connected.paymentProfile,
       transport: input.transport,
     };
   });

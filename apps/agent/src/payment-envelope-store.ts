@@ -1,5 +1,6 @@
 import { homedir } from "node:os";
 import { isAbsolute, join, resolve } from "node:path";
+import { performance } from "node:perf_hooks";
 
 import { assertNewPaymentEnvelopeCapacity } from "./payment-envelope-capacity.js";
 import {
@@ -99,8 +100,9 @@ export class PaymentEnvelopeStore {
   }
 
   async #locked<T>(task: (document: PaymentEnvelopeDocument) => Promise<T>) {
+    const lockDeadline = performance.now() + this.#lockOptions.lockTimeoutMs;
     await preparePaymentEnvelopeDirectory(this.#directory);
-    return withPaymentEnvelopeLock(this.#directory, this.#lockOptions, async () => {
+    return withPaymentEnvelopeLock(this.#directory, this.#lockOptions, lockDeadline, async () => {
       const document = await readPaymentEnvelopeDocument(this.#directory);
       return task(document);
     });

@@ -47,7 +47,7 @@ function child(script: string, stateRoot: string, marker: string) {
 }
 
 async function waitForFile(path: string) {
-  const deadline = performance.now() + 3_000;
+  const deadline = performance.now() + 10_000;
   while (performance.now() < deadline) {
     try {
       await stat(path);
@@ -60,6 +60,7 @@ async function waitForFile(path: string) {
 }
 
 function exit(process_: ChildProcess) {
+  if (process_.exitCode !== null || process_.signalCode !== null) return Promise.resolve();
   return new Promise<void>((resolve) => process_.once("exit", () => resolve()));
 }
 
@@ -166,14 +167,15 @@ describe("PaymentEnvelopeStore kernel lock", () => {
   it("does not acquire after its deadline when the event loop wakes late", async () => {
     const stateRoot = await root();
     const marker = join(stateRoot, "holder-ready");
-    child(releasingScript, stateRoot, marker);
+    const holder = child(releasingScript, stateRoot, marker);
+    const released = exit(holder);
     await waitForFile(marker);
     const attempt = new PaymentEnvelopeStore(address, stateRoot, {
       lockRetryDelayMs: 30,
       lockTimeoutMs: 30,
     }).find("pay_missing", fingerprint);
-    await new Promise((resolve) => setTimeout(resolve, 10));
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+    await released;
 
     await expect(attempt).rejects.toMatchObject({ code: "PAYMENT_ENVELOPE_LOCK_TIMEOUT" });
   });

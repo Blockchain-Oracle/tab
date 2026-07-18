@@ -43,19 +43,16 @@ async function openAnchor(directory: string) {
   }
 }
 
-async function acquire(directory: string, options: PaymentEnvelopeLockOptions) {
+async function acquire(directory: string, options: PaymentEnvelopeLockOptions, deadline: number) {
   const handle = await openAnchor(directory);
-  const deadline = performance.now() + options.lockTimeoutMs;
-  let firstAttempt = true;
   try {
     while (true) {
-      if (!firstAttempt && performance.now() >= deadline) {
+      if (performance.now() >= deadline) {
         throw new PaymentEnvelopeStoreError(
           "PAYMENT_ENVELOPE_LOCK_TIMEOUT",
           "The durable payment envelope lock timed out.",
         );
       }
-      firstAttempt = false;
       let acquired: boolean;
       try {
         acquired = tryLock(handle.fd);
@@ -81,9 +78,10 @@ async function acquire(directory: string, options: PaymentEnvelopeLockOptions) {
 export async function withPaymentEnvelopeLock<T>(
   directory: string,
   options: PaymentEnvelopeLockOptions,
+  deadline: number,
   task: () => Promise<T>,
 ) {
-  const handle = await acquire(directory, options);
+  const handle = await acquire(directory, options, deadline);
   let completed = false;
   let releaseError: PaymentEnvelopeStoreError | undefined;
   let taskError: unknown;

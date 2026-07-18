@@ -27,7 +27,7 @@ settlement half of Phase 0 cannot truthfully be marked complete.
 | Genuine on-chain settlement and independent verification | No payer wallet/address exists to fund; therefore no Magic signature, facilitator settlement, transaction hash, PostgreSQL settled receipt, feed, or notification evidence exists | Not run |
 | Real negative paths and restart | Gate/no-sign and durable restart behavior are integration tested, but no funded before/after chain proof exists | Partial |
 | Particle mainnet spike | Installed SDK 2.0.3 mainnet-only scope is respected; buyer EOA/UA is known, but no approximately 20-USDC funding or real transfer exists | Not run |
-| Review and CI | Security/code review is push-ready; branch CI is pending at this audit snapshot | Pending |
+| Review and CI | Security/code review completed; both push and pull-request Actions runs passed, and GitGuardian incident 17197295 was verified and ignored as a CI test credential | Pass |
 
 ## Live evidence
 
@@ -83,6 +83,19 @@ completed successfully. Post-migration checks showed:
 | `git diff --check` | Exit 0 |
 | Source line hard cap | Pass; maximum production/test/script source file 299 lines |
 
+Hosted verification for commit `bdbce908d2a7b674c2ae580342a69a12c3119b78`:
+
+- Push run `29641083918`: 1/1 job passed in 4m20s.
+- Pull-request run `29641102090`: 1/1 job passed in 5m17s.
+- The pull-request run passed lint, showcase checking, typecheck (Turbo 6/6),
+  database migration validation, tests (1,271 passed and 3 skipped across the
+  visible suites), build (Turbo 4/4), and packed-agent verification.
+- GitGuardian incident `17197295` identified the literal password for the
+  ephemeral `postgres:16` CI service. It is scoped to `tab_test` on loopback,
+  equals the test user, and is not a production or external credential. The
+  incident is explicitly `Ignored — Test credential`; no secret was printed,
+  revoked, or replaced with another hardcoded value.
+
 Test detail:
 
 - Web: 219 files passed, 2 live files skipped; 1,009 tests passed, 2 skipped
@@ -105,6 +118,10 @@ Test detail:
   second payment. Production-scale archival remains future work.
 - Chain finality trusts one configured RPC's `finalized` view; no RPC quorum or
   independent Merkle proof is implemented.
+- GitGuardian's original failed pull-request result is immutable. The confirmed
+  CI-only PostgreSQL test credential was classified in GitGuardian as
+  `Ignored — Test credential`; a fresh branch event is required for the check app
+  to publish the updated result.
 
 ## Completion blockers
 
@@ -118,6 +135,5 @@ Test detail:
    failure paths, and restart persistence.
 4. The separate Particle buyer address needs approximately 20 native USDC on Base
    mainnet before the real UA transfer/rebalance spike.
-5. Branch GitHub CI must be run and observed green after the curated push.
 
 No completion claim is made for the missing live evidence.

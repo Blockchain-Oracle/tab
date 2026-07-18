@@ -12,7 +12,8 @@ dirty_worktree: allow
 
 Execution contracts:
 
-- Every RED step scaffolds only the testable workspace boundary when that workspace does not yet exist, adds an exact `[RED: …]` sentinel test, and verifies through `scripts/assert-red.mjs`. That harness succeeds only when the command exits non-zero and the named sentinel appears; a missing workspace or unrelated failure cannot satisfy RED.
+- Course correction accepted 2026-07-18: UI testing is risk-based. Preserve stable tests, but do not expand RED/GREEN matrices for visual atoms, CSS, exact markup/wording, spacing, skeletons, badges, or animation details. Interpret future UI-focused RED steps as the smallest meaningful state, money, security, recovery, or accessibility boundary; verify presentation through direct browser inspection, a small Playwright desktop/mobile/reduced-motion journey set, and axe on judged routes. Financially consequential and persistence contracts remain fully test-driven.
+- When a RED step still protects one of those meaningful boundaries, scaffold only the testable workspace boundary when it does not yet exist, add an exact `[RED: …]` sentinel test, and verify through `scripts/assert-red.mjs`. That harness succeeds only when the command exits non-zero and the named sentinel appears; a missing workspace or unrelated failure cannot satisfy RED.
 - Every phase-ending review also runs `pnpm check:showcase`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build`. A phase is not complete while one is red; pre-existing failures are recorded, then fixed in scope before the checkpoint is accepted.
 - Live-provider steps may conclude with a precisely evidenced external blocker only where the action says so. They may never substitute seeded data, a mocked provider, or a fabricated money result.
 

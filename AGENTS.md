@@ -39,6 +39,18 @@ The fabricated-showcase grep gate in `CLAUDE.md` must also return 0 hits in `app
 `packages/` before a phase is complete. Run it with `pnpm check:showcase`; the script excludes
 generated and dependency directories so build caches cannot create binary false positives.
 
+### Risk-based UI testing
+
+- Preserve stable existing tests, but do not add RED/GREEN pairs or exhaustive unit matrices for
+  visual atoms, CSS declarations, exact markup/wording, spacing, badges, skeletons, or animation
+  details.
+- Unit/component tests earn their keep at state, money, security, recovery, and accessibility
+  boundaries: payment verification, test/live labeling, policy gates, emergency controls,
+  dialogs/keyboard behavior, truthful loading/error/stale states, and duplicate-safe operations.
+- During visual implementation, prefer typecheck, lint, and direct browser inspection. Keep a
+  small set of Playwright golden journeys at desktop/mobile/reduced-motion sizes, axe checks on
+  judged routes, and external-consumer tests for the packed SDK/CLI artifacts.
+
 ## Context Workflow
 
 - **Use the domain wiki first.** For hackathon, sponsor, SDK, ecosystem, or product-domain

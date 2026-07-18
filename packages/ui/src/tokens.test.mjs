@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const RED_MARKER = "[RED: shared visual tokens]";
+const PUBLIC_API_URL = new URL("./index.ts", import.meta.url);
 const TOKEN_IMPLEMENTATION_URL = new URL("./tokens.ts", import.meta.url);
 const THEME_STYLES_URL = new URL("./theme.css", import.meta.url);
 
@@ -113,7 +114,9 @@ function declarationsFor(source, selector) {
     if (separator === -1) continue;
     const property = segment.slice(0, separator).trim();
     const value = segment.slice(separator + 1).trim();
-    if (property) declarations[property] = value;
+    if (property) {
+      declarations[property] = /^#[0-9a-f]{6}$/i.test(value) ? value.toUpperCase() : value;
+    }
   }
   return declarations;
 }
@@ -146,6 +149,7 @@ async function loadImplementation() {
 
 test("financial-atelier tokens are exact, themed, accessible, and motion-aware", async () => {
   const implementation = await loadImplementation();
+  const publicApi = await import(PUBLIC_API_URL.href);
   const css = await readFile(THEME_STYLES_URL, "utf8");
 
   assert.deepEqual(implementation.TAB_PALETTE, expectedPalette);
@@ -241,4 +245,20 @@ test("financial-atelier tokens are exact, themed, accessible, and motion-aware",
     "--tab-motion-duration-slow": "1ms",
     "--tab-motion-travel-distance": "0px",
   });
+
+  const defaultTheme = publicApi.TabThemeProvider({ children: "Tab" });
+  assert.equal(defaultTheme.type, "div");
+  assert.equal(defaultTheme.props["data-tab-ui"], "");
+  assert.equal(defaultTheme.props["data-tab-theme"], "system");
+  assert.equal(defaultTheme.props.children, "Tab");
+
+  const darkTheme = publicApi.TabThemeProvider({ children: null, id: "ui-root", theme: "dark" });
+  assert.equal(darkTheme.props.id, "ui-root");
+  assert.equal(darkTheme.props["data-tab-theme"], "dark");
+  assert.throws(
+    () => publicApi.TabThemeProvider({ children: null, theme: "sepia" }),
+    (error) =>
+      error instanceof publicApi.InvalidTabThemeError &&
+      error.message === "The Tab theme must be light, dark, or system.",
+  );
 });

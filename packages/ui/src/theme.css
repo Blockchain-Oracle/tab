@@ -1,0 +1,112 @@
+[data-tab-ui] {
+  --tab-color-paper: #f4f0e7;
+  --tab-color-surface: #fffcf7;
+  --tab-color-ink: #15130f;
+  --tab-color-muted: #6c665c;
+  --tab-color-cobalt: #3157e8;
+  --tab-color-emerald: #1f7a4d;
+  --tab-color-testnet-amber: #9a6400;
+  --tab-color-danger: #b83f4a;
+  --tab-color-line: #ddd6c8;
+  --tab-font-product: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --tab-font-marketing-emphasis: "Instrument Serif", Georgia, serif;
+  --tab-font-evidence: "Geist Mono", "SFMono-Regular", Consolas, monospace;
+  --tab-focus-color: var(--tab-color-cobalt);
+  --tab-focus-width: 2px;
+  --tab-focus-offset: 3px;
+  --tab-motion-duration-fast: 120ms;
+  --tab-motion-duration-base: 220ms;
+  --tab-motion-duration-slow: 480ms;
+  --tab-motion-easing: cubic-bezier(0.2, 0, 0, 1);
+  --tab-motion-travel-distance: 24px;
+  --tab-flowline-draw-duration: 640ms;
+
+  background: var(--tab-canvas);
+  color: var(--tab-text);
+  font-family: var(--tab-font-product);
+}
+
+[data-tab-ui][data-tab-theme="light"] {
+  --tab-canvas: var(--tab-color-paper);
+  --tab-surface: var(--tab-color-surface);
+  --tab-text: var(--tab-color-ink);
+  --tab-text-muted: var(--tab-color-muted);
+  --tab-line: var(--tab-color-line);
+  --tab-action: var(--tab-color-cobalt);
+  --tab-mode-live: var(--tab-color-ink);
+  --tab-mode-test: var(--tab-color-testnet-amber);
+  --tab-status-success: var(--tab-color-emerald);
+  --tab-status-warning: var(--tab-color-testnet-amber);
+  --tab-status-danger: var(--tab-color-danger);
+  --tab-status-unavailable: var(--tab-color-muted);
+  --tab-status-stale: var(--tab-color-muted);
+  color-scheme: light;
+}
+
+[data-tab-ui][data-tab-theme="dark"] {
+  --tab-canvas: var(--tab-color-ink);
+  --tab-surface: var(--tab-color-ink);
+  --tab-text: var(--tab-color-surface);
+  --tab-text-muted: var(--tab-color-line);
+  --tab-line: var(--tab-color-muted);
+  --tab-action: var(--tab-color-cobalt);
+  --tab-mode-live: var(--tab-color-surface);
+  --tab-mode-test: var(--tab-color-testnet-amber);
+  --tab-status-success: var(--tab-color-emerald);
+  --tab-status-warning: var(--tab-color-testnet-amber);
+  --tab-status-danger: var(--tab-color-danger);
+  --tab-status-unavailable: var(--tab-color-line);
+  --tab-status-stale: var(--tab-color-line);
+  color-scheme: dark;
+}
+
+[data-tab-ui][data-tab-theme="system"] {
+  --tab-canvas: var(--tab-color-paper);
+  --tab-surface: var(--tab-color-surface);
+  --tab-text: var(--tab-color-ink);
+  --tab-text-muted: var(--tab-color-muted);
+  --tab-line: var(--tab-color-line);
+  --tab-action: var(--tab-color-cobalt);
+  --tab-mode-live: var(--tab-color-ink);
+  --tab-mode-test: var(--tab-color-testnet-amber);
+  --tab-status-success: var(--tab-color-emerald);
+  --tab-status-warning: var(--tab-color-testnet-amber);
+  --tab-status-danger: var(--tab-color-danger);
+  --tab-status-unavailable: var(--tab-color-muted);
+  --tab-status-stale: var(--tab-color-muted);
+  color-scheme: light;
+}
+
+[data-tab-ui] :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: var(--tab-focus-width) solid var(--tab-focus-color);
+  outline-offset: var(--tab-focus-offset);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-tab-ui][data-tab-theme="system"] {
+    --tab-canvas: var(--tab-color-ink);
+    --tab-surface: var(--tab-color-ink);
+    --tab-text: var(--tab-color-surface);
+    --tab-text-muted: var(--tab-color-line);
+    --tab-line: var(--tab-color-muted);
+    --tab-action: var(--tab-color-cobalt);
+    --tab-mode-live: var(--tab-color-surface);
+    --tab-mode-test: var(--tab-color-testnet-amber);
+    --tab-status-success: var(--tab-color-emerald);
+    --tab-status-warning: var(--tab-color-testnet-amber);
+    --tab-status-danger: var(--tab-color-danger);
+    --tab-status-unavailable: var(--tab-color-line);
+    --tab-status-stale: var(--tab-color-line);
+    color-scheme: dark;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-tab-ui] {
+    --tab-motion-duration-fast: 1ms;
+    --tab-motion-duration-base: 1ms;
+    --tab-motion-duration-slow: 1ms;
+    --tab-motion-travel-distance: 0px;
+    --tab-flowline-draw-duration: 1ms;
+  }
+}

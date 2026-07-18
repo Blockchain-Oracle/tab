@@ -46,15 +46,15 @@ verify:
     kind: exists
 
 - [ ] **Step 3: Generate the landing concept checkpoint**
-action: Use the built-in image generation tool in `ui-mockup` mode to produce a preview-only desktop/mobile concept for the approved kinetic-ledger landing direction: cool receipt canvas, continuous settlement spine, human and agent branches, Spline Sans-like product voice, Azeret Mono-like evidence, settlement blue, testnet amber, no fake metrics, and no distorted third-party logos.
+action: Use the built-in image generation tool in `ui-mockup` mode to produce a preview-only desktop/mobile concept for the approved financial-atelier landing direction: warm paper and ink surfaces, a one-shot Flowline entering Tab and branching into human checkout and Leash/x402, Instrument Sans product voice, sparse Instrument Serif marketing emphasis, Geist Mono evidence, cobalt action, emerald verification, testnet amber, no fake metrics, no generic glassmorphism, and no distorted third-party logos.
 loop: false
 verify:
   type: human-review
-  prompt: Confirm the landing concept feels recognizably Tab, explains one rail and two payers, avoids generic SaaS/Web3 styling, and uses motion composition that can become a one-shot reduced-motion-safe trace.
+  prompt: Confirm the landing concept feels recognizably Tab, explains one rail and two payers, avoids generic SaaS/Web3 styling, and uses motion composition that can become a one-shot, reduced-motion-safe Flowline.
 gate: human
 
 - [ ] **Step 4: Generate the checkout state-strip checkpoint**
-action: Use the built-in image generation tool to produce one preview-only state strip containing trigger loading, branded Magic email/OTP, unified balance, insufficient/add-funds, real processing substages, verified success, and specific recovery; keep test/live treatment unmistakable and avoid timer-based fake progress.
+action: Use the built-in image generation tool to produce one preview-only state strip containing trigger loading, branded Magic email/OTP, unified balance, insufficient/add-funds, real processing substages, submitted success after a real transactionId, verification in progress, verified/settled evidence, and specific recovery; keep test/live treatment unmistakable and avoid timer-based fake progress.
 loop: false
 verify:
   type: human-review
@@ -62,7 +62,7 @@ verify:
 gate: human
 
 - [ ] **Step 5: Generate the product-family checkpoint**
-action: Use the built-in image generation tool to produce a preview-only coordinated merchant, Leash receipt/policy, and mobile emergency-control concept using the same kinetic-ledger system without compressing desktop navigation into mobile.
+action: Use the built-in image generation tool to produce a preview-only coordinated merchant, Leash receipt/policy, and mobile emergency-control concept using the same financial-atelier tokens and Flowline evidence rail without compressing desktop navigation into mobile.
 loop: false
 verify:
   type: human-review
@@ -130,7 +130,7 @@ verify:
     command: pnpm --filter @tab/networks typecheck
 
 - [ ] **Step 11: Write RED tests for shared visual tokens**
-action: Create only the `@tab/ui` package/test manifest when absent, then add an exact `[RED: shared visual tokens]` test requiring the kinetic-ledger light/dark/system token contract, Spline Sans/Azeret Mono roles, semantic test/live/status colors, focus visibility, and reduced-motion variables without embedding application or financial fixture state. Do not add token implementation.
+action: Create only the `@tab/ui` package/test manifest when absent, then add an exact `[RED: shared visual tokens]` test requiring the locked financial-atelier light/dark/system palette, Instrument Sans / sparse Instrument Serif / Geist Mono roles, semantic test/live/status colors, focus visibility, and reduced-motion variables without embedding application or financial fixture state. Do not add token implementation.
 loop: false
 verify: node scripts/assert-red.mjs --expect "[RED: shared visual tokens]" -- pnpm --filter @tab/ui test
 
@@ -145,7 +145,7 @@ verify:
     command: pnpm --filter @tab/ui typecheck
 
 - [ ] **Step 13: Write RED tests for shared state primitives**
-action: Add an exact `[RED: shared state primitives]` behavior/accessibility test for status badge, network identity, copy control, skeleton, empty state, error state, receipt spine, dialog/sheet, and live-region primitives; require full network names, stable skeleton geometry, and no focusable skeleton controls.
+action: Add an exact `[RED: shared state primitives]` behavior/accessibility test for status badge, network identity, copy control, skeleton, empty state, error state, Flowline evidence rail, dialog/sheet, and live-region primitives; require full network names, stable skeleton geometry, and no focusable skeleton controls.
 loop: false
 verify: node scripts/assert-red.mjs --expect "[RED: shared state primitives]" -- pnpm --filter @tab/ui test
 
@@ -160,12 +160,12 @@ verify:
     command: pnpm --filter @tab/ui lint
 
 - [ ] **Step 15: Write RED tests for motion policy**
-action: Add an exact `[RED: motion policy]` test requiring one-shot transaction-trace transitions, real-event stage input, static reduced-motion output, no perpetual decorative animation, and unchanged semantic content when motion is disabled.
+action: Add an exact `[RED: motion policy]` test requiring one-shot Flowline transitions, real-event stage input, static reduced-motion output, no perpetual decorative animation, and unchanged semantic content when motion is disabled.
 loop: false
 verify: node scripts/assert-red.mjs --expect "[RED: motion policy]" -- pnpm --filter @tab/ui test
 
 - [ ] **Step 16: Implement application motion primitives**
-action: Add the current verified `motion` dependency to site/web/docs only, implement trace/stage primitives satisfying Step 15, and keep `@tab/sdk` and `@tab/agent` free of the dependency.
+action: Add the current verified `motion` dependency to site/web/docs only, implement Flowline/stage primitives satisfying Step 15, and keep `@tab/sdk` and `@tab/agent` free of the dependency.
 loop: until tests pass
 max_iterations: 5
 verify:
@@ -198,7 +198,7 @@ loop: false
 verify: node scripts/assert-red.mjs --expect "[RED: marketing surface]" -- pnpm --filter @tab/site test
 
 - [ ] **Step 19: Implement the static-first marketing application**
-action: Create `apps/site` with the approved kinetic-ledger responsive composition, shared tokens, one-shot/reduced-motion trace, metadata, social image, sitemap, robots, and hard links to app/docs; satisfy Step 18 without adding a seeded public demo.
+action: Create `apps/site` with the approved financial-atelier responsive composition, shared tokens, one-shot/reduced-motion Flowline, metadata, social image, sitemap, robots, and hard links to app/docs; satisfy Step 18 without adding a seeded public demo.
 gate: human
 loop: until tests pass
 max_iterations: 5
@@ -215,7 +215,7 @@ max_iterations: 3
 verify:
   type: browser
   url: http://localhost:3001/
-  check: The first viewport states Tab's product thesis, shows the meaningful two-path transaction trace, has visible focus and no fake financial metric.
+  check: The first viewport states Tab's product thesis, shows the meaningful two-path Flowline, has visible focus and no fake financial metric.
 gate: human
 
 - [ ] **Step 21: Write RED tests for documentation information architecture**

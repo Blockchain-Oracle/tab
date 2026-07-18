@@ -28,7 +28,8 @@ Signup → restore/login with Magic → business identity → checkout appearanc
 ```text
 Merchant PayButton → signed intent/context load → email or restored Magic session
 → unified balance read → confirm exact amount → real execution stages
-→ authoritative verification → receipt/success
+→ real transactionId → submitted success → continuing independent verification
+→ verified/settled evidence
 ```
 
 ### Leash shortest path
@@ -53,7 +54,7 @@ Install/open PWA → authenticated overview/feed → receipt detail
 
 | Surface | Purpose | Required states |
 | --- | --- | --- |
-| Marketing home | Explain “Invisible payments—for you, and for your AI” through the kinetic transaction trace | static-first loading, full motion, reduced motion, mobile navigation, unavailable app/docs link recovery |
+| Marketing home | Explain “Invisible payments—for you, and for your AI” through the branching Flowline | static-first loading, one-shot motion, reduced motion, mobile navigation, unavailable app/docs link recovery |
 | Human payments story | Teach Magic identity + Particle unified balance without crypto prerequisite language | default, expanded technical detail, reduced motion |
 | Agent payments story | Teach policy-first x402 and the reason Particle is outside the hot path | default, gate-by-gate reveal, reduced motion |
 | Evidence/security | Show what Tab proves and what it never claims | default, test/live comparison, blocked capability |
@@ -144,7 +145,7 @@ Install/open PWA → authenticated overview/feed → receipt detail
 
 ### Demo-critical 1: Human checkout
 
-The audience must see a real merchant context, branded login/session restoration, real unified-balance read, exact authorization consequence, progress driven by real callbacks, and authoritative success or honest blocker. Failure and insufficient-balance paths must be equally designed.
+The audience must see a real merchant context, branded login/session restoration, real unified-balance read, exact authorization consequence, progress driven by real callbacks, transaction-ID-backed submitted success followed by authoritative verification, or an honest blocker. Failure and insufficient-balance paths must be equally designed.
 
 ### Demo-critical 2: Agent pays under policy
 
@@ -232,7 +233,7 @@ The values below are **PROTOTYPE-ONLY ILLUSTRATIONS**. They may be used in desig
 - Developers always see full network name, official mark, CAIP-2 ID, asset name/address, amount, nonce, and expiry where relevant.
 - Never use chain initials as the only identity.
 - Use `Test funds — not real money` for Base Sepolia and `Live funds` for mainnet.
-- Do not say `success`, `settled`, `funded`, or `verified` without the corresponding authoritative observation.
+- `Submitted success` is allowed only after the authoritative observation of a real `transactionId`. Do not say `confirmed`, `settled`, `funded`, or `verified` without the corresponding authoritative observation.
 - Errors do not apologize. They state what failed, whether money may have moved, and the safe next action.
 - No `wallet connect` language for buyer email login, no LLM/model picker in Leash, and no claim that Particle participates in the x402 hot path.
 
@@ -243,7 +244,7 @@ The values below are **PROTOTYPE-ONLY ILLUSTRATIONS**. They may be used in desig
 - One rail / two payer narrative and the three demo-critical moments.
 - Separate marketing, application/API, and docs domains.
 - Official chain marks plus full names.
-- Kinetic transaction trace / receipt spine as the signature product motif.
+- The Flowline as the signature product motif: one rail branches into human checkout and Leash/x402, then becomes a real-event progress line and evidence rail.
 - Motion is state-driven, one-shot, and reduced-motion-safe.
 - Mainnet/testnet never silently fall back to one another.
 - Every money state is real, explicitly test, or visibly blocked.
@@ -251,8 +252,8 @@ The values below are **PROTOTYPE-ONLY ILLUSTRATIONS**. They may be used in desig
 ### Designer's call
 
 - Exact responsive composition, spacing rhythm, crop, and section proportions.
-- How the transaction trace bends, branches, and settles across breakpoints.
-- Exact balance between dense ledger evidence and quiet product space.
+- How the Flowline bends, branches, and settles across breakpoints.
+- Exact balance between dense evidence-rail content and quiet product space.
 - Micro-interaction easing and durations within accessibility/performance limits.
 
 ## Traceability

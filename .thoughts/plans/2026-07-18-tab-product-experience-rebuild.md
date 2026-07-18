@@ -88,7 +88,8 @@ Create one coherent system for web, site, docs, and mobile while keeping the dis
 
 - Add internal `@tab/ui` tokens and primitives for typography, brand, actions, fields, dialogs, sheets, status, evidence, loading, empty, error, copy, and motion policy.
 - Add framework-neutral `@tab/networks` profiles containing CAIP-2 ID, numeric chain ID, display name, official logo, explorer, native asset, Circle USDC address, facilitator, and `testFunds`.
-- Define light/dark/system themes around a cool kinetic-ledger palette, Spline Sans for product voice, and Azeret Mono for policy, code, amounts, and evidence. Avoid the generic warm-cream/editorial-serif treatment.
+- Define light/dark/system themes as a financial atelier: Instrument Sans for product UI, Instrument Serif only for restrained marketing emphasis, and Geist Mono for policy, code, addresses, amounts, and evidence. Use warm paper `#F4F0E7`, surface `#FFFCF7`, ink `#15130F`, muted `#6C665C`, cobalt `#3157E8`, emerald `#1F7A4D`, testnet amber `#9A6400`, danger `#B83F4A`, and line `#DDD6C8`; dark mode uses ink surfaces and warm-white text.
+- Make the reusable Flowline the single signature motif: one line branches into human checkout and Leash/x402 on marketing, advances only from real checkout events, and becomes the evidence rail in Leash. Hero choreography runs once and settles; reduced motion replaces travel and line drawing with static or opacity-only presentation.
 - Add Motion only to React applications; use scoped CSS/SVG transitions in `@tab/sdk`.
 - Add Playwright and axe infrastructure with deterministic Linux visual baselines.
 
@@ -235,7 +236,7 @@ Make checkout feel like a trustworthy payment product while preserving the exist
 
 - Add backward-compatible `appearance`, `className`, and `onStageChange` PayButton props plus normalized merchant appearance in checkout context.
 - Replace inline styles with scoped `--tab-*` variables and collision-safe styles.
-- Rebuild trigger, branded auth, balance confirmation, add-funds, real execution substages, success evidence, and retry-safe failure.
+- Rebuild trigger, branded auth, balance confirmation, add-funds, real execution substages, transaction-ID-backed submitted success, continuing verification, verified/settled evidence, and retry-safe failure.
 - Instrument progress from real execution callbacks, never timers.
 - Redesign `/demo` around the current tenant, signed intent, key, webhook, and built SDK.
 
@@ -255,7 +256,7 @@ Existing test-mode simulation remains explicitly labeled, randomized, server-per
 
 ### Acceptance Criteria Covered
 
-Branded PayButton, persistent auth, real progress, balance/add-funds clarity, evidence success, and developer-quality theming.
+Branded PayButton, persistent auth, real progress, balance/add-funds clarity, submitted success plus independently verified settlement evidence, and developer-quality theming.
 
 ### Stop Condition
 

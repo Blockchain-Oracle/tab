@@ -108,7 +108,7 @@ Wants to distinguish real integration from presentation, see sponsor technologie
 
 ### Marketing to product
 
-The hero presents the product thesis and the actual two-path trace before marketing claims. A visitor follows either `Build with Tab` or `Set up Leash`, restores/signs in with Magic, and lands on the first incomplete real task.
+The hero presents the product thesis and the actual two-path Flowline before marketing claims. A visitor follows either `Build with Tab` or `Set up Leash`, restores/signs in with Magic, and lands on the first incomplete real task.
 
 ### Merchant
 
@@ -116,7 +116,7 @@ Identity → appearance → API key → webhook → merchant-owned test workspac
 
 ### Buyer
 
-Intent loading → branded identity → OTP/restored session → balance read → exact confirmation → real progress → verified receipt or specific recovery.
+Intent loading → branded identity → OTP/restored session → balance read → exact confirmation → real progress → transaction-ID-backed submitted success → continuing verification → verified/settled evidence or specific recovery.
 
 ### Leash owner
 
@@ -126,7 +126,7 @@ Provision → cap/emergency policy → Test Lab → connect packed CLI/MCP → f
 
 ### Landing
 
-Lead with the kinetic transaction trace, not a dashboard screenshot or floating crypto tokens. The trace begins as a single Tab ledger line and branches into `Human checkout` and `Agent payment`, then resolves into evidence. Vary section proportions; avoid a repeated card grid.
+Lead with the Flowline, not a dashboard screenshot or floating crypto tokens. It begins as one line entering Tab, branches into `Human checkout` and `Leash / x402`, then resolves into evidence. Vary section proportions; avoid a repeated card grid.
 
 ### Auth and onboarding
 
@@ -142,7 +142,7 @@ Treat integration as an observable path from code to real evidence. Prefer one s
 
 ### Leash
 
-Make “policy before signature” the organizing visual truth. Gate states should converge into the transaction trace; a blocked gate visibly terminates it before signature. Receipt evidence should be dense but scannable.
+Make “policy before signature” the organizing visual truth. Gate states should converge into the Flowline evidence rail; a blocked gate visibly terminates it before signature. Receipt evidence should be dense but scannable.
 
 ### Mobile
 
@@ -158,7 +158,7 @@ Use the same identity more quietly. Code and evidence are primary content; expla
 - Never invent volume, customer, success-rate, balance, transaction, or sponsor claim.
 - Represent real integrations accurately even when the design prototype cannot call them.
 - Every money/action state must be mapped during prototype reintegration as real MVP, visibly simulated test-only, deferred, or blocked.
-- Do not design a fake optimistic `settled` state. Optimistic UI is acceptable only for reversible non-money preferences.
+- Do not design a fake optimistic `settled` state. A real-`transactionId` submitted-success state is evidentiary and is not a settled or confirmed claim. Optimistic UI is otherwise acceptable only for reversible non-money preferences.
 - Every loading state must preserve final geometry and announce the operation; every empty/error state must contain a real next action.
 
 ## Prototype Quality Bar
@@ -182,9 +182,9 @@ Use the same identity more quietly. Code and evidence are primary content; expla
 
 ## Interaction Opportunities
 
-- One-shot hero trace that can be replayed and becomes static under reduced motion.
+- One-shot landing Flowline that can be replayed and becomes static under reduced motion.
 - Shared-layout transition from PayButton amount into checkout header.
-- Receipt spine whose gate ticks resolve from source events.
+- Flowline evidence rail whose gate ticks resolve from source events.
 - Copy controls with immediate, labeled confirmation.
 - QR/address funding sheet with automatic balance recheck.
 - Before/after-signature visual distinction in Leash.
@@ -202,13 +202,16 @@ Use the same identity more quietly. Code and evidence are primary content; expla
 
 ## Creative Freedom
 
-The approved direction is a **kinetic ledger**, not a fixed comp:
+The approved direction is a **financial atelier**, not a fixed comp. It supersedes the earlier cool kinetic-ledger concept:
 
-- Use a cool porcelain/receipt canvas, near-black ledger ink, settlement blue, testnet amber, and restrained verification color.
-- Use Spline Sans for product voice and Azeret Mono for policy, code, amounts, and evidence.
-- The single signature element is a continuous receipt/settlement spine with real gate ticks.
-- Exact palette values, responsive composition, density, line geometry, and easing may be refined when the three concept boards are reviewed.
-- Spend visual boldness on the transaction trace; keep surrounding surfaces quiet and disciplined.
+- Typography is Instrument Sans for product UI, Instrument Serif sparingly for marketing emphasis, and Geist Mono for code, addresses, amounts, policy, and evidence.
+- The light palette is warm paper `#F4F0E7`, surface `#FFFCF7`, ink `#15130F`, muted `#6C665C`, cobalt `#3157E8`, emerald `#1F7A4D`, testnet amber `#9A6400`, danger `#B83F4A`, and line `#DDD6C8`.
+- Dark mode uses ink surfaces and warm-white text. Chain brand colors appear only inside official marks and network badges.
+- The Flowline is the one signature element. On landing it branches into human checkout and Leash/x402; in checkout it advances only on real events; in Leash it becomes the evidence rail.
+- Hero choreography runs once and settles. Reduced motion replaces travel, parallax, and line drawing with static or opacity-only changes without changing meaning.
+- Responsive composition, spacing rhythm, line geometry, and easing may be refined during the three checkpoint reviews; the palette and type roles are locked.
+- Spend visual boldness on the Flowline and restrained serif emphasis; keep product surfaces quiet, tactile, and information-led.
+- Do not use generic glassmorphism, walls of interchangeable cards, decorative gradients everywhere, fake charts, or unexplained crypto abbreviations.
 
 ## Explicit Non-goals
 

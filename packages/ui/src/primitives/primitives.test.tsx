@@ -46,14 +46,14 @@ describe("shared state primitives", () => {
   it("labels status and canonical network identity with words rather than color alone", () => {
     render(
       <>
-        <StatusBadge tone="test">Test funds — not real money</StatusBadge>
+        <StatusBadge tone="unavailable">Unavailable</StatusBadge>
         <NetworkIdentity profileId="eip155:42161" />
         <NetworkIdentity profileId="eip155:84532" />
       </>,
     );
 
-    const badge = screen.getByText("Test funds — not real money");
-    expect(badge.getAttribute("data-tone")).toBe("test");
+    const badge = screen.getByText("Unavailable");
+    expect(badge.getAttribute("data-tone")).toBe("unavailable");
     const network = screen.getByRole("group", { name: "Network: Arbitrum One" });
     expect(within(network).getByText("Arbitrum One")).toBeTruthy();
     expect(within(network).getByText("eip155:42161")).toBeTruthy();
@@ -192,8 +192,8 @@ describe("shared state primitives", () => {
     render(
       <EvidenceRail
         items={[
-          { id: "identity", label: "Identity checked", state: "complete" },
-          { id: "policy", label: "Policy in review", state: "current" },
+          { id: "identity", label: "Identity checked", state: "passed" },
+          { id: "policy", label: "Policy waiting", state: "pending" },
           { id: "approval", label: "Approval blocked", state: "blocked" },
           { id: "provider", label: "Provider rejected", state: "failed" },
           { id: "settlement", label: "Settlement unavailable", state: "unavailable" },
@@ -208,24 +208,22 @@ describe("shared state primitives", () => {
     const items = within(rail).getAllByRole("listitem");
     expect(items).toHaveLength(6);
     expect(items.map((item) => item.getAttribute("data-state"))).toEqual([
-      "complete",
-      "current",
+      "passed",
+      "pending",
       "blocked",
       "failed",
       "unavailable",
       "not-reached",
     ]);
     expect(items.map((item) => item.textContent)).toEqual([
-      "Identity checkedComplete",
-      "Policy in reviewCurrent",
+      "Identity checkedPassed",
+      "Policy waitingPending",
       "Approval blockedBlocked",
       "Provider rejectedFailed",
       "Settlement unavailableUnavailable",
       "Delivery not reachedNot reached",
     ]);
-    expect(rail.querySelector('[aria-current="step"]')?.textContent).toBe(
-      "Policy in reviewCurrent",
-    );
+    expect(rail.querySelector('[aria-current="step"]')).toBeNull();
   });
 
   it.each([

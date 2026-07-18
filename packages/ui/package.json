@@ -10,21 +10,26 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./primitives.css": "./dist/primitives.css",
     "./theme.css": "./dist/theme.css"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc --project tsconfig.build.json && cp src/theme.css dist/theme.css",
+    "build": "rm -rf dist && tsc --project tsconfig.build.json && cp src/theme.css src/primitives/primitives.css dist/",
     "typecheck": "tsc --noEmit --project tsconfig.json",
     "test": "pnpm run test:tokens && pnpm run test:primitives",
     "test:tokens": "node --experimental-strip-types --test src/tokens.test.mjs",
     "test:primitives": "node --experimental-strip-types scripts/require-primitives.mjs && vitest run --config vitest.config.ts src/primitives/primitives.test.tsx",
     "lint": "biome check ."
   },
+  "dependencies": {
+    "@tab/networks": "workspace:*"
+  },
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@testing-library/react": "16.3.2",

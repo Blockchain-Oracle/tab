@@ -174,10 +174,13 @@ describe("PaymentEnvelopeStore kernel lock", () => {
       lockRetryDelayMs: 30,
       lockTimeoutMs: 30,
     }).find("pay_missing", fingerprint);
+    const timedOut = expect(attempt).rejects.toMatchObject({
+      code: "PAYMENT_ENVELOPE_LOCK_TIMEOUT",
+    });
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
     await released;
 
-    await expect(attempt).rejects.toMatchObject({ code: "PAYMENT_ENVELOPE_LOCK_TIMEOUT" });
+    await timedOut;
   });
 
   it("rejects a FIFO lock anchor without blocking", async () => {

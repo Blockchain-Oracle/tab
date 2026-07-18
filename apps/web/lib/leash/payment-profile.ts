@@ -1,10 +1,12 @@
+import { getNetworkProfile, type NetworkProfile, type NetworkProfileId } from "@tab/networks";
+
 export const MAINNET_PAYMENT_PROFILE = "mainnet" as const;
 export const BASE_SEPOLIA_INTEGRATION_PROFILE = "base_sepolia_integration" as const;
 export type PaymentProfile =
   | typeof MAINNET_PAYMENT_PROFILE
   | typeof BASE_SEPOLIA_INTEGRATION_PROFILE;
 
-export type LeashPaymentNetwork = "eip155:8453" | "eip155:42161" | "eip155:84532";
+export type LeashPaymentNetwork = NetworkProfileId;
 
 export interface PaymentNetworkConfiguration {
   asset: `0x${string}`;
@@ -17,36 +19,22 @@ export interface PaymentNetworkConfiguration {
   testFunds: boolean;
 }
 
-const BASE: PaymentNetworkConfiguration = {
-  asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-  chainId: 8_453,
-  domainName: "USD Coin",
-  explorerOrigin: "https://basescan.org",
-  label: "Base",
-  network: "eip155:8453",
-  rpcEnvironmentName: "BASE_RPC_URL",
-  testFunds: false,
-};
-const ARBITRUM: PaymentNetworkConfiguration = {
-  asset: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-  chainId: 42_161,
-  domainName: "USD Coin",
-  explorerOrigin: "https://arbiscan.io",
-  label: "Arbitrum",
-  network: "eip155:42161",
-  rpcEnvironmentName: "ARBITRUM_RPC_URL",
-  testFunds: false,
-};
-const BASE_SEPOLIA: PaymentNetworkConfiguration = {
-  asset: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-  chainId: 84_532,
-  domainName: "USDC",
-  explorerOrigin: "https://sepolia.basescan.org",
-  label: "Base Sepolia",
-  network: "eip155:84532",
-  rpcEnvironmentName: "BASE_SEPOLIA_RPC_URL",
-  testFunds: true,
-};
+function paymentNetwork(profile: NetworkProfile, label: string): PaymentNetworkConfiguration {
+  return {
+    asset: profile.circleUsdc.address,
+    chainId: profile.chainId,
+    domainName: profile.circleUsdc.name,
+    explorerOrigin: profile.explorerOrigin,
+    label,
+    network: profile.caip2,
+    rpcEnvironmentName: profile.rpcEnvironmentName,
+    testFunds: profile.testFunds,
+  };
+}
+
+const BASE = paymentNetwork(getNetworkProfile("eip155:8453"), "Base");
+const ARBITRUM = paymentNetwork(getNetworkProfile("eip155:42161"), "Arbitrum");
+const BASE_SEPOLIA = paymentNetwork(getNetworkProfile("eip155:84532"), "Base Sepolia");
 
 export class InvalidPaymentProfileError extends Error {
   constructor() {

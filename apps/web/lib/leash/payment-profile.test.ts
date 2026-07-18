@@ -10,8 +10,26 @@ describe("server-authoritative Leash payment profiles", () => {
   it("keeps production on mainnet by default", () => {
     expect(provisioningPaymentProfile({})).toBe("mainnet");
     expect(networksForPaymentProfile("mainnet")).toEqual([
-      expect.objectContaining({ network: "eip155:8453", testFunds: false }),
-      expect.objectContaining({ network: "eip155:42161", testFunds: false }),
+      {
+        asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        chainId: 8_453,
+        domainName: "USD Coin",
+        explorerOrigin: "https://basescan.org",
+        label: "Base",
+        network: "eip155:8453",
+        rpcEnvironmentName: "BASE_RPC_URL",
+        testFunds: false,
+      },
+      {
+        asset: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        chainId: 42_161,
+        domainName: "USD Coin",
+        explorerOrigin: "https://arbiscan.io",
+        label: "Arbitrum",
+        network: "eip155:42161",
+        rpcEnvironmentName: "ARBITRUM_RPC_URL",
+        testFunds: false,
+      },
     ]);
   });
 

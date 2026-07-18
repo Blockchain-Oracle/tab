@@ -1,0 +1,13 @@
+{
+  "name": "@tab/ui",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test src/tokens.test.mjs",
+    "lint": "biome check ."
+  },
+  "sideEffects": [
+    "**/*.css"
+  ]
+}

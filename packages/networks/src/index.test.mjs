@@ -60,14 +60,26 @@ const expectedProfiles = [
 ];
 
 async function loadImplementation() {
+  const implementationUrl = new URL("./index.ts", import.meta.url);
   try {
-    return await import(new URL("./index.ts", import.meta.url).href);
+    return await import(implementationUrl.href);
   } catch (error) {
-    throw new Error(`${RED_MARKER} implementation exports are absent.`, { cause: error });
+    if (
+      error &&
+      typeof error === "object" &&
+      error.code === "ERR_MODULE_NOT_FOUND" &&
+      error.url === implementationUrl.href
+    ) {
+      process.stderr.write(`${RED_MARKER}\n`);
+      throw new Error("Canonical network profile implementation exports are absent.", {
+        cause: error,
+      });
+    }
+    throw error;
   }
 }
 
-test(`${RED_MARKER} are exact, immutable, and fail closed`, async () => {
+test("canonical network profiles are exact, immutable, and fail closed", async () => {
   const implementation = await loadImplementation();
   assert.deepEqual(implementation.NETWORK_PROFILES, expectedProfiles);
   assert.equal(Object.isFrozen(implementation.NETWORK_PROFILES), true);

@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const MAX_OUTPUT_BYTES = 16 * 1024 * 1024;
+const TIMEOUT_MS = 60_000;
 const argumentsList = process.argv.slice(2);
 const expectationIndex = argumentsList.indexOf("--expect");
 const separatorIndex = argumentsList.indexOf("--");
@@ -25,6 +26,7 @@ const result = spawnSync(command, commandArguments, {
   env: process.env,
   maxBuffer: MAX_OUTPUT_BYTES,
   shell: false,
+  timeout: TIMEOUT_MS,
 });
 
 process.stdout.write(result.stdout ?? "");
@@ -37,7 +39,8 @@ if (result.status === 0) {
 }
 
 const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
-if (!output.includes(expectedMarker)) {
+const hasExactMarkerLine = output.split(/\r?\n/u).some((line) => line === expectedMarker);
+if (!hasExactMarkerLine) {
   throw new Error(`The command failed for the wrong reason; missing ${expectedMarker}.`);
 }
 

@@ -118,10 +118,15 @@ Test detail:
   second payment. Production-scale archival remains future work.
 - Chain finality trusts one configured RPC's `finalized` view; no RPC quorum or
   independent Merkle proof is implemented.
-- GitGuardian's original failed pull-request result is immutable. The confirmed
-  CI-only PostgreSQL test credential was classified in GitGuardian as
-  `Ignored — Test credential`; a fresh branch event is required for the check app
-  to publish the updated result.
+- GitGuardian's original failed pull-request result remains attached to its prior
+  commit. After the confirmed CI-only PostgreSQL credential was classified as
+  `Ignored — Test credential`, the follow-up check scanned all 32 commits without
+  finding a secret.
+- That follow-up CI event exposed a separate five-second timeout cliff in the two
+  real CLI child-process integration tests. Their MCP requests now share a
+  15-second abort deadline, the outer tests retain a bounded cleanup window, and
+  connect observations are isolated by per-test API key so a timed-out child
+  cannot contaminate the next test.
 
 ## Completion blockers
 

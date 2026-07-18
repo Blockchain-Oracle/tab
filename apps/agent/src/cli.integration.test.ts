@@ -10,6 +10,9 @@ import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+const CLI_REQUEST_DEADLINE_MS = 15_000;
+const CLI_TEST_TIMEOUT_MS = 25_000;
+
 const paymentRequired = {
   accepts: [
     {
@@ -57,8 +60,7 @@ function cliProcessArguments(arguments_: string[]) {
 }
 
 describe("leash-mcp stdio CLI", () => {
-  const apiKey = `leash_sk_${"d".repeat(43)}`;
-  const connectBodies: unknown[] = [];
+  const connectBodiesByApiKey = new Map<string, unknown[]>();
   const upstreamCalls: string[] = [];
   const upstream = new Server(
     { name: "stdio-upstream", version: "1.0.0" },
@@ -68,10 +70,18 @@ describe("leash-mcp stdio CLI", () => {
   let origin = "";
   const loopback = createServer(async (request, response) => {
     if (request.url === "/api/agent/connect") {
+      const authorization = request.headers.authorization;
+      const bodies = authorization?.startsWith("Bearer ")
+        ? connectBodiesByApiKey.get(authorization.slice("Bearer ".length))
+        : undefined;
+      if (!bodies) {
+        response.statusCode = 401;
+        response.end();
+        return;
+      }
       const chunks: Buffer[] = [];
       for await (const chunk of request) chunks.push(Buffer.from(chunk));
-      connectBodies.push(JSON.parse(Buffer.concat(chunks).toString("utf8")));
-      expect(request.headers.authorization).toBe(`Bearer ${apiKey}`);
+      bodies.push(JSON.parse(Buffer.concat(chunks).toString("utf8")));
       response.setHeader("content-type", "application/json");
       response.end(JSON.stringify({ agent: { address: null }, paymentProfile: "mainnet" }));
       return;
@@ -127,74 +137,108 @@ describe("leash-mcp stdio CLI", () => {
     );
   });
 
-  it("boots the actual TypeScript bin over stdio without corrupting protocol stdout", async () => {
-    connectBodies.length = 0;
-    const cli = cliProcessArguments([]);
-    const transport = new StdioClientTransport({
-      args: cli.args,
-      command: cli.command,
-      cwd: process.cwd(),
-      env: definedEnvironment({
-        ...process.env,
-        LEASH_ALLOW_DEVELOPMENT_LOOPBACK: "1",
-        LEASH_API_BASE_URL: origin,
-        LEASH_API_KEY: apiKey,
-      }),
-      stderr: "pipe",
-    });
-    const client = new Client({ name: "stdio-integration", version: "1.0.0" });
-    const stderr: Buffer[] = [];
-    transport.stderr?.on("data", (chunk) => stderr.push(Buffer.from(chunk)));
-    try {
-      await client.connect(transport);
-      await expect(client.listTools()).resolves.toMatchObject({
-        tools: [{ name: "paid_fetch" }],
+  it(
+    "boots the actual TypeScript bin over stdio without corrupting protocol stdout",
+    async () => {
+      const apiKey = `leash_sk_${"d".repeat(42)}1`;
+      const connectBodies: unknown[] = [];
+      connectBodiesByApiKey.set(apiKey, connectBodies);
+      const requestOptions = {
+        signal: AbortSignal.timeout(CLI_REQUEST_DEADLINE_MS),
+        timeout: CLI_REQUEST_DEADLINE_MS,
+      };
+      const cli = cliProcessArguments([]);
+      const transport = new StdioClientTransport({
+        args: cli.args,
+        command: cli.command,
+        cwd: process.cwd(),
+        env: definedEnvironment({
+          ...process.env,
+          LEASH_ALLOW_DEVELOPMENT_LOOPBACK: "1",
+          LEASH_API_BASE_URL: origin,
+          LEASH_API_KEY: apiKey,
+        }),
+        stderr: "pipe",
       });
-      const result = await client.callTool({
-        arguments: { idempotencyKey: "stdio-free-1", url: `${origin}/free` },
-        name: "paid_fetch",
-      });
-      expect(textResult(result)).toMatchObject({ body: "stdio result", status: 200 });
-      expect(connectBodies).toEqual([{ transport: "mcp" }]);
-      expect(Buffer.concat(stderr).toString("utf8")).toBe("");
-    } finally {
-      await client.close();
-    }
-  });
+      const client = new Client({ name: "stdio-integration", version: "1.0.0" });
+      const stderr: Buffer[] = [];
+      transport.stderr?.on("data", (chunk) => stderr.push(Buffer.from(chunk)));
+      try {
+        await client.connect(transport, requestOptions);
+        await expect(client.listTools(undefined, requestOptions)).resolves.toMatchObject({
+          tools: [{ name: "paid_fetch" }],
+        });
+        const result = await client.callTool(
+          {
+            arguments: { idempotencyKey: "stdio-free-1", url: `${origin}/free` },
+            name: "paid_fetch",
+          },
+          undefined,
+          requestOptions,
+        );
+        expect(textResult(result)).toMatchObject({ body: "stdio result", status: 200 });
+        expect(connectBodies).toEqual([{ transport: "mcp" }]);
+        expect(Buffer.concat(stderr).toString("utf8")).toBe("");
+      } finally {
+        try {
+          await client.close();
+        } finally {
+          connectBodiesByApiKey.delete(apiKey);
+        }
+      }
+    },
+    CLI_TEST_TIMEOUT_MS,
+  );
 
-  it("wires stdio through a real Streamable HTTP upstream and keeps free tools usable", async () => {
-    connectBodies.length = 0;
-    upstreamCalls.length = 0;
-    const cli = cliProcessArguments(["--upstream", `${origin}/mcp`]);
-    const transport = new StdioClientTransport({
-      args: cli.args,
-      command: cli.command,
-      cwd: process.cwd(),
-      env: definedEnvironment({
-        ...process.env,
-        LEASH_ALLOW_DEVELOPMENT_LOOPBACK: "1",
-        LEASH_API_BASE_URL: origin,
-        LEASH_API_KEY: apiKey,
-      }),
-      stderr: "pipe",
-    });
-    const client = new Client({ name: "proxy-integration", version: "1.0.0" });
-    const stderr: Buffer[] = [];
-    transport.stderr?.on("data", (chunk) => stderr.push(Buffer.from(chunk)));
-    try {
-      await client.connect(transport);
-      await expect(client.listTools()).resolves.toMatchObject({
-        tools: [{ name: "free" }, { name: "paid" }],
+  it(
+    "wires stdio through a real Streamable HTTP upstream and keeps free tools usable",
+    async () => {
+      const apiKey = `leash_sk_${"d".repeat(42)}2`;
+      const connectBodies: unknown[] = [];
+      connectBodiesByApiKey.set(apiKey, connectBodies);
+      upstreamCalls.length = 0;
+      const requestOptions = {
+        signal: AbortSignal.timeout(CLI_REQUEST_DEADLINE_MS),
+        timeout: CLI_REQUEST_DEADLINE_MS,
+      };
+      const cli = cliProcessArguments(["--upstream", `${origin}/mcp`]);
+      const transport = new StdioClientTransport({
+        args: cli.args,
+        command: cli.command,
+        cwd: process.cwd(),
+        env: definedEnvironment({
+          ...process.env,
+          LEASH_ALLOW_DEVELOPMENT_LOOPBACK: "1",
+          LEASH_API_BASE_URL: origin,
+          LEASH_API_KEY: apiKey,
+        }),
+        stderr: "pipe",
       });
-      await expect(client.callTool({ name: "free" })).resolves.toMatchObject({
-        content: [{ text: "proxied free result", type: "text" }],
-      });
-      await expect(client.callTool({ name: "paid" })).rejects.toThrow("SIGNER_NOT_CONFIGURED");
-      expect(upstreamCalls).toEqual(["free", "paid"]);
-      expect(connectBodies).toEqual([{ transport: "mcp" }]);
-      expect(Buffer.concat(stderr).toString("utf8")).toBe("");
-    } finally {
-      await client.close();
-    }
-  });
+      const client = new Client({ name: "proxy-integration", version: "1.0.0" });
+      const stderr: Buffer[] = [];
+      transport.stderr?.on("data", (chunk) => stderr.push(Buffer.from(chunk)));
+      try {
+        await client.connect(transport, requestOptions);
+        await expect(client.listTools(undefined, requestOptions)).resolves.toMatchObject({
+          tools: [{ name: "free" }, { name: "paid" }],
+        });
+        await expect(
+          client.callTool({ name: "free" }, undefined, requestOptions),
+        ).resolves.toMatchObject({ content: [{ text: "proxied free result", type: "text" }] });
+        await expect(client.callTool({ name: "paid" }, undefined, requestOptions)).rejects.toThrow(
+          "SIGNER_NOT_CONFIGURED",
+        );
+        expect(upstreamCalls).toEqual(["free", "paid"]);
+        expect(connectBodies).toEqual([{ transport: "mcp" }]);
+        expect(Buffer.concat(stderr).toString("utf8")).toBe("");
+      } finally {
+        try {
+          await client.close();
+        } finally {
+          connectBodiesByApiKey.delete(apiKey);
+        }
+      }
+    },
+    CLI_TEST_TIMEOUT_MS,
+  );
 });

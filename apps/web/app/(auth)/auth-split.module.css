@@ -1,0 +1,237 @@
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 100dvh;
+}
+
+/* ————— Brand panel: always dark, in both themes ————— */
+.brandPanel {
+  background: var(--tab-color-ink);
+  color: var(--tab-color-bone);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 32px 40px;
+}
+
+[data-tab-theme="dark"] .brandPanel {
+  background: var(--tab-color-night);
+  border-right: 1px solid var(--tab-color-night-line);
+}
+
+.brandHome {
+  align-items: center;
+  color: inherit;
+  display: inline-flex;
+  gap: 8px;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.brandName {
+  font-size: 17px;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+}
+
+.brandScope {
+  border-left: 1px solid var(--tab-color-night-line);
+  color: var(--tab-color-bone-muted);
+  font-family: var(--tab-font-evidence);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding-left: 8px;
+  text-transform: uppercase;
+}
+
+.brandBody {
+  display: grid;
+  gap: 28px;
+  max-width: 26rem;
+}
+
+.tally {
+  height: 54px;
+  width: 72px;
+}
+
+.tallyStroke,
+.tallySlash {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: strokeDraw 200ms var(--tab-motion-easing-settle) forwards;
+}
+
+.tallyStroke:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.tallyStroke:nth-child(2) {
+  animation-delay: 110ms;
+}
+
+.tallyStroke:nth-child(3) {
+  animation-delay: 220ms;
+}
+
+.tallyStroke:nth-child(4) {
+  animation-delay: 330ms;
+}
+
+.tallySlash {
+  animation-delay: 480ms;
+  animation-duration: 280ms;
+  stroke: var(--tab-color-vermilion-bright);
+}
+
+.tagline {
+  animation: rise var(--tab-motion-duration-base) var(--tab-motion-easing-settle) 240ms both;
+  font-size: clamp(1.6rem, 2.6vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.tagline em {
+  color: var(--tab-color-vermilion-bright);
+  font-style: italic;
+}
+
+.strands {
+  height: 64px;
+  width: min(320px, 100%);
+}
+
+.strand {
+  stroke: var(--tab-color-bone-muted);
+}
+
+.strandRail {
+  stroke: var(--tab-color-vermilion-bright);
+}
+
+.strand,
+.strandRail {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: strokeDraw var(--tab-flowline-draw-duration) var(--tab-motion-easing) 480ms forwards;
+}
+
+.strandRail {
+  animation-delay: 900ms;
+}
+
+.brandFoot {
+  color: var(--tab-color-bone-muted);
+  font-family: var(--tab-font-evidence);
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ————— Form panel ————— */
+.formPanel {
+  background: var(--tab-canvas);
+  color: var(--tab-text);
+  display: grid;
+  place-items: center;
+  padding: 48px 24px;
+}
+
+.formCol {
+  display: grid;
+  gap: 18px;
+  width: min(404px, 100%);
+}
+
+.formBrand {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 0;
+}
+
+.card {
+  animation: cardIn 120ms var(--tab-motion-easing) both;
+  background: var(--tab-surface);
+  border: 1px solid var(--tab-line);
+  border-radius: var(--tab-radius-l);
+  box-shadow: var(--tab-shadow-raise);
+  min-height: 328px;
+  padding: 32px 32px 28px;
+}
+
+.footer {
+  color: var(--tab-text-muted);
+  font-size: 12px;
+  margin: 0;
+  text-align: center;
+}
+
+@keyframes strokeDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ————— Mobile: slim brand band ————— */
+@media (max-width: 880px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+
+  .brandPanel {
+    align-items: center;
+    flex-direction: row;
+    padding: 14px 20px;
+  }
+
+  .brandBody {
+    display: none;
+  }
+
+  .formPanel {
+    padding: 32px 20px 48px;
+  }
+
+  .card {
+    padding: 26px 20px 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tallyStroke,
+  .tallySlash,
+  .strand,
+  .strandRail {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .tagline,
+  .card {
+    animation: none;
+  }
+}

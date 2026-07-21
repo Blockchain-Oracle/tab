@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Tab</title>
+  <style>
+    .bg { fill: #FAF8F3; }
+    .stroke { stroke: #161310; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #141210; }
+      .stroke { stroke: #F2EFE9; }
+    }
+  </style>
+  <rect width="64" height="64" rx="14" class="bg"/>
+  <g class="stroke" stroke-width="4.6" stroke-linecap="round" fill="none">
+    <line x1="17.5" y1="19" x2="17.5" y2="45"/>
+    <line x1="27.2" y1="19" x2="27.2" y2="45"/>
+    <line x1="36.8" y1="19" x2="36.8" y2="45"/>
+    <line x1="46.5" y1="19" x2="46.5" y2="45"/>
+    <line x1="12" y1="40.5" x2="52" y2="23.5" stroke="#E8501F"/>
+  </g>
+</svg>

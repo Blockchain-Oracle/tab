@@ -60,7 +60,7 @@ export async function insertReceipt(
           ? "invalid_exact_evm_transaction_failed"
           : "FLOAT_EMPTY"
         : blocked
-          ? "LEASH_CAP_EXCEEDED"
+          ? "CAP_EXCEEDED"
           : null,
     requestFingerprint: randomBytes(32).toString("hex"),
     settledAt: settled ? new Date("2026-07-17T00:01:00.000Z") : null,

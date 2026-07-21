@@ -1,7 +1,7 @@
 .preview {
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--tab-surface);
   padding: 18px 20px;
 }
 
@@ -22,7 +22,7 @@
 }
 
 .heading span {
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   font-weight: 650;
   letter-spacing: 0.07em;
@@ -30,12 +30,12 @@
 
 .heading h2 {
   margin: 0;
-  color: #24231f;
+  color: var(--tab-action-hover);
   font-size: 15px;
 }
 
 .heading a {
-  color: #206b4e;
+  color: var(--tab-status-success);
   font-size: 11.5px;
   font-weight: 650;
   text-decoration: none;
@@ -43,7 +43,7 @@
 
 .empty {
   margin: 18px 0 3px;
-  color: #79766e;
+  color: var(--tab-text-muted);
   font-size: 12.5px;
 }
 
@@ -55,14 +55,14 @@
 }
 
 .list li {
-  border-top: 1px solid #efede8;
+  border-top: 1px solid var(--tab-canvas);
 }
 
 .list a {
   align-items: center;
   gap: 14px;
   min-height: 58px;
-  color: #24231f;
+  color: var(--tab-action-hover);
   text-decoration: none;
 }
 
@@ -83,7 +83,7 @@
 }
 
 .resource small {
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
 }
 
@@ -95,8 +95,8 @@
 }
 
 .network {
-  background: #f2f0eb;
-  color: #5d5951;
+  background: var(--tab-canvas);
+  color: var(--tab-text-muted);
 }
 
 .receiptStatus {
@@ -106,26 +106,26 @@
 }
 
 .settled {
-  background: #e7f3ef;
-  color: #17503a;
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  color: var(--tab-status-success);
 }
 .pending {
-  background: #fff2dc;
-  color: #8a5711;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 .failed {
-  background: #fbe9e6;
-  color: #9a3025;
+  background: color-mix(in srgb, var(--tab-status-danger) 9%, transparent);
+  color: var(--tab-status-danger);
 }
 .blocked {
-  background: #e8eff5;
-  color: #345a73;
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  color: var(--tab-text-muted);
 }
 
 .list a:focus-visible,
 .heading a:focus-visible {
   border-radius: 6px;
-  outline: 2px solid #206b4e;
+  outline: 2px solid var(--tab-status-success);
   outline-offset: 2px;
 }
 

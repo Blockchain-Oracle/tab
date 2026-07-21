@@ -6,7 +6,7 @@ import {
   provisioningPaymentProfile,
 } from "./payment-profile";
 
-describe("server-authoritative Leash payment profiles", () => {
+describe("server-authoritative Agent payment profiles", () => {
   it("keeps production on mainnet by default", () => {
     expect(provisioningPaymentProfile({})).toBe("mainnet");
     expect(networksForPaymentProfile("mainnet")).toEqual([
@@ -35,7 +35,7 @@ describe("server-authoritative Leash payment profiles", () => {
 
   it("enables only Base Sepolia through the explicit integration profile", () => {
     expect(
-      provisioningPaymentProfile({ LEASH_PROVISIONING_PROFILE: "base_sepolia_integration" }),
+      provisioningPaymentProfile({ TAB_AGENT_PROVISIONING_PROFILE: "base_sepolia_integration" }),
     ).toBe("base_sepolia_integration");
     expect(networksForPaymentProfile("base_sepolia_integration")).toEqual([
       {
@@ -52,7 +52,7 @@ describe("server-authoritative Leash payment profiles", () => {
   });
 
   it("fails closed for unknown configuration without falling back", () => {
-    expect(() => provisioningPaymentProfile({ LEASH_PROVISIONING_PROFILE: "testnet" })).toThrow(
+    expect(() => provisioningPaymentProfile({ TAB_AGENT_PROVISIONING_PROFILE: "testnet" })).toThrow(
       InvalidPaymentProfileError,
     );
     expect(() => networksForPaymentProfile("unknown" as never)).toThrow(InvalidPaymentProfileError);

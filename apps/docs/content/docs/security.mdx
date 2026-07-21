@@ -1,0 +1,46 @@
+---
+title: Security model
+description: Key custody, session separation, and the guarantees the product refuses to break.
+---
+
+## Key custody
+
+- **Merchant secret keys** (`sk_…`) are hashed at rest and shown exactly
+  once. Rotation revokes the old key immediately — there is no grace window.
+- **Agent keys** (`agent_sk_…`) are one-per-agent, shown once at
+  provisioning, and revoked by the emergency ladder.
+- **Buyer wallets** are created by email OTP through an embedded wallet
+  provider. There is no seed phrase to lose and no extension to spoof.
+- **Agent signing keys** live in a hosted signer. They never appear in agent
+  context, tool output, environment dumps, or this documentation.
+
+## Session separation
+
+Merchant sessions and agent-owner sessions are separate principals with
+separate cookies. A merchant session presented to an owner surface is
+rejected — and vice versa — even for the same human.
+
+## The cap is outside the model
+
+The agent spending cap is enforced in the MCP proxy and the server, not in
+the agent's instructions. Prompt injection can make an agent *want* to
+overspend; it cannot make the proxy sign the payment.
+
+## Mobile signs nothing
+
+The mobile monitor is read-and-revoke only. It contains no signing code
+path: no message signing, no transaction authorization — by construction,
+not by policy.
+
+## Money-state honesty
+
+- Live money movement stays **blocked** until the production money-mover
+  verification completes. No environment flag can unblock it from the
+  client.
+- Submitted is never presented as settled. Test is never presented as live.
+- On-chain claims carry transaction hashes you can verify independently.
+
+## Reporting
+
+Found a security issue? Email the address on the dashboard's security page.
+Please do not open public issues for vulnerabilities.

@@ -62,7 +62,7 @@ function verifyPackedPaths(paths) {
     if (!paths.has(path)) fail(`required file is missing: ${path}`);
   }
   for (const path of paths) {
-    if (path !== "package.json" && !path.startsWith("dist/")) {
+    if (path !== "package.json" && path !== "LICENSE" && !path.startsWith("dist/")) {
       fail(`unexpected non-runtime file is packed: ${path}`);
     }
     if (path.endsWith(".map")) fail(`source map is packed: ${path}`);
@@ -74,11 +74,13 @@ function verifyPackedPaths(paths) {
 
 function verifyPackageContract() {
   const packageJson = JSON.parse(readFileSync(join(packageDirectory, "package.json"), "utf8"));
-  if (packageJson.private !== true)
-    fail("package must remain private while publication is deferred");
-  if (packageJson.bin?.["leash-mcp"] !== "./dist/cli.js") fail("leash-mcp bin target changed");
+  if (packageJson.name !== "@runtab/mcp") fail("package must be named @runtab/mcp");
+  if (packageJson.private !== false) fail("package must be publishable (private: false)");
+  if (packageJson.publishConfig?.access !== "public") fail("scoped package needs public access");
+  if (packageJson.license !== "MIT") fail("license must be declared for publication");
+  if (packageJson.bin?.["tab-mcp"] !== "./dist/cli.js") fail("tab-mcp bin target changed");
   if (packageJson.exports?.["./fetch"]?.import !== "./dist/fetch.js") {
-    fail("@tab/agent/fetch import export is missing");
+    fail("tab-mcp/fetch import export is missing");
   }
 }
 
@@ -89,7 +91,7 @@ function verifyExternalConsumer(tarballPath, temporaryDirectory) {
     version: "0.0.0",
     private: true,
     type: "module",
-    dependencies: { "@tab/agent": `file:${tarballPath}` },
+    dependencies: { "@runtab/mcp": `file:${tarballPath}` },
   };
   mkdirSync(consumerDirectory);
   writeFileSync(join(consumerDirectory, "package.json"), `${JSON.stringify(manifest, null, 2)}\n`);
@@ -97,15 +99,15 @@ function verifyExternalConsumer(tarballPath, temporaryDirectory) {
     cwd: consumerDirectory,
   });
 
-  const installedPackage = realpathSync(join(consumerDirectory, "node_modules/@tab/agent"));
+  const installedPackage = realpathSync(join(consumerDirectory, "node_modules/@runtab/mcp"));
   if (installedPackage.startsWith(realpathSync(packageDirectory))) {
     fail("consumer resolved the workspace package instead of the tarball");
   }
 
-  const executable = join(consumerDirectory, "node_modules/.bin/leash-mcp");
+  const executable = join(consumerDirectory, "node_modules/.bin/tab-mcp");
   const executableStats = lstatSync(executable);
   if (!executableStats.isFile() && !executableStats.isSymbolicLink()) {
-    fail("node_modules/.bin/leash-mcp is not executable content");
+    fail("node_modules/.bin/tab-mcp is not executable content");
   }
   accessSync(executable, fsConstants.X_OK);
   const cli = run(executable, [], {
@@ -113,8 +115,8 @@ function verifyExternalConsumer(tarballPath, temporaryDirectory) {
     env: { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "" },
     expectedStatus: 1,
   });
-  if (cli.stderr.trim() !== "leash-mcp: LEASH_API_BASE_URL is required.") {
-    fail("packed leash-mcp did not start and fail closed on missing configuration");
+  if (cli.stderr.trim() !== "tab-mcp: TAB_API_BASE_URL is required.") {
+    fail("packed tab-mcp did not start and fail closed on missing configuration");
   }
 
   const imported = run(
@@ -122,12 +124,12 @@ function verifyExternalConsumer(tarballPath, temporaryDirectory) {
     [
       "--input-type=module",
       "--eval",
-      "const m=await import('@tab/agent/fetch');if(typeof m.createLeashFetch!=='function')process.exit(2);process.stdout.write('fetch-export-ok')",
+      "const m=await import('@runtab/mcp/fetch');if(typeof m.createTabFetch!=='function')process.exit(2);process.stdout.write('fetch-export-ok')",
     ],
     { cwd: consumerDirectory },
   );
   if (imported.stdout !== "fetch-export-ok")
-    fail("@tab/agent/fetch import returned an invalid export");
+    fail("tab-mcp/fetch import returned an invalid export");
 
   const paidE2e = run(
     process.execPath,
@@ -140,7 +142,7 @@ function verifyExternalConsumer(tarballPath, temporaryDirectory) {
     { cwd: consumerDirectory },
   );
   if (paidE2e.stdout !== "packed paid_fetch restart E2E verified\n") {
-    fail("packed leash-mcp did not pass the paid restart E2E");
+    fail("packed tab-mcp did not pass the paid restart E2E");
   }
 
   const upstreamE2e = run(
@@ -154,7 +156,7 @@ function verifyExternalConsumer(tarballPath, temporaryDirectory) {
     { cwd: consumerDirectory },
   );
   if (upstreamE2e.stdout !== "packed upstream restart E2E verified\n") {
-    fail("packed leash-mcp did not pass the upstream restart E2E");
+    fail("packed tab-mcp did not pass the upstream restart E2E");
   }
 }
 
@@ -170,7 +172,7 @@ try {
   run("pnpm", ["pack", "--out", tarballPath]);
   verifyExternalConsumer(tarballPath, temporaryDirectory);
   process.stdout.write(
-    `packed artifact verified: ${packManifest.files.length} files; leash-mcp executable; paid and upstream restart E2E; @tab/agent/fetch import\n`,
+    `packed artifact verified: ${packManifest.files.length} files; tab-mcp executable; paid and upstream restart E2E; tab-mcp/fetch import\n`,
   );
 } finally {
   rmSync(temporaryDirectory, { recursive: true, force: true });

@@ -3,6 +3,7 @@ import { BASE_SEPOLIA_INTEGRATION_PROFILE } from "../../../../../lib/leash/payme
 import { TEST_FUNDS_LABEL } from "../../../../../lib/leash/test-funds";
 import { EvidenceCopyButton } from "../evidence-copy-button";
 import { classifyFloatHealth } from "../float-health";
+import { FaucetClaim } from "./faucet-claim";
 import { FundsBalanceGrid } from "./funds-balance-grid";
 import styles from "./funds-panel.module.css";
 
@@ -39,10 +40,12 @@ function readState(snapshot: LeashFundsSnapshot) {
 }
 
 export function FundsPanel({
+  agentId,
   agentName,
   agentStatus,
   snapshot,
 }: {
+  agentId: string;
   agentName: string;
   agentStatus: AgentStatus;
   snapshot: LeashFundsSnapshot;
@@ -95,11 +98,15 @@ export function FundsPanel({
         </article>
       </section>
 
+      {testFunds && snapshot.agentAddress && !terminal ? (
+        <FaucetClaim agentAddress={snapshot.agentAddress} agentId={agentId} />
+      ) : null}
+
       {agentStatus === "nuked" ? (
         <section className={styles.unifiedCard} role="alert">
           <strong>Signing credential destroyed</strong>
           <p>
-            Leash withdrawal is unavailable after nuclear destruction. Any remaining floats may be
+            Agent withdrawal is unavailable after nuclear destruction. Any remaining floats may be
             stranded.
           </p>
         </section>

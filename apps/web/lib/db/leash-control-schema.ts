@@ -138,7 +138,7 @@ export const leashKeys = pgTable(
       .on(table.agentId)
       .where(sql`${table.revokedAt} is null`),
     check("leash_keys_hash_check", sql`${table.hashedKey} ~ '^[0-9a-f]{64}$'`),
-    check("leash_keys_prefix_check", sql`${table.prefix} = 'leash_sk_'`),
+    check("leash_keys_prefix_check", sql`${table.prefix} = 'agent_sk_'`),
     check("leash_keys_last4_check", sql`${table.last4} ~ '^[A-Za-z0-9_-]{4}$'`),
   ],
 );

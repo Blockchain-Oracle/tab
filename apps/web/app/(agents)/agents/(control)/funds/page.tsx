@@ -1,3 +1,5 @@
+export const metadata = { title: "Funds" };
+
 import { notFound } from "next/navigation";
 
 import { requireCurrentOwner } from "../../../../../lib/auth/current-owner";
@@ -36,6 +38,7 @@ export default async function FundsPage({ searchParams }: FundsPageProps) {
     <>
       <AgentPicker agents={selection.agents} selectedId={selection.selected.id} />
       <FundsPanel
+        agentId={selection.selected.id}
         agentName={selection.selected.name}
         agentStatus={selection.selected.status}
         snapshot={snapshot}

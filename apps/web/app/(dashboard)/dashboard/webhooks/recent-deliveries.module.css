@@ -4,8 +4,8 @@
   gap: 12px;
   align-items: center;
   padding: 11px 18px;
-  border-bottom: 1px solid #f5f4f0;
-  color: #8c8a80;
+  border-bottom: 1px solid var(--tab-canvas);
+  color: var(--tab-text-muted);
   font-size: 11.5px;
 }
 
@@ -18,13 +18,13 @@
 }
 
 .recentRow > code:first-child {
-  color: #1c1b18;
+  color: var(--tab-text);
   font-weight: 600;
 }
 
 .recentRow > code:nth-child(3) {
   overflow: hidden;
-  color: #3b5bd9;
+  color: var(--tab-text);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -34,25 +34,25 @@
 }
 
 .success {
-  color: #257a46;
+  color: var(--tab-text);
 }
 
 .warning {
-  color: #96650f;
+  color: var(--tab-status-warning);
 }
 
 .danger {
-  color: #b4383d;
+  color: var(--tab-status-danger);
 }
 
 .neutral {
-  color: #5f5d55;
+  color: var(--tab-text-muted);
 }
 
 .noDeliveries {
   margin: 0;
   padding: 24px 18px;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 12.5px;
 }
 

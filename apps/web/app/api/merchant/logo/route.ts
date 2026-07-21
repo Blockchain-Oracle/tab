@@ -13,6 +13,7 @@ import {
 import { consumeLogoUploadGrant } from "../../../../lib/db/logo-upload-rate-limit";
 import { merchants } from "../../../../lib/db/schema";
 import { getServerDatabase } from "../../../../lib/db/server";
+import { jsonError } from "../../../../lib/http/responses";
 import {
   completedLogoIsAllowed,
   LOGO_CONTENT_TYPES,
@@ -22,13 +23,6 @@ import {
 import { logoWriteConditions } from "./logo-write-conditions";
 
 class LogoUploadRateLimitError extends Error {}
-
-function error(code: string, message: string, status: number) {
-  return NextResponse.json(
-    { error: { code, message } },
-    { headers: { "cache-control": "no-store" }, status },
-  );
-}
 
 function blobToken() {
   return process.env.BLOB_READ_WRITE_TOKEN?.trim();
@@ -76,27 +70,27 @@ export async function POST(request: NextRequest) {
   try {
     parsedBody = await request.json();
   } catch {
-    return error("INVALID_UPLOAD_REQUEST", "The upload request is invalid.", 400);
+    return jsonError("INVALID_UPLOAD_REQUEST", "The upload request is invalid.", 400);
   }
   if (!isUploadBody(parsedBody)) {
-    return error("INVALID_UPLOAD_REQUEST", "The upload request is invalid.", 400);
+    return jsonError("INVALID_UPLOAD_REQUEST", "The upload request is invalid.", 400);
   }
   const body = parsedBody;
 
   let principal: Awaited<ReturnType<typeof authenticatedMerchant>>;
   if (body.type === "blob.generate-client-token") {
     if (!requestOriginIsAllowed(request)) {
-      return error("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
+      return jsonError("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
     }
     principal = await authenticatedMerchant(request);
     if (!principal) {
-      return error("SESSION_REQUIRED", "A valid merchant session is required.", 401);
+      return jsonError("SESSION_REQUIRED", "A valid merchant session is required.", 401);
     }
   }
 
   const token = blobToken();
   if (!token) {
-    return error("LOGO_STORAGE_NOT_CONFIGURED", "Logo storage is not configured.", 503);
+    return jsonError("LOGO_STORAGE_NOT_CONFIGURED", "Logo storage is not configured.", 503);
   }
 
   try {
@@ -124,23 +118,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response, { headers: { "cache-control": "no-store" } });
   } catch (uploadError) {
     if (uploadError instanceof LogoUploadRateLimitError) {
-      return error("LOGO_UPLOAD_RATE_LIMITED", "Try another logo upload later.", 429);
+      return jsonError("LOGO_UPLOAD_RATE_LIMITED", "Try another logo upload later.", 429);
     }
-    return error("UPLOAD_NOT_ALLOWED", "The logo upload could not be authorized.", 400);
+    return jsonError("UPLOAD_NOT_ALLOWED", "The logo upload could not be authorized.", 400);
   }
 }
 
 export async function PUT(request: NextRequest) {
   if (!requestOriginIsAllowed(request)) {
-    return error("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
+    return jsonError("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
   }
   const principal = await authenticatedMerchant(request);
   if (!principal) {
-    return error("SESSION_REQUIRED", "A valid merchant session is required.", 401);
+    return jsonError("SESSION_REQUIRED", "A valid merchant session is required.", 401);
   }
   const token = blobToken();
   if (!token) {
-    return error("LOGO_STORAGE_NOT_CONFIGURED", "Logo storage is not configured.", 503);
+    return jsonError("LOGO_STORAGE_NOT_CONFIGURED", "Logo storage is not configured.", 503);
   }
 
   let completed: { etag: string; url: string } | undefined;
@@ -158,12 +152,12 @@ export async function PUT(request: NextRequest) {
   } catch {
     completed = undefined;
   }
-  if (!completed) return error("INVALID_LOGO", "A completed logo upload is required.", 400);
+  if (!completed) return jsonError("INVALID_LOGO", "A completed logo upload is required.", 400);
 
   try {
     const blob = await head(completed.url, { token });
     if (!completedLogoIsAllowed(blob, principal.merchantId, completed.etag)) {
-      return error("INVALID_LOGO", "The uploaded logo is not valid for this merchant.", 400);
+      return jsonError("INVALID_LOGO", "The uploaded logo is not valid for this merchant.", 400);
     }
     await getServerDatabase()
       .db.update(merchants)
@@ -174,6 +168,6 @@ export async function PUT(request: NextRequest) {
       { headers: { "cache-control": "no-store" }, status: 200 },
     );
   } catch {
-    return error("INVALID_LOGO", "The uploaded logo could not be verified.", 400);
+    return jsonError("INVALID_LOGO", "The uploaded logo could not be verified.", 400);
   }
 }

@@ -17,7 +17,7 @@
 
 .eyebrow {
   margin: 0;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -33,7 +33,7 @@
   display: block;
   max-width: 650px;
   margin-top: 5px;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12.5px;
 }
 
@@ -47,23 +47,23 @@
 }
 
 .activeChip {
-  border: 1px solid #bee0d6;
-  background: #e7f3ef;
-  color: #17503a;
+  border: 1px solid color-mix(in srgb, var(--tab-text) 5%, transparent);
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  color: var(--tab-text);
 }
 
 .waitingChip {
-  border: 1px solid #dbd9d0;
-  background: #fff;
-  color: #8c8a80;
+  border: 1px solid var(--tab-line);
+  background: var(--tab-surface);
+  color: var(--tab-text-muted);
 }
 
 .steps {
   gap: 0;
   padding: 14px 18px;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 11px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .steps > div {
@@ -71,7 +71,7 @@
   flex: 1;
   align-items: center;
   gap: 8px;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
   font-weight: 600;
 }
@@ -81,37 +81,37 @@
   width: 23px;
   height: 23px;
   place-items: center;
-  border: 1px solid #dbd9d0;
+  border: 1px solid var(--tab-line);
   border-radius: 50%;
   font-size: 10.5px;
 }
 
 .steps .doneStep {
-  color: #17503a;
+  color: var(--tab-text);
 }
 
 .doneStep b {
-  border-color: #bee0d6;
-  background: #e7f3ef;
+  border-color: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
 }
 
 .steps .currentStep {
-  color: #96650f;
+  color: var(--tab-status-warning);
 }
 
 .currentStep b {
-  border-color: #f2e3c2;
-  background: #fbf1dc;
+  border-color: color-mix(in srgb, var(--tab-mode-test) 22%, transparent);
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
 }
 
 .connectionCard {
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .connectionCard p {
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -132,7 +132,7 @@
 }
 
 .connectionCard small {
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
 }
 

@@ -41,6 +41,8 @@ function receipt(status: ReceiptItem["status"], index: number): ReceiptItem {
     amountDisplay: `$0.${index}0`,
     amountUsd: `0.${index}00000`,
     asset: "USDC",
+    authorizationNonce: "0xab",
+    authorizationValidBefore: "2026-07-16T11:00:00.000Z",
     capContext: null,
     createdAt: `2026-07-17T10:0${index}:00.000Z`,
     explorer: settled
@@ -54,7 +56,7 @@ function receipt(status: ReceiptItem["status"], index: number): ReceiptItem {
     },
     origin: null,
     payTo: "0x1111111111111111111111111111111111111111",
-    reason: status === "blocked" ? "LEASH_CAP_EXCEEDED" : null,
+    reason: status === "blocked" ? "CAP_EXCEEDED" : null,
     resourceHost: `api-${index}.example.test`,
     resourceUrl: `https://api-${index}.example.test/search`,
     settledAt: settled ? "2026-07-17T10:10:00.000Z" : null,
@@ -101,7 +103,7 @@ describe("receipt feed", () => {
     expect(html).toContain("https://api-4.example.test/search");
     expect(html).toContain("https://basescan.org/tx/");
     expect(html).toContain(`0x${"a".repeat(64)}`);
-    expect(html).toContain("/leash/receipts/00000000-0000-4000-8000-000000000004");
+    expect(html).toContain("/agents/receipts/00000000-0000-4000-8000-000000000004");
   });
 
   it("shows explorer evidence for a failed transaction that reached chain", () => {

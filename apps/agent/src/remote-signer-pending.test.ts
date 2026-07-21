@@ -2,7 +2,7 @@ import type { PaymentResponseContext } from "@x402/core/client";
 import { privateKeyToAccount } from "viem/accounts";
 import { describe, expect, it } from "vitest";
 
-import { LeashRemoteSigner } from "./remote-signer.js";
+import { TabRemoteSigner } from "./remote-signer.js";
 
 const nowSeconds = 1_784_271_300;
 const account = privateKeyToAccount(`0x${"33".repeat(32)}`);
@@ -66,10 +66,10 @@ async function signedReporter(fetch: typeof globalThis.fetch) {
     request as unknown as Parameters<typeof account.signTypedData>[0],
   );
   let signRequests = 0;
-  const signer = new LeashRemoteSigner({
+  const signer = new TabRemoteSigner({
     address: account.address,
     apiBaseUrl: "https://tab.example.test/",
-    apiKey: "leash_sk_secret",
+    apiKey: "agent_sk_secret",
     fetch: async (input, init) => {
       if (new URL(input.toString()).pathname === "/api/agent/sign") {
         signRequests += 1;
@@ -87,7 +87,7 @@ async function signedReporter(fetch: typeof globalThis.fetch) {
   return { signRequests: () => signRequests, signature, signer };
 }
 
-describe("Leash pending settlement observation retries", () => {
+describe("Agent pending settlement observation retries", () => {
   it("retries a 202 acknowledgement to its bound and retains correlation while pending", async () => {
     let attempts = 0;
     const { signRequests, signature, signer } = await signedReporter(async () => {

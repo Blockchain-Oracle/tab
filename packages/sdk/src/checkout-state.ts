@@ -6,11 +6,13 @@ export type CheckoutStage =
   | "email-sending"
   | "otp"
   | "otp-verifying"
+  | "device-approval"
   | "balance-loading"
   | "balance-ready"
   | "insufficient"
   | "add-funds"
   | "confirming"
+  | "stuck"
   | "success"
   | "error";
 
@@ -26,12 +28,14 @@ export type CheckoutEvent =
   | { otp: string; type: "otp-changed" }
   | { type: "otp-submitted" }
   | { type: "otp-rejected" }
+  | { type: "device-approval-needed" }
   | { type: "auth-restarted" }
   | { type: "auth-succeeded" }
   | { sufficient: boolean; type: "balance-resolved" }
   | { type: "add-funds-opened" }
   | { type: "balance-recheck-started" }
   | { type: "confirmation-started" }
+  | { type: "confirmation-delayed" }
   | { type: "payment-succeeded" }
   | { type: "failed" }
   | { type: "cancelled" };
@@ -66,10 +70,23 @@ export function checkoutReducer(state: CheckoutState, event: CheckoutEvent): Che
       return state.stage === "email-sending" || state.stage === "otp-verifying"
         ? { otp: "", stage: "otp" }
         : state;
+    case "device-approval-needed":
+      // Magic asks the buyer to approve a new device by email. This is a
+      // recoverable waiting state, never a failure: once approved, the same
+      // attempt continues and resolves auth.
+      return state.stage === "email-sending" ||
+        state.stage === "otp" ||
+        state.stage === "otp-verifying"
+        ? next(state, "device-approval")
+        : state;
     case "auth-restarted":
-      return state.stage === "otp" ? next(state, "email") : state;
+      return state.stage === "otp" || state.stage === "device-approval"
+        ? next(state, "email")
+        : state;
     case "auth-succeeded":
-      return state.stage === "opening" || state.stage === "otp-verifying"
+      return state.stage === "opening" ||
+        state.stage === "otp-verifying" ||
+        state.stage === "device-approval"
         ? next(state, "balance-loading")
         : state;
     case "balance-resolved":
@@ -84,8 +101,14 @@ export function checkoutReducer(state: CheckoutState, event: CheckoutEvent): Che
         : state;
     case "confirmation-started":
       return state.stage === "balance-ready" ? next(state, "confirming") : state;
+    case "confirmation-delayed":
+      // The payment is taking longer than expected. Money may be in flight:
+      // the UI must say so honestly and must NOT offer a blind retry.
+      return state.stage === "confirming" ? next(state, "stuck") : state;
     case "payment-succeeded":
-      return state.stage === "confirming" ? next(state, "success") : state;
+      return state.stage === "confirming" || state.stage === "stuck"
+        ? next(state, "success")
+        : state;
     case "failed":
       return state.stage === "success" ? state : next(state, "error");
     case "cancelled":

@@ -1,0 +1,207 @@
+.panel {
+  display: grid;
+  gap: 20px;
+}
+
+.header {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.header h1 {
+  font-size: 22px;
+  font-weight: 640;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.header p {
+  color: var(--tab-text-muted);
+  font-size: 13.5px;
+  margin: 6px 0 0;
+  max-width: 52ch;
+}
+
+.count {
+  color: var(--tab-text-muted);
+  font-family: var(--tab-font-evidence);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.milestone {
+  align-items: center;
+  background: var(--tab-surface);
+  border: 1px solid var(--tab-line);
+  border-radius: var(--tab-radius-m);
+  display: flex;
+  gap: 14px;
+  padding: 16px 20px;
+}
+
+.milestoneMark {
+  align-items: center;
+  border: 2px solid var(--tab-text);
+  border-radius: 50%;
+  color: var(--tab-text);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.milestone strong {
+  font-size: 14px;
+}
+
+.milestone p {
+  color: var(--tab-text-muted);
+  font-size: 12.5px;
+  margin: 2px 0 0;
+}
+
+.milestone a {
+  color: var(--tab-text);
+  font-size: 13px;
+  font-weight: 590;
+  margin-left: auto;
+  text-decoration: underline;
+}
+
+.milestone a:hover {
+  color: var(--tab-accent);
+}
+
+.error {
+  color: var(--tab-status-danger);
+  font-size: 13px;
+  margin: 0;
+}
+
+.steps {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.step {
+  background: var(--tab-surface);
+  border: 1px solid var(--tab-line);
+  border-left: 3px solid var(--tab-line);
+  border-radius: var(--tab-radius-m);
+  display: flex;
+  gap: 14px;
+  padding: 16px 18px;
+  transition: border-color var(--tab-motion-duration-fast) var(--tab-motion-easing);
+}
+
+/* The current step carries the working vermilion rail. */
+.step[data-active] {
+  border-left-color: var(--tab-accent);
+}
+
+.stepMark,
+.doneMark {
+  align-items: center;
+  border-radius: 50%;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-family: var(--tab-font-evidence);
+  font-size: 12px;
+  height: 26px;
+  justify-content: center;
+  margin-top: 1px;
+  width: 26px;
+}
+
+.stepMark {
+  border: 1px solid var(--tab-line-strong);
+  color: var(--tab-text-muted);
+}
+
+/* Step completion is progress, not money truth — ink, never green. */
+.doneMark {
+  background: var(--tab-text);
+  color: var(--tab-bg);
+  font-weight: 700;
+}
+
+.stepBody {
+  display: grid;
+  flex: 1;
+  gap: 6px;
+  min-width: 0;
+}
+
+.stepBody > p {
+  color: var(--tab-text-muted);
+  font-size: 13px;
+  margin: 0;
+  max-width: 64ch;
+}
+
+.stepHeading {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.stepHeading strong {
+  font-size: 14px;
+  font-weight: 620;
+}
+
+.doneLabel {
+  color: var(--tab-text-muted);
+  font-family: var(--tab-font-evidence);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ackButton {
+  background: var(--tab-action);
+  border: 0;
+  border-radius: var(--tab-radius-pill);
+  color: var(--tab-action-text);
+  font-size: 12.5px;
+  font-weight: 600;
+  height: 32px;
+  margin-left: auto;
+  padding-inline: 14px;
+  transition: background var(--tab-motion-duration-fast) var(--tab-motion-easing);
+}
+
+.ackButton:hover:not(:disabled) {
+  background: var(--tab-action-hover);
+}
+
+.ackButton:disabled {
+  opacity: 0.75;
+}
+
+.stepLink {
+  color: var(--tab-text);
+  font-size: 13px;
+  font-weight: 590;
+  margin-left: auto;
+  text-decoration: underline;
+}
+
+.stepHeading .ackButton + .stepLink {
+  margin-left: 0;
+}
+
+.stepLink:hover {
+  color: var(--tab-accent);
+}

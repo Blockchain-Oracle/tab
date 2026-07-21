@@ -21,7 +21,7 @@
 
 .header p {
   margin: 0;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -36,7 +36,7 @@
 .headerSubtitle {
   display: block;
   margin-top: 5px;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12.5px;
 }
 
@@ -47,8 +47,8 @@
 .headerActions b {
   padding: 5px 9px;
   border-radius: 999px;
-  background: #e7f3ef;
-  color: #17503a;
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  color: var(--tab-status-success);
   font-size: 10.5px;
 }
 
@@ -56,10 +56,10 @@
 .itemActions button,
 .itemActions a,
 .loadMore button {
-  border: 1px solid #dbd9d0;
+  border: 1px solid var(--tab-line);
   border-radius: 8px;
-  background: #fff;
-  color: #1c1b18;
+  background: var(--tab-surface);
+  color: var(--tab-text);
   font-size: 11.5px;
   font-weight: 600;
 }
@@ -81,9 +81,9 @@
   justify-content: space-between;
   gap: 14px;
   padding: 12px 14px;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 11px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .filters > div {
@@ -93,24 +93,24 @@
 .filters button {
   height: 30px;
   padding: 0 11px;
-  border: 1px solid #dbd9d0;
+  border: 1px solid var(--tab-line);
   border-radius: 999px;
-  background: #fff;
-  color: #5f5d55;
+  background: var(--tab-surface);
+  color: var(--tab-text-muted);
   font-size: 11.5px;
 }
 
 .filters button[aria-pressed="true"] {
-  border-color: #1c1b18;
-  background: #1c1b18;
-  color: #fff;
+  border-color: var(--tab-text);
+  background: var(--tab-text);
+  color: var(--tab-surface);
 }
 
 .filters label {
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   font-weight: 600;
 }
@@ -118,10 +118,10 @@
 .filters select {
   height: 30px;
   padding: 0 8px;
-  border: 1px solid #dbd9d0;
+  border: 1px solid var(--tab-line);
   border-radius: 7px;
-  background: #fff;
-  color: #1c1b18;
+  background: var(--tab-surface);
+  color: var(--tab-text);
   font-size: 11px;
 }
 
@@ -136,9 +136,9 @@
 .item,
 .stickyItem,
 .empty {
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 11px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .item,
@@ -147,9 +147,9 @@
 }
 
 .stickyItem {
-  border-color: #e8b6b9;
-  background: #fdf7f7;
-  box-shadow: inset 3px 0 #b4383d;
+  border-color: color-mix(in srgb, var(--tab-status-danger) 26%, transparent);
+  background: color-mix(in srgb, var(--tab-status-danger) 4%, transparent);
+  box-shadow: inset 3px 0 var(--tab-status-danger);
 }
 
 .itemTopline {
@@ -167,28 +167,28 @@
 }
 
 .tier2 {
-  background: #fbf1dc;
-  color: #96650f;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 
 .tier3 {
-  background: #faecec;
-  color: #b4383d;
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, transparent);
+  color: var(--tab-status-danger);
 }
 
 .itemTopline i {
-  background: #e7f3ef;
-  color: #17503a;
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  color: var(--tab-status-success);
 }
 
 .itemTopline .resolved {
-  background: #efede7;
-  color: #5f5d55;
+  background: var(--tab-canvas);
+  color: var(--tab-text-muted);
 }
 
 .itemTopline time {
   margin-left: auto;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
 }
 
@@ -205,7 +205,7 @@
 .item > p,
 .stickyItem > p {
   margin: 4px 0 0;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -222,9 +222,9 @@
 }
 
 .itemActions a {
-  border-color: #206b4e;
-  background: #206b4e;
-  color: #fff;
+  border-color: var(--tab-status-success);
+  background: var(--tab-status-success);
+  color: var(--tab-surface);
 }
 
 .empty {
@@ -239,13 +239,13 @@
 
 .empty p {
   margin: 6px 0 0;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 12px;
 }
 
 .error {
   margin: 0;
-  color: #b4383d;
+  color: var(--tab-status-danger);
   font-size: 12px;
 }
 
@@ -255,7 +255,7 @@
 .itemActions button:focus-visible,
 .itemActions a:focus-visible,
 .loadMore button:focus-visible {
-  outline: 2px solid #206b4e;
+  outline: 2px solid var(--tab-status-success);
   outline-offset: 2px;
 }
 

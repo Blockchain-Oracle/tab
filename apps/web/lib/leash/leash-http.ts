@@ -1,17 +1,13 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { authenticateOwnerRequest } from "../auth/owner-request";
 import { requestOriginIsAllowed } from "../auth/request-origin";
+import { jsonError, NO_STORE_HEADERS } from "../http/responses";
 import { LeashAgentNotFoundError, LeashCapNotFoundError } from "./cap-policy";
 
-export const LEASH_RESPONSE_HEADERS = { "cache-control": "no-store" };
+export const LEASH_RESPONSE_HEADERS = NO_STORE_HEADERS;
 
-export function leashError(code: string, message: string, status: number) {
-  return NextResponse.json(
-    { error: { code, message } },
-    { headers: LEASH_RESPONSE_HEADERS, status },
-  );
-}
+export const leashError = jsonError;
 
 export function requireLeashMutationOrigin(request: NextRequest) {
   return requestOriginIsAllowed(request)
@@ -26,10 +22,10 @@ export async function requireOwnerRequest(request: NextRequest) {
 
 export function capPolicyError(error: unknown) {
   if (error instanceof LeashAgentNotFoundError) {
-    return leashError("LEASH_AGENT_NOT_FOUND", "The Leash agent was not found.", 404);
+    return leashError("AGENT_NOT_FOUND", "The agent was not found.", 404);
   }
   if (error instanceof LeashCapNotFoundError) {
-    return leashError("LEASH_CAP_NOT_SET", "Set a cap before resetting its cycle.", 409);
+    return leashError("CAP_NOT_SET", "Set a cap before resetting its cycle.", 409);
   }
   throw error;
 }

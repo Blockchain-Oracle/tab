@@ -19,14 +19,14 @@
 
 .eyebrow,
 .level {
-  color: #79746b;
+  color: var(--tab-text-muted);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.11em;
 }
 
 .header h1 {
-  color: #171713;
+  color: var(--tab-color-ink);
   font-size: clamp(28px, 4vw, 40px);
   letter-spacing: -0.04em;
   margin: 7px 0 8px;
@@ -34,7 +34,7 @@
 
 .header p,
 .spectrum p {
-  color: #68635b;
+  color: var(--tab-text-muted);
   line-height: 1.55;
   margin: 0;
 }
@@ -48,29 +48,29 @@
 }
 
 .provisioned {
-  background: #e8f5ed;
-  border-color: #b7dbc4;
-  color: #23663c;
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  border-color: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  color: var(--tab-text);
 }
 .paused {
-  background: #efede8;
-  border-color: #d2cec5;
-  color: #625d54;
+  background: var(--tab-canvas);
+  border-color: var(--tab-line);
+  color: var(--tab-text-muted);
 }
 .frozen {
-  background: #e8eff5;
-  border-color: #b8cbd9;
-  color: #345a73;
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  border-color: color-mix(in srgb, var(--tab-text) 14%, transparent);
+  color: var(--tab-text-muted);
 }
 .cancelled {
-  background: #fff2dc;
-  border-color: #eccf9a;
-  color: #8a5711;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  border-color: color-mix(in srgb, var(--tab-mode-test) 30%, transparent);
+  color: var(--tab-status-warning);
 }
 .nuked {
-  background: #fbe9e6;
-  border-color: #e5b5ae;
-  color: #9a3025;
+  background: color-mix(in srgb, var(--tab-status-danger) 9%, transparent);
+  border-color: color-mix(in srgb, var(--tab-status-danger) 28%, transparent);
+  color: var(--tab-status-danger);
 }
 
 .spectrum {
@@ -80,8 +80,8 @@
 }
 
 .spectrum article {
-  background: #fff;
-  border: 1px solid #e3e0d9;
+  background: var(--tab-surface);
+  border: 1px solid var(--tab-line);
   border-radius: 14px;
   display: flex;
   flex-direction: column;
@@ -90,17 +90,17 @@
 }
 
 .spectrum h2 {
-  color: #24231f;
+  color: var(--tab-action-hover);
   font-size: 19px;
   margin: 12px 0 9px;
 }
 
 .controlButton {
   align-self: flex-start;
-  background: #252520;
+  background: var(--tab-action-hover);
   border: 0;
   border-radius: 9px;
-  color: #fff;
+  color: var(--tab-surface);
   cursor: pointer;
   font: inherit;
   font-weight: 650;
@@ -109,13 +109,13 @@
 }
 
 .spectrum .warningCard {
-  border-color: #e8cf9f;
+  border-color: color-mix(in srgb, var(--tab-mode-test) 30%, transparent);
 }
 .spectrum .dangerCard {
-  border-color: #e2b5af;
+  border-color: color-mix(in srgb, var(--tab-status-danger) 28%, transparent);
 }
 .dangerButton {
-  background: #a33a2e;
+  background: var(--tab-status-danger);
 }
 .controlButton:disabled {
   cursor: not-allowed;
@@ -123,7 +123,7 @@
 }
 
 .message {
-  color: #514d46;
+  color: var(--tab-text-muted);
   min-height: 24px;
 }
 
@@ -133,10 +133,10 @@
   justify-content: space-between;
   gap: 18px;
   padding: 14px 16px;
-  border: 1px solid #e2b5af;
+  border: 1px solid color-mix(in srgb, var(--tab-status-danger) 28%, transparent);
   border-radius: 11px;
-  background: #fbe9e6;
-  color: #7c2e27;
+  background: color-mix(in srgb, var(--tab-status-danger) 9%, transparent);
+  color: var(--tab-status-danger);
 }
 
 .recovery p {
@@ -145,7 +145,7 @@
 
 .recovery a {
   flex: 0 0 auto;
-  color: #7c2e27;
+  color: var(--tab-status-danger);
   font-weight: 700;
 }
 

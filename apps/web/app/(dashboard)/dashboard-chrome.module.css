@@ -1,0 +1,29 @@
+.testBanner {
+  background: color-mix(in srgb, var(--tab-mode-test) 10%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--tab-mode-test) 22%, transparent);
+  color: var(--tab-mode-test);
+  font-size: 12px;
+  font-weight: 550;
+  padding: 8px 32px;
+}
+
+.accountArea {
+  display: grid;
+  gap: 8px;
+}
+
+.accountArea :global([data-tab-theme-toggle]) {
+  background: transparent;
+  border: 1px solid var(--tab-line);
+  border-radius: var(--tab-radius-pill);
+  color: var(--tab-text-muted);
+  font-size: 12px;
+  font-weight: 550;
+  padding: 5px 12px;
+  width: fit-content;
+}
+
+.accountArea :global([data-tab-theme-toggle]):hover {
+  border-color: var(--tab-text-muted);
+  color: var(--tab-text);
+}

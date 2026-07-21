@@ -18,8 +18,8 @@
   display: flex;
   width: min(480px, 100vw);
   flex-direction: column;
-  border-left: 1px solid #e8e6df;
-  background: #fff;
+  border-left: 1px solid var(--tab-line);
+  background: var(--tab-surface);
   box-shadow: -16px 0 48px rgba(28, 27, 24, 0.14);
 }
 
@@ -28,7 +28,7 @@
   align-items: flex-start;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #f0eee8;
+  border-bottom: 1px solid var(--tab-canvas);
 }
 
 .header h2,
@@ -43,7 +43,7 @@
 
 .header p {
   margin-top: 4px;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font:
     11px var(--font-geist-mono),
     monospace;
@@ -61,13 +61,13 @@
   height: 30px;
   place-items: center;
   border-radius: 8px;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 20px;
   text-decoration: none;
 }
 
 .close:hover {
-  background: #f5f4f0;
+  background: var(--tab-canvas);
 }
 
 .body {
@@ -82,7 +82,7 @@
 .body section h3,
 .evidenceField dt {
   margin: 0 0 6px;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   font-weight: 650;
   letter-spacing: 0.04em;
@@ -92,7 +92,7 @@
 .body section > a {
   display: inline-block;
   margin-top: 8px;
-  color: #3b5bd9;
+  color: var(--tab-text);
   font-size: 12px;
   font-weight: 500;
   text-decoration: none;
@@ -108,24 +108,24 @@
 }
 
 .settled {
-  background: #e8f3ec;
-  color: #257a46;
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  color: var(--tab-status-success);
 }
 
 .pending {
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 
 .failed {
-  background: #faecec;
-  color: #b4383d;
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, transparent);
+  color: var(--tab-status-danger);
 }
 
 .testBadge {
   border-radius: 5px;
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
   font-size: 9.5px;
   letter-spacing: 0.05em;
 }
@@ -133,17 +133,17 @@
 .testNotice {
   margin: 0;
   padding: 9px 11px;
-  border: 1px solid #f2e3c2;
+  border: 1px solid color-mix(in srgb, var(--tab-mode-test) 22%, transparent);
   border-radius: 8px;
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
   font-size: 12px;
 }
 
 .fullValue {
   display: block;
   overflow-wrap: anywhere;
-  color: #3a3934;
+  color: var(--tab-action-hover);
   font:
     11px / 1.5 var(--font-geist-mono),
     monospace;
@@ -167,7 +167,7 @@
 .evidenceField dd {
   overflow-wrap: anywhere;
   margin: 0;
-  color: #3a3934;
+  color: var(--tab-action-hover);
   font:
     11px / 1.45 var(--font-geist-mono),
     monospace;
@@ -180,14 +180,14 @@
 
 .changeCard {
   overflow: hidden;
-  border: 1px solid #efede7;
+  border: 1px solid var(--tab-canvas);
   border-radius: 9px;
 }
 
 .changeRow {
   display: grid;
   padding: 8px 11px;
-  border-bottom: 1px solid #f5f4f0;
+  border-bottom: 1px solid var(--tab-canvas);
   grid-template-columns: minmax(95px, 0.7fr) minmax(0, 1.3fr);
   gap: 10px;
   font-size: 11.5px;
@@ -198,7 +198,7 @@
 }
 
 .changeRow span {
-  color: #8c8a80;
+  color: var(--tab-text-muted);
 }
 
 .changeRow code {
@@ -208,7 +208,7 @@
 
 .rawJson {
   margin-top: 8px;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
 }
 
@@ -222,8 +222,8 @@
   max-height: 260px;
   padding: 11px;
   border-radius: 8px;
-  background: #f5f4f0;
-  color: #3a3934;
+  background: var(--tab-canvas);
+  color: var(--tab-action-hover);
   font:
     10.5px / 1.5 var(--font-geist-mono),
     monospace;
@@ -233,7 +233,7 @@
 .webhook,
 .muted {
   margin: 0;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12px;
 }
 

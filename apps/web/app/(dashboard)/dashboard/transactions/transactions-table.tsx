@@ -1,5 +1,5 @@
 import Link from "next/link";
-
+import { chainDisplay } from "../../../../lib/payments/chain-display";
 import type { DashboardTransaction } from "../../../../lib/payments/dashboard-transactions";
 import {
   type DashboardTransactionSearch,
@@ -20,7 +20,7 @@ function transactionEvidence(row: DashboardTransaction) {
       : { label: "Awaiting report", value: "—" };
   }
   if (row.settlement.verificationMethod === "simulated_test") {
-    return { label: "Simulated test", value: compact(row.settlement.particleTransactionId) };
+    return { label: "Sandbox simulation", value: compact(row.settlement.particleTransactionId) };
   }
   return {
     label: "Verified",
@@ -71,7 +71,10 @@ export function TransactionsTable({ rows, search }: TransactionsTableProps) {
                     <div className={styles.amountCell}>
                       <div>
                         <strong>{formatUsd(row.amountUsd)}</strong>
-                        <span>{formatTokenAmount(row.amountUsd)} USDC · Arbitrum One</span>
+                        <span>
+                          {formatTokenAmount(row.amountUsd)} USDC ·{" "}
+                          {chainDisplay(row.tokenChainId).label}
+                        </span>
                       </div>
                       {row.env === "test" ? <span className={styles.testBadge}>TEST</span> : null}
                     </div>

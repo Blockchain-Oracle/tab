@@ -42,7 +42,7 @@ function policy(overrides: Partial<CapPolicyView> = {}): CapPolicyView {
   };
 }
 
-describe("Leash cap control reality states", () => {
+describe("Agent cap control reality states", () => {
   it("shows the real no-cap hard gate instead of an uncapped active state", () => {
     const html = renderToStaticMarkup(<CapPanel agentId={agentId} initialPolicy={null} />);
 

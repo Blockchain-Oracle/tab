@@ -1,5 +1,5 @@
 import Link from "next/link";
-
+import { chainDisplay } from "../../../../lib/payments/chain-display";
 import type { DashboardTransaction } from "../../../../lib/payments/dashboard-transactions";
 import {
   type DashboardTransactionSearch,
@@ -107,7 +107,7 @@ export function TransactionDetail({ row, search }: TransactionDetailProps) {
 
         <div className={styles.body}>
           {row.env === "test" ? (
-            <p className={styles.testNotice}>Simulated test — no funds moved.</p>
+            <p className={styles.testNotice}>Sandbox settlement — simulated, no funds moved.</p>
           ) : null}
 
           <section>
@@ -115,12 +115,27 @@ export function TransactionDetail({ row, search }: TransactionDetailProps) {
             <code className={styles.fullValue}>
               {row.settlement?.particleTransactionId ?? row.reportedTransactionId ?? "Not reported"}
             </code>
+            {row.env === "live" && row.settlement?.particleTransactionId ? (
+              <a
+                href={`https://universalx.app/activity/details?id=${encodeURIComponent(row.settlement.particleTransactionId)}`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                View on UniversalX activity ↗
+              </a>
+            ) : null}
             {realHash ? (
               <>
                 <code className={styles.fullValue}>{realHash}</code>
-                <a href={`https://arbiscan.io/tx/${realHash}`} rel="noreferrer" target="_blank">
-                  View on Arbiscan ↗
-                </a>
+                {chainDisplay(row.tokenChainId).explorerTxUrl ? (
+                  <a
+                    href={chainDisplay(row.tokenChainId).explorerTxUrl?.(realHash)}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    View on {chainDisplay(row.tokenChainId).label} explorer ↗
+                  </a>
+                ) : null}
               </>
             ) : null}
           </section>

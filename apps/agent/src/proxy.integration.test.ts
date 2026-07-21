@@ -18,7 +18,7 @@ import {
 import { createLeashPaymentClient } from "./payment-client.js";
 import { PaymentEnvelopeStore } from "./payment-envelope-store.js";
 import { createLeashProxyServer } from "./proxy.js";
-import { LeashRemoteSigner } from "./remote-signer.js";
+import { TabRemoteSigner } from "./remote-signer.js";
 
 const payerAccount = privateKeyToAccount(`0x${"11".repeat(32)}`);
 const payer = payerAccount.address;
@@ -42,7 +42,7 @@ const paymentRequired = {
   x402Version: 2,
 } satisfies PaymentRequired;
 
-describe("Leash MCP proxy with real SDK transports", () => {
+describe("Tab MCP proxy with real SDK transports", () => {
   const upstreamServer = new Server(
     { name: "paid-upstream", version: "1.0.0" },
     { capabilities: { tools: {} } },
@@ -73,10 +73,10 @@ describe("Leash MCP proxy with real SDK transports", () => {
     }
     return Response.json({ error: { code: "NOT_FOUND", message: "Not found." } }, { status: 404 });
   });
-  const signer = new LeashRemoteSigner({
+  const signer = new TabRemoteSigner({
     address: payer,
     apiBaseUrl: "https://tab.example.test",
-    apiKey: "leash_sk_integration",
+    apiKey: "agent_sk_integration",
     fetch: remoteFetch,
     paymentProfile: "mainnet",
     reportRetryDelayMs: 1,

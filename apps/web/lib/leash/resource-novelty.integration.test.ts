@@ -37,7 +37,7 @@ async function provision() {
   if (!agent) throw new Error("Expected agent");
   const [key] = await connection.client<{ id: string }[]>`
     insert into leash_keys (agent_id, hashed_key, prefix, last4)
-    values (${agent.id}, ${randomBytes(32).toString("hex")}, 'leash_sk_', 'a1B2') returning id
+    values (${agent.id}, ${randomBytes(32).toString("hex")}, 'agent_sk_', 'a1B2') returning id
   `;
   const [cycle] = await connection.client<{ id: string }[]>`
     insert into cap_cycles (agent_id, started_at)

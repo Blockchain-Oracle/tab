@@ -30,7 +30,13 @@ export async function loadMerchantSession(db: Database, token: string, secret?: 
     throw error;
   }
 
-  const merchantSession = isMerchantSession(session) ? session : undefined;
+  // A merchant principal requires a merchant-scoped token. Owner tokens
+  // (no merchantId claim) must never resolve merchant routes — the two
+  // dashboards are separate privilege domains.
+  if (!isMerchantSession(session)) {
+    throw new InvalidMerchantSessionError();
+  }
+  const merchantSession = session;
 
   const [principal] = await db
     .select({
@@ -50,7 +56,7 @@ export async function loadMerchantSession(db: Database, token: string, secret?: 
       and(
         eq(users.id, session.userId),
         eq(users.email, session.email),
-        merchantSession ? eq(merchants.id, merchantSession.merchantId) : undefined,
+        eq(merchants.id, merchantSession.merchantId),
       ),
     )
     .limit(1);
@@ -66,7 +72,7 @@ export async function loadMerchantSession(db: Database, token: string, secret?: 
     logoEtag: principal.logoEtag,
     logoUrl: principal.logoUrl,
     merchantId: principal.merchantId,
-    mode: merchantSession?.mode ?? "test",
+    mode: merchantSession.mode,
     receivingAddress: principal.receivingAddress,
     receivingAddressSource: principal.receivingAddressSource,
     userId: principal.userId,

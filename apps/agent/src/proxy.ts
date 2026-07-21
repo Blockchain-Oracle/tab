@@ -29,10 +29,7 @@ export function readMcpSettlementMetadata(
 }
 
 export function createLeashProxyServer(options: LeashProxyOptions) {
-  const server = new Server(
-    { name: "leash-mcp", version: "0.0.1" },
-    { capabilities: { tools: {} } },
-  );
+  const server = new Server({ name: "tab-mcp", version: "0.0.1" }, { capabilities: { tools: {} } });
 
   server.setRequestHandler(ListToolsRequestSchema, (request, extra) =>
     options.upstream.listTools(request.params, { signal: extra.signal }),

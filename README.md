@@ -20,10 +20,10 @@ targeting the Arbitrum and Magic Labs bonuses.
 - **You pay (Tab checkout):** a drop-in pay button. Log in with just an email — no wallet,
   no cards, no chains. Your funds are sourced from wherever they live and the merchant is
   paid on Arbitrum. It feels like a normal checkout; you never know it's crypto.
-- **Your AI pays (Leash mode):** install Tab alongside your own AI agent (as an MCP server or
+- **Your AI pays (agent mode):** install Tab alongside your own AI agent (as an MCP server or
   an HTTP wrapper). When the agent hits a paywall — an **x402** (HTTP 402) charge — Tab pays
-  it automatically, then the agent continues. You set the budget, watch every cent, and can
-  pull the leash instantly.
+  it automatically, then the agent continues. You set the cap, watch every cent, and can
+  cut the agent off instantly.
 
 ## How it works (the machinery, kept invisible to users)
 
@@ -40,9 +40,13 @@ targeting the Arbitrum and Magic Labs bonuses.
 
 ## Status
 
-**Phase 1 foundation is scaffolded and locally verified.** The pnpm/Turborepo workspace, app
-shells, shared SDK package, CI workflow, linting, typechecking, tests, builds, pre-commit hook,
-and mobile PWA shell are in place. Product behavior begins in Phase 2.
+**The product is live.** Marketing site ([runtab.xyz](https://runtab.xyz)), app
+([app.runtab.xyz](https://app.runtab.xyz) — merchant dashboard, buyer checkout, agent control
+plane, mobile monitor), and docs ([docs.runtab.xyz](https://docs.runtab.xyz)) are deployed, and
+both packages are published on npm: [`@runtab/sdk`](https://www.npmjs.com/package/@runtab/sdk)
+(drop-in `<PayButton>`) and [`@runtab/mcp`](https://www.npmjs.com/package/@runtab/mcp) (the
+`tab-mcp` agent proxy). Payments run end-to-end on Base Sepolia sandbox with caps, kill switch,
+receipts, and live monitoring.
 
 The funded live spike in Phase 0 is not complete, so every money-moving path remains visibly
 blocked: buyer settlement, agent mainnet payment, float movement, and automatic rebalance are
@@ -61,11 +65,13 @@ package types and the canonical `x402-foundation/x402` source clone.
   decisions/     DECISIONS.md — the durable decision log
   brand-and-vision.md
 apps/
-  web/           Next.js checkout, backend, merchant dashboard, and Leash dashboard
-  agent/         Leash MCP proxy, x402 wrapper, cap engine, and receipt ledger
-  mobile/        monitor-only PWA shell; no on-device signing
+  web/           Next.js checkout, backend, merchant + agent dashboards; mobile monitor
+                 PWA at app/mobile (read + revoke only; no on-device signing)
+  site/          marketing site (runtab.xyz)
+  docs/          documentation site (docs.runtab.xyz, Fumadocs)
+  agent/         Tab MCP proxy (tab-mcp / @runtab/mcp), x402 wrapper, cap engine, receipts
 packages/
-  sdk/           drop-in PayButton and Tab client package
+  sdk/           @runtab/sdk — drop-in PayButton and Tab client package
 instuctions.md   the original hackathon brief
 PITCH-DECK-PROMPT.md   5-slide pitch-deck generation prompt
 ```

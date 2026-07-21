@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import styles from "./leash-shell.module.css";
+import styles from "./leash-chrome.module.css";
 
 export function LeashAccountMenu({ email }: { email: string }) {
   const [error, setError] = useState<string>();
@@ -16,7 +16,7 @@ export function LeashAccountMenu({ email }: { email: string }) {
     try {
       const response = await fetch("/api/auth/logout", { method: "POST" });
       if (!response.ok) throw new Error("Server logout failed");
-      window.location.assign("/leash/login");
+      window.location.assign("/agents/login");
     } catch {
       setError("Couldn’t sign out. Try again.");
       setSigningOut(false);
@@ -30,7 +30,7 @@ export function LeashAccountMenu({ email }: { email: string }) {
           {email.charAt(0).toUpperCase()}
         </span>
         <span className={styles.accountText}>
-          <span className={styles.accountName}>Leash owner</span>
+          <span className={styles.accountName}>Agent owner</span>
           <span className={styles.accountEmail}>{email}</span>
         </span>
         <span aria-hidden="true" className={styles.menuMark}>

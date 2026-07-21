@@ -12,7 +12,7 @@ export async function terminalizeSigningReceipt(
   receipt: typeof receipts.$inferSelect,
   code: FinalSigningPolicyCode,
 ) {
-  const blocked = code === "LEASH_CAP_EXCEEDED";
+  const blocked = code === "CAP_EXCEEDED";
   await transaction
     .update(receipts)
     .set({
@@ -52,13 +52,13 @@ export async function lockedSigningContext(
     .from(agents)
     .where(eq(agents.id, options.agentId))
     .for("update");
-  if (!agent) return { code: "INVALID_LEASH_KEY" as const };
+  if (!agent) return { code: "INVALID_AGENT_KEY" as const };
   const [receipt] = await transaction
     .select()
     .from(receipts)
     .where(and(eq(receipts.id, options.receiptId), eq(receipts.agentId, agent.id)))
     .for("update");
-  if (!receipt) return { code: "INVALID_LEASH_KEY" as const };
+  if (!receipt) return { code: "INVALID_AGENT_KEY" as const };
   const [key] = await transaction
     .select({ id: leashKeys.id })
     .from(leashKeys)
@@ -71,7 +71,7 @@ export async function lockedSigningContext(
     );
   const statusError = statusGateError(agent.status);
   if (statusError) return { agent, code: statusError.code, receipt };
-  if (!key) return { agent, code: "INVALID_LEASH_KEY" as const, receipt };
+  if (!key) return { agent, code: "INVALID_AGENT_KEY" as const, receipt };
   if (!agent.address || !agent.subject) {
     return { agent, code: "SIGNER_NOT_CONFIGURED" as const, receipt };
   }

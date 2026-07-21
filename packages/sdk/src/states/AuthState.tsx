@@ -1,8 +1,8 @@
-import { type ClipboardEvent, type FormEvent, useEffect, useRef } from "react";
+import { type ClipboardEvent, type FormEvent, type KeyboardEvent, useEffect, useRef } from "react";
 
 import type { CheckoutStage } from "../checkout-state";
 import { BUYER_COPY, buyerFormat } from "../copy";
-import { center, colors, field, primaryButton, quietButton } from "../styles";
+import { center, field, primaryButton, quietButton, useTokens } from "../styles";
 
 export type OtpIssue = "expired" | "invalid" | "rate-limited" | undefined;
 
@@ -26,11 +26,13 @@ function maskedEmail(email: string) {
 }
 
 export function AuthState(props: Props) {
+  const tokens = useTokens();
   const refs = useRef<Array<HTMLInputElement | null>>([]);
   const isEmail = props.stage === "email" || props.stage === "email-sending";
   useEffect(() => {
     if (!isEmail) refs.current[0]?.focus();
   }, [isEmail]);
+
   if (isEmail) {
     const sending = props.stage === "email-sending";
     const blocked = sending || props.cooldownActive;
@@ -40,8 +42,8 @@ export function AuthState(props: Props) {
     };
     return (
       <form onSubmit={submit} style={{ ...center, gap: 8 }}>
-        <div style={{ fontSize: 17, fontWeight: 600 }}>{BUYER_COPY.auth.emailTitle}</div>
-        <div style={{ color: colors.muted, fontSize: 13, lineHeight: 1.5 }}>
+        <div style={{ fontSize: 17, fontWeight: 620 }}>{BUYER_COPY.auth.emailTitle}</div>
+        <div style={{ color: tokens.muted, fontSize: 13, lineHeight: 1.5 }}>
           {BUYER_COPY.auth.emailBody}
         </div>
         <label style={{ marginTop: 14, width: "100%" }}>
@@ -54,14 +56,14 @@ export function AuthState(props: Props) {
             disabled={sending}
             onChange={(event) => props.onEmailChange(event.currentTarget.value)}
             required
-            style={field}
+            style={field(tokens)}
             type="email"
             value={props.email}
           />
         </label>
         <button
           disabled={blocked || !props.email.trim()}
-          style={{ ...primaryButton, marginTop: 2, opacity: blocked ? 0.85 : 1 }}
+          style={{ ...primaryButton(tokens), marginTop: 2, opacity: blocked ? 0.85 : 1 }}
           type="submit"
         >
           {sending ? BUYER_COPY.auth.sending : BUYER_COPY.buttons.continue}
@@ -81,6 +83,13 @@ export function AuthState(props: Props) {
     if (digit && index < 5) refs.current[index + 1]?.focus();
     if (code.length === 6) props.onOtpComplete(code);
   };
+  const keyDown = (index: number) => (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Backspace" && !digits[index] && index > 0) {
+      event.preventDefault();
+      refs.current[index - 1]?.focus();
+      updateDigit(index - 1, "");
+    }
+  };
   const paste = (event: ClipboardEvent<HTMLInputElement>) => {
     const code = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
     if (code.length !== 6) return;
@@ -94,16 +103,17 @@ export function AuthState(props: Props) {
     : undefined;
   return (
     <div style={{ ...center, gap: 8 }}>
-      <div style={{ fontSize: 17, fontWeight: 600 }}>{BUYER_COPY.auth.otpTitle}</div>
-      <div style={{ color: colors.muted, fontSize: 13 }}>
+      <div style={{ fontSize: 17, fontWeight: 620 }}>{BUYER_COPY.auth.otpTitle}</div>
+      <div style={{ color: tokens.muted, fontSize: 13 }}>
         {BUYER_COPY.auth.codeSent} <strong>{maskedEmail(props.email)}</strong>
       </div>
       {issueCopy ? (
         <div
+          role="alert"
           style={{
-            background: "#FAECEC",
+            background: "#FAECEA",
             borderRadius: 10,
-            color: "#8E2F34",
+            color: "#8E2F2A",
             fontSize: 12.5,
             padding: "9px 12px",
             width: "100%",
@@ -122,12 +132,13 @@ export function AuthState(props: Props) {
             key={buyerFormat.codeDigit(index + 1)}
             maxLength={1}
             onChange={(event) => updateDigit(index, event.currentTarget.value)}
+            onKeyDown={keyDown(index)}
             onPaste={paste}
             ref={(element) => {
               refs.current[index] = element;
             }}
             style={{
-              ...field,
+              ...field(tokens),
               fontSize: 20,
               height: 52,
               padding: 0,
@@ -138,14 +149,14 @@ export function AuthState(props: Props) {
           />
         ))}
       </div>
-      <div aria-live="polite" style={{ color: colors.muted, fontSize: 12.5, marginTop: 4 }}>
+      <div aria-live="polite" style={{ color: tokens.muted, fontSize: 12.5, marginTop: 4 }}>
         {verifying ? BUYER_COPY.auth.verifying : BUYER_COPY.auth.codeHint}
       </div>
       {props.issue === "expired" || props.issue === "rate-limited" ? (
         <button
           disabled={props.cooldownActive}
           onClick={props.onStartOver}
-          style={{ ...quietButton, marginTop: 7, opacity: props.cooldownActive ? 0.6 : 1 }}
+          style={{ ...quietButton(tokens), marginTop: 7, opacity: props.cooldownActive ? 0.6 : 1 }}
           type="button"
         >
           {BUYER_COPY.auth.startOver}

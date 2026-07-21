@@ -13,7 +13,7 @@ import {
 import { validatePaymentIdempotencyKey } from "./payment-envelope-model.js";
 import type { PaymentEnvelopeStore } from "./payment-envelope-store.js";
 import type { PaymentProfile } from "./payment-profile.js";
-import type { LeashRemoteSigner } from "./remote-signer.js";
+import type { TabRemoteSigner } from "./remote-signer.js";
 
 export const MCP_PAYMENT_IDEMPOTENCY_META_KEY = "tab/payment-idempotency-key";
 const MAX_MCP_PAYMENT_REQUEST_BYTES = 1_048_576;
@@ -24,7 +24,7 @@ interface DurableMcpPaymentOptions {
   client: x402Client;
   nowSeconds?: () => number;
   paymentProfile: PaymentProfile;
-  signer: LeashRemoteSigner;
+  signer: TabRemoteSigner;
   store: PaymentEnvelopeStore;
 }
 

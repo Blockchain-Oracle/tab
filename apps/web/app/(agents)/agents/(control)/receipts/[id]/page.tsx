@@ -1,3 +1,5 @@
+export const metadata = { title: "Receipt" };
+
 import { notFound } from "next/navigation";
 
 import {

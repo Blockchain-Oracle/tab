@@ -1,0 +1,26 @@
+.underline {
+  animation: drawUnderline var(--tab-flowline-draw-duration) var(--tab-motion-easing-settle) 120ms
+    both;
+  background: var(--tab-accent);
+  border-radius: var(--tab-radius-pill);
+  display: block;
+  height: 2px;
+  margin: 18px auto 0;
+  transform-origin: left;
+  width: 88px;
+}
+
+@keyframes drawUnderline {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .underline {
+    animation: none;
+  }
+}

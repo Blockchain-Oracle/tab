@@ -7,7 +7,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 
 export class LeashAgentSelectionError extends Error {
   constructor() {
-    super("The Leash agent was not found.");
+    super("The agent was not found.");
     this.name = "LeashAgentSelectionError";
   }
 }

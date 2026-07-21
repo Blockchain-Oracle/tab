@@ -24,6 +24,8 @@ const agent = {
   transport: null,
 } satisfies OwnerAgent;
 const receipt = receiptView({
+  authorizationNonce: "0xab",
+  authorizationValidBefore: new Date("2026-07-16T11:00:00Z"),
   amountAtomic: "420000",
   amountUsd: "0.420000",
   asset: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
@@ -78,7 +80,7 @@ function overagePolicy(): CapPolicyView {
   };
 }
 
-describe("Leash overview cap evidence", () => {
+describe("Agent overview cap evidence", () => {
   it("derives connection activity from heartbeat freshness, not revocation state", () => {
     const now = Date.parse("2026-07-17T10:05:00.000Z");
     expect(
@@ -123,9 +125,9 @@ describe("Leash overview cap evidence", () => {
     expect(html).toContain("api.example.test");
     expect(html).toContain("Claude Code · search · mcp");
     expect(html).toContain(
-      'href="/leash/receipts/33333333-3333-4333-8333-333333333333?agentId=11111111-1111-4111-8111-111111111111"',
+      'href="/agents/receipts/33333333-3333-4333-8333-333333333333?agentId=11111111-1111-4111-8111-111111111111"',
     );
-    expect(html).toContain('href="/leash/payments?agentId=11111111-1111-4111-8111-111111111111"');
+    expect(html).toContain('href="/agents/payments?agentId=11111111-1111-4111-8111-111111111111"');
     expect(html).toContain("OIDC setup blocked");
     expect(html).toContain("B-03 must pass before Tab can claim");
     expect(html).toContain("Payments halted at the cap");
@@ -150,14 +152,14 @@ describe("Leash overview cap evidence", () => {
 
     expect(html).toContain("Not provisioned — credential destroyed");
     expect(html).toContain("Provision new agent");
-    expect(html).toContain("Leash cannot withdraw remaining floats");
+    expect(html).toContain("Tab cannot withdraw remaining floats");
     expect(html).not.toContain("Nuked — provisioning required");
   });
 
   it.each([
-    ["paused", "Resume payments", "/leash/revocation?agentId="],
-    ["frozen", "Unfreeze signer", "/leash/revocation?agentId="],
-    ["cancelled", "Provision new agent", "/leash/provision?agentId="],
+    ["paused", "Resume payments", "/agents/revocation?agentId="],
+    ["frozen", "Unfreeze signer", "/agents/revocation?agentId="],
+    ["cancelled", "Provision new agent", "/agents/provision?agentId="],
   ] as const)("renders the accepted %s state action", (status, action, href) => {
     const policy = overagePolicy();
     const html = renderToStaticMarkup(
@@ -266,7 +268,7 @@ describe("Leash overview cap evidence", () => {
       />,
     );
 
-    expect(html).toContain("Test funds — not real money");
+    expect(html).toContain("Sandbox funds — no real value");
     expect(html).toContain("Base Sepolia test funds");
     expect(html).toContain("Live Base Sepolia test-fund read returned zero.");
     expect(html).not.toContain("Live Base and Arbitrum reads both returned zero.");

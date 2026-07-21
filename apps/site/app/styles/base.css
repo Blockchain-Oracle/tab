@@ -1,0 +1,166 @@
+/* Kinetic Ledger — site foundation. Token source: @tab/ui theme.css. */
+
+.site-shell {
+  --tab-font-product: var(--font-general-sans), "Helvetica Neue", Arial, sans-serif;
+  --tab-font-evidence: var(--font-geist-mono), "SFMono-Regular", Consolas, monospace;
+  --site-max: 76rem;
+  --site-pad: clamp(20px, 4vw, 48px);
+
+  display: flex;
+  flex-direction: column;
+  font-family: var(--tab-font-product);
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.site-shell :where(a) {
+  color: inherit;
+}
+
+.site-shell :where(h1, h2, h3, p, ul, ol, figure) {
+  margin: 0;
+}
+
+.site-shell :where(ul, ol) {
+  list-style: none;
+  padding: 0;
+}
+
+.container {
+  margin-inline: auto;
+  max-width: var(--site-max);
+  padding-inline: var(--site-pad);
+  width: 100%;
+}
+
+/* Bands: the page alternates paper and ink. The ink band flips the local
+   theme variables so every token-driven element inside stays correct. */
+.band {
+  background: var(--tab-canvas);
+  color: var(--tab-text);
+}
+
+.band-ink {
+  --tab-canvas: var(--tab-color-night);
+  --tab-surface: var(--tab-color-night-raised);
+  --tab-text: var(--tab-color-bone);
+  --tab-text-muted: var(--tab-color-bone-muted);
+  --tab-line: var(--tab-color-night-line);
+  --tab-action: var(--tab-color-bone);
+  --tab-action-hover: var(--tab-color-bone-soft);
+  --tab-action-text: var(--tab-color-night);
+  --tab-accent: var(--tab-color-vermilion-bright);
+  --tab-focus-color: var(--tab-color-bone);
+  --tab-status-success: var(--tab-color-verified-bright);
+  --tab-status-warning: var(--tab-color-testnet-amber-bright);
+
+  background: var(--tab-canvas);
+  color: var(--tab-text);
+}
+
+/* In dark mode the ink band inverts to paper so the page keeps its rhythm. */
+[data-tab-theme="dark"] .band-ink {
+  --tab-canvas: var(--tab-color-paper);
+  --tab-surface: var(--tab-color-surface);
+  --tab-text: var(--tab-color-ink);
+  --tab-text-muted: var(--tab-color-muted);
+  --tab-line: var(--tab-color-line);
+  --tab-action: var(--tab-color-ink);
+  --tab-action-hover: var(--tab-color-ink-soft);
+  --tab-action-text: var(--tab-color-paper);
+  --tab-accent: var(--tab-color-vermilion);
+  --tab-focus-color: var(--tab-color-ink);
+  --tab-status-success: var(--tab-color-verified);
+  --tab-status-warning: var(--tab-color-testnet-amber);
+}
+
+/* Buttons */
+.btn {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--tab-radius-pill);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 560;
+  gap: 8px;
+  height: 48px;
+  justify-content: center;
+  padding-inline: 26px;
+  text-decoration: none;
+  transition:
+    background var(--tab-motion-duration-fast) var(--tab-motion-easing),
+    color var(--tab-motion-duration-fast) var(--tab-motion-easing),
+    border-color var(--tab-motion-duration-fast) var(--tab-motion-easing);
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--tab-action);
+  color: var(--tab-action-text);
+}
+
+.btn-primary:hover {
+  background: var(--tab-action-hover);
+}
+
+.btn-quiet {
+  border-color: var(--tab-line);
+  color: var(--tab-text);
+}
+
+.btn-quiet:hover {
+  border-color: var(--tab-text-muted);
+}
+
+/* Type utilities */
+.mono {
+  font-family: var(--tab-font-evidence);
+}
+
+.eyebrow {
+  color: var(--tab-text-muted);
+  font-family: var(--tab-font-evidence);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.accent {
+  color: var(--tab-accent);
+}
+
+/* Accessibility */
+.skip-link {
+  background: var(--tab-action);
+  border-radius: var(--tab-radius-s);
+  color: var(--tab-action-text);
+  left: 16px;
+  padding: 10px 16px;
+  position: fixed;
+  text-decoration: none;
+  top: -64px;
+  transition: top var(--tab-motion-duration-fast) var(--tab-motion-easing);
+  z-index: 60;
+}
+
+.skip-link:focus-visible {
+  top: 16px;
+}
+
+.visually-hidden {
+  block-size: 1px;
+  clip-path: inset(50%);
+  inline-size: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+}

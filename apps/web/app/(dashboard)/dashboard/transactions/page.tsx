@@ -1,3 +1,4 @@
+import { PageHeader } from "@tab/ui";
 import type { Metadata } from "next";
 
 import { requireCurrentMerchant } from "../../../../lib/auth/current-merchant";
@@ -41,10 +42,11 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
 
   return (
     <div className={styles.page}>
-      <div className={styles.pageHeader}>
-        <h1>Transactions</h1>
-        <TransactionsFilters search={search} />
-      </div>
+      <PageHeader
+        actions={<TransactionsFilters search={search} />}
+        eyebrow="Operate"
+        title="Transactions"
+      />
 
       {page.rows.length === 0 ? (
         <TransactionsEmptyState filtered={filtered} mode={merchant.mode} />

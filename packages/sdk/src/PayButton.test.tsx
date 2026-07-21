@@ -58,7 +58,7 @@ describe("PayButton", () => {
     await user.click(within(dialog).getByRole("button", { name: "Add funds" }));
     expect(within(dialog).getByText(buyer.ownerAddress)).toBeInTheDocument();
     expect(
-      within(dialog).getByText("Send USDC on a supported network to this address."),
+      within(dialog).getByText("Send test USDC to this address. Sandbox funds — no real value."),
     ).toBeInTheDocument();
     await user.click(within(dialog).getByRole("button", { name: "Copy address" }));
     expect(writeText).toHaveBeenCalledWith(buyer.ownerAddress);

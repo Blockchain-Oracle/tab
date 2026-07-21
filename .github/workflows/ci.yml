@@ -71,5 +71,11 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Test end-to-end
+        run: pnpm test:e2e
+
       - name: Verify packed agent artifact
         run: pnpm --filter @tab/agent verify:pack

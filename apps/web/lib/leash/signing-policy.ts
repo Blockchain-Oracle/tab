@@ -50,10 +50,10 @@ export async function finalSigningPolicy(
         now: input.now,
       })
     : undefined;
-  if (!cap?.amountUsdCents || !cycle) return { code: "LEASH_CAP_NOT_SET" };
+  if (!cap?.amountUsdCents || !cycle) return { code: "CAP_NOT_SET" };
   if (cycle.id !== input.receipt.cycleId) return { code: "CAP_CYCLE_CHANGED" };
   if (await findActiveCapHalt(transaction, input.agentId)) {
-    return { code: "LEASH_CAP_EXCEEDED", cycleId: cycle.id };
+    return { code: "CAP_EXCEEDED", cycleId: cycle.id };
   }
 
   const [usage] = await transaction
@@ -63,7 +63,7 @@ export async function finalSigningPolicy(
       and(eq(receipts.agentId, input.agentId), eq(receipts.cycleId, cycle.id), receiptCommitted()),
     );
   if (BigInt(usage?.amountAtomic ?? "0") > BigInt(cap.amountUsdCents) * ATOMIC_UNITS_PER_CENT) {
-    return { code: "LEASH_CAP_EXCEEDED", cycleId: cycle.id };
+    return { code: "CAP_EXCEEDED", cycleId: cycle.id };
   }
 
   const [reserved] = await transaction

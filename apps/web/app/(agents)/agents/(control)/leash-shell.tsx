@@ -1,22 +1,13 @@
 "use client";
 
+import { AppShell, UnreadBadge } from "@tab/ui";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { ThemeToggle } from "../../../theme-toggle";
 import { LeashAccountMenu } from "./leash-account-menu";
-import styles from "./leash-shell.module.css";
-
-const navigation = [
-  { href: "/leash", label: "Overview" },
-  { href: "/leash/payments", label: "Payments" },
-  { href: "/leash/notifications", label: "Notifications" },
-  { href: "/leash/cap", label: "Cap & limits" },
-  { href: "/leash/funds", label: "Funds" },
-  { href: "/leash/provision", label: "Provision agent" },
-  { href: "/leash/revocation", label: "Revocation" },
-  { href: "/leash/connect", label: "Connect agent" },
-] as const;
+import styles from "./leash-chrome.module.css";
 
 type LeashShellProps = {
   children: ReactNode;
@@ -25,50 +16,62 @@ type LeashShellProps = {
 };
 
 function isActive(pathname: string, href: string) {
-  return href === "/leash" ? pathname === href : pathname.startsWith(href);
+  return href === "/agents" ? pathname === href : pathname.startsWith(href);
 }
 
 export function LeashShell({ children, email, unreadCount }: LeashShellProps) {
   const pathname = usePathname();
 
+  const groups = [
+    {
+      items: [
+        { href: "/agents", label: "Overview" },
+        { href: "/agents/payments", label: "Payments" },
+        {
+          badge: <UnreadBadge count={unreadCount} />,
+          href: "/agents/notifications",
+          label: "Notifications",
+        },
+      ],
+      label: "Operate",
+    },
+    {
+      items: [
+        { href: "/agents/cap", label: "Cap & limits" },
+        { href: "/agents/funds", label: "Funds" },
+        { href: "/agents/revocation", label: "Revocation" },
+      ],
+      label: "Controls",
+    },
+    {
+      items: [
+        { href: "/agents/start", label: "Get started" },
+        { href: "/agents/provision", label: "Provision agent" },
+        { href: "/agents/connect", label: "Connect agent" },
+      ],
+      label: "Setup",
+    },
+  ].map((group) => ({
+    ...group,
+    items: group.items.map((item) => ({ ...item, active: isActive(pathname, item.href) })),
+  }));
+
   return (
-    <div className={styles.shell}>
-      <aside className={styles.sidebar}>
-        <Link className={styles.brand} href="/leash">
-          <span aria-hidden="true" className={styles.brandTile}>
-            L
-          </span>
-          <span>Leash</span>
-        </Link>
-
-        <nav aria-label="Leash control plane" className={styles.navigation}>
-          {navigation.map((item) => {
-            const active = isActive(pathname, item.href);
-            return (
-              <Link
-                aria-current={active ? "page" : undefined}
-                className={active ? styles.activeNavItem : styles.navItem}
-                href={item.href}
-                key={item.href}
-              >
-                <span>{item.label}</span>
-                {item.href === "/leash/notifications" && unreadCount !== null ? (
-                  <span className={styles.badge}>
-                    <span className={styles.srOnly}>{unreadCount} unread notifications</span>
-                    <span aria-hidden="true">{unreadCount > 99 ? "99+" : unreadCount}</span>
-                  </span>
-                ) : null}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className={styles.sidebarBottom}>
-          <p className={styles.productNote}>x402 payments, capped outside your agent.</p>
+    <AppShell
+      accountSlot={
+        <div className={styles.accountArea}>
+          <ThemeToggle />
           <LeashAccountMenu email={email} />
         </div>
-      </aside>
-      <div className={styles.contentColumn}>{children}</div>
-    </div>
+      }
+      brandHref="/agents"
+      groups={groups}
+      linkComponent={Link}
+      modeSlot={<p className={styles.productNote}>x402 payments, capped outside your agent.</p>}
+      navAriaLabel="Agent control plane"
+      surfaceTag="Agents"
+    >
+      {children}
+    </AppShell>
   );
 }

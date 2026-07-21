@@ -58,7 +58,7 @@ async function report(merchantId: string, paymentId: string) {
     { env: "test", merchantId },
     paymentId,
     { tokenChanges: [{ source: "dashboard-test" }], transactionId: `test_${randomUUID()}` },
-    { payerAddress },
+    { payerAddress, payerEmail: "buyer@example.test" },
   );
 }
 

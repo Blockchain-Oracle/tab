@@ -3,8 +3,8 @@
   padding: 24px;
   border: 0;
   border-radius: 14px;
-  background: #fff;
-  color: #1c1b18;
+  background: var(--tab-surface);
+  color: var(--tab-text);
   box-shadow: 0 24px 64px rgba(28, 27, 24, 0.3);
 }
 
@@ -21,14 +21,14 @@
 
 .dialog p {
   margin: 6px 0 0;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12.5px;
   line-height: 1.55;
 }
 
 .dialog .error {
   margin-top: 10px;
-  color: #8e2f34;
+  color: var(--tab-status-danger);
 }
 
 .actions {
@@ -41,15 +41,15 @@
 .actions button {
   height: 36px;
   padding: 0 14px;
-  border: 1px solid #dbd9d0;
+  border: 1px solid var(--tab-line);
   border-radius: 9px;
-  background: #fff;
+  background: var(--tab-surface);
   font-size: 12.5px;
   font-weight: 500;
 }
 
 .actions .liveButton {
   border: 0;
-  background: #257a46;
-  color: #fff;
+  background: var(--tab-status-success);
+  color: var(--tab-surface);
 }

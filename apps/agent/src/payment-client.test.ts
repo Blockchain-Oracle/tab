@@ -3,7 +3,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { describe, expect, it, vi } from "vitest";
 
 import { createLeashPaymentClient } from "./payment-client.js";
-import type { LeashRemoteSigner } from "./remote-signer.js";
+import type { TabRemoteSigner } from "./remote-signer.js";
 import { BASE_NETWORK, BASE_SEPOLIA_NETWORK, BASE_SEPOLIA_USDC, BASE_USDC } from "./routing.js";
 
 const account = privateKeyToAccount(`0x${"55".repeat(32)}`);
@@ -11,7 +11,7 @@ const signer = {
   address: account.address,
   reportPaymentObservation: vi.fn(),
   signTypedData: account.signTypedData,
-} as unknown as LeashRemoteSigner;
+} as unknown as TabRemoteSigner;
 
 function challenge(network: typeof BASE_NETWORK | typeof BASE_SEPOLIA_NETWORK): PaymentRequired {
   const integration = network === BASE_SEPOLIA_NETWORK;

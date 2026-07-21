@@ -12,20 +12,20 @@
   width: min(480px, 100%);
   padding: 24px;
   border-radius: 14px;
-  background: #fff;
+  background: var(--tab-surface);
   box-shadow: 0 24px 64px rgb(28 27 24 / 30%);
 }
 
 .dialog h2 {
   margin: 0;
-  color: #1c1b18;
+  color: var(--tab-text);
   font-size: 16px;
   font-weight: 600;
 }
 
 .dialog p {
   margin: 8px 0 0;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12.5px;
   line-height: 1.55;
 }
@@ -37,10 +37,10 @@
 .dialog button {
   height: 32px;
   padding: 0 12px;
-  border: 1px solid #dbd9d0;
+  border: 1px solid var(--tab-line);
   border-radius: 8px;
-  background: #fff;
-  color: #5f5d55;
+  background: var(--tab-surface);
+  color: var(--tab-text-muted);
   font: inherit;
   font-size: 12px;
   font-weight: 500;
@@ -50,10 +50,10 @@
 .dialog .warning {
   margin-top: 12px;
   padding: 10px 13px;
-  border: 1px solid #f2e3c2;
+  border: 1px solid color-mix(in srgb, var(--tab-mode-test) 22%, transparent);
   border-radius: 9px;
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 
 .secretReveal {
@@ -63,21 +63,21 @@
   margin-top: 14px;
   padding: 14px;
   border-radius: 9px;
-  background: #26251f;
+  background: var(--tab-action-hover);
 }
 
 .secretReveal code {
   min-width: 0;
   flex: 1;
   overflow-wrap: anywhere;
-  color: #e4e2d8;
+  color: var(--tab-line);
   font-size: 12.5px;
 }
 
 .secretReveal button {
   border-color: rgb(255 255 255 / 12%);
   background: rgb(255 255 255 / 10%);
-  color: #e4e2d8;
+  color: var(--tab-line);
 }
 
 .dialogActions {
@@ -90,13 +90,18 @@
 .dialog .savedButton,
 .dialog .removeButton {
   border: 0;
-  color: #fff;
+  color: var(--tab-surface);
 }
 
 .dialog .savedButton {
-  background: #1c1b18;
+  background: var(--tab-text);
 }
 
 .dialog .removeButton {
-  background: #c13a40;
+  background: var(--tab-status-danger);
+}
+
+.dialogBody {
+  display: grid;
+  gap: 12px;
 }

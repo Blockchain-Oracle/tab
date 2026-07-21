@@ -62,7 +62,7 @@ describe("POST /api/agent/sign", () => {
     const noCap = await provision({ capCents: null });
     const response = await POST(request(noCap.secret, signBody()));
     expect(response.status).toBe(403);
-    await expect(response.json()).resolves.toMatchObject({ error: { code: "LEASH_CAP_NOT_SET" } });
+    await expect(response.json()).resolves.toMatchObject({ error: { code: "CAP_NOT_SET" } });
     expect(rpc.methods).toHaveLength(0);
   });
 
@@ -89,7 +89,7 @@ describe("POST /api/agent/sign", () => {
 
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toMatchObject({
-      error: { code: "LEASH_CAP_EXCEEDED" },
+      error: { code: "CAP_EXCEEDED" },
     });
     const [stored] = await connection.db
       .select({ intendedNetwork: receipts.intendedNetwork, status: receipts.status })

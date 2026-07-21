@@ -27,12 +27,12 @@ export function NoAgentState() {
     <main className={styles.emptyPage}>
       <section className={styles.emptyCard}>
         <span className={styles.blockedLabel}>BLOCKED · SIGNER PROVISIONING</span>
-        <h1>No Leash agent has been created</h1>
+        <h1>No agent has been created</h1>
         <p>
           Agent provisioning stays disabled until the funded Magic OIDC signing spike is verified.
           No wallet, balance, cap, or connection has been fabricated for this account.
         </p>
-        <Link href="/leash/provision">Set up agent</Link>
+        <Link href="/agents/provision">Set up agent</Link>
       </section>
     </main>
   );

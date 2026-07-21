@@ -12,7 +12,7 @@ import {
   sql,
 } from "./leash-schema.integration-support";
 
-describe("Phase 6 Leash PostgreSQL ledger constraints", () => {
+describe("Phase 6 Agent PostgreSQL ledger constraints", () => {
   beforeEach(async () => {
     await sql`truncate table users cascade`;
   });

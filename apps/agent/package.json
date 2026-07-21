@@ -1,12 +1,12 @@
 {
-  "name": "@tab/agent",
+  "name": "@runtab/mcp",
   "version": "0.0.1",
-  "private": true,
+  "private": false,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "leash-mcp": "./dist/cli.js"
+    "tab-mcp": "dist/cli.js"
   },
   "exports": {
     ".": {
@@ -43,5 +43,23 @@
     "tsx": "4.23.1",
     "typescript": "^5.8",
     "vitest": "^4.1.10"
+  },
+  "description": "Tab MCP proxy: lets an AI agent pay x402 (HTTP 402) charges in USDC under a server-enforced spending cap — the agent never holds a key.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Blockchain-Oracle/tab.git",
+    "directory": "apps/agent"
+  },
+  "keywords": [
+    "mcp",
+    "x402",
+    "ai-agent",
+    "payments",
+    "usdc",
+    "model-context-protocol"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

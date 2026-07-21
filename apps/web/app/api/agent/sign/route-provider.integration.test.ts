@@ -209,7 +209,7 @@ describe("POST /api/agent/sign provider lifecycle", () => {
     const independent = await signedPost(request(identity.secret, signBody()));
     expect(independent.status).toBe(403);
     await expect(independent.json()).resolves.toMatchObject({
-      error: { code: "LEASH_CAP_EXCEEDED" },
+      error: { code: "CAP_EXCEEDED" },
     });
     expect(signingCalls).toBe(1);
     expect(finalizedAuthorizationUsed).toHaveBeenCalledOnce();

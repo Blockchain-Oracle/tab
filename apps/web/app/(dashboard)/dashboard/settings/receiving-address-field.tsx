@@ -27,6 +27,7 @@ export function ReceivingAddressField({
     try {
       await navigator.clipboard.writeText(receivingAddress);
       setCopyStatus("copied");
+      setTimeout(() => setCopyStatus(undefined), 2_000);
     } catch {
       setCopyStatus("error");
     }

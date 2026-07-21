@@ -69,7 +69,7 @@ export function LeashOverview({
     <main className={styles.page}>
       <header className={styles.header}>
         <div>
-          <p className={styles.eyebrow}>COMMAND BRIDGE</p>
+          <p className={styles.eyebrow}>Operate · Overview</p>
           <div className={styles.titleLine}>
             <h1>{agent.name}</h1>
             <span
@@ -105,7 +105,7 @@ export function LeashOverview({
         <section className={styles.spendCard}>
           <div className={styles.cardHeading}>
             <span>SPEND THIS CYCLE</span>
-            <Link href={`/leash/cap${query}`}>Cap &amp; limits →</Link>
+            <Link href={`/agents/cap${query}`}>Cap &amp; limits →</Link>
           </div>
           <p className={styles.spendAmount}>
             <strong>{formatUsdAtomic(policy.spend.committedAtomic)}</strong>

@@ -4,9 +4,9 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { connectLeashAgent, LeashConnectError } from "./bootstrap.js";
 
-const apiKey = `leash_sk_${"b".repeat(43)}`;
+const apiKey = `agent_sk_${"b".repeat(43)}`;
 
-describe("Leash control-plane bootstrap over HTTP", () => {
+describe("agent control-plane bootstrap over HTTP", () => {
   const requests: Array<{ authorization: string | undefined; body: unknown; method: string }> = [];
   let responseBody: unknown = {
     agent: { address: null },
@@ -96,7 +96,7 @@ describe("Leash control-plane bootstrap over HTTP", () => {
 
     await expect(connectLeashAgent({ apiBaseUrl: origin, apiKey, fetch })).rejects.toMatchObject({
       code: "INVALID_CONNECT_RESPONSE",
-      message: "The Leash control plane returned an invalid response.",
+      message: "The agent control plane returned an invalid response.",
       status: 502,
     });
     expect(cancelled).toBe(true);

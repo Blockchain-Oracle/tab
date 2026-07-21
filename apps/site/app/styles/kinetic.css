@@ -1,0 +1,160 @@
+/* Kinetic vocabulary. Every animation is gated on html[data-tab-hero-motion]:
+   the theme-shell bootstrap sets that attribute ONLY when JS runs and the
+   visitor does not prefer reduced motion. No JS or reduced motion → all
+   content renders in its final state. Animations run once; theme toggles do
+   not replay them. */
+
+/* — Kinetic type: lines rise out of a clipped row — */
+.k-row {
+  display: block;
+  overflow: hidden;
+  padding-block-end: 0.06em;
+}
+
+.k-line {
+  display: block;
+  will-change: transform;
+}
+
+[data-tab-hero-motion] .k-line {
+  animation: k-rise 700ms var(--tab-motion-easing-settle) both;
+  animation-delay: var(--k-delay, 0ms);
+}
+
+@keyframes k-rise {
+  from {
+    opacity: 0.001;
+    transform: translateY(108%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* — Fade/rise for supporting elements — */
+[data-tab-hero-motion] .k-fade {
+  animation: k-fade 560ms var(--tab-motion-easing) both;
+  animation-delay: var(--k-delay, 0ms);
+}
+
+@keyframes k-fade {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* — The vermilion vector: a streak that draws itself — */
+.k-streak {
+  background: linear-gradient(90deg, var(--tab-accent), transparent 92%);
+  border-radius: 2px;
+  display: block;
+  height: clamp(6px, 0.9vw, 12px);
+  transform-origin: left center;
+}
+
+[data-tab-hero-motion] .k-streak {
+  animation: k-draw var(--tab-flowline-draw-duration) var(--tab-motion-easing) both;
+  animation-delay: var(--k-delay, 0ms);
+}
+
+@keyframes k-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* — SVG path draw (rails/strands): pathLength=1 on the path — */
+.k-path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+[data-tab-hero-motion] .k-path {
+  animation: k-path-draw var(--tab-flowline-draw-duration) var(--tab-motion-easing) both;
+  animation-delay: var(--k-delay, 0ms);
+  stroke-dashoffset: 1;
+}
+
+@keyframes k-path-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* — Scroll reveals: the Reveal component adds .is-in via IntersectionObserver.
+     Hidden states exist only under the motion gate. — */
+[data-tab-hero-motion] .reveal {
+  opacity: 0;
+  transform: translateY(var(--tab-motion-travel-distance));
+  transition:
+    opacity var(--tab-motion-duration-slow) var(--tab-motion-easing),
+    transform var(--tab-motion-duration-slow) var(--tab-motion-easing-settle);
+  transition-delay: var(--k-delay, 0ms);
+}
+
+[data-tab-hero-motion] .reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* — The stamp: money truth arrives — */
+[data-tab-hero-motion] .stamp {
+  opacity: 0;
+  transform: scale(1.18) rotate(-5deg);
+  transition:
+    opacity var(--tab-stamp-duration) var(--tab-motion-easing-settle),
+    transform var(--tab-stamp-duration) var(--tab-motion-easing-settle);
+  transition-delay: var(--k-delay, 0ms);
+}
+
+[data-tab-hero-motion] .stamp.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* — Code arrives like a ledger prints: line by line, top to bottom — */
+[data-tab-hero-motion] .dev-panel .dev-code-line {
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity var(--tab-motion-duration-slow) var(--tab-motion-easing),
+    transform var(--tab-motion-duration-slow) var(--tab-motion-easing-settle);
+  transition-delay: calc(var(--k-delay, 0ms) + 120ms + var(--code-line, 0) * 55ms);
+}
+
+[data-tab-hero-motion] .dev-panel.is-in .dev-code-line {
+  opacity: 1;
+  transform: none;
+}
+
+/* Belt and braces: even if the JS gate was set, the OS-level reduced-motion
+   preference always wins — everything renders in its final state. */
+@media (prefers-reduced-motion: reduce) {
+  [data-tab-hero-motion] .k-line,
+  [data-tab-hero-motion] .k-fade,
+  [data-tab-hero-motion] .k-streak,
+  [data-tab-hero-motion] .k-path {
+    animation: none;
+  }
+
+  [data-tab-hero-motion] .k-path {
+    stroke-dashoffset: 0;
+  }
+
+  [data-tab-hero-motion] .reveal,
+  [data-tab-hero-motion] .stamp,
+  [data-tab-hero-motion] .dev-panel .dev-code-line {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

@@ -6,10 +6,13 @@ Read AGENTS.md first. This file is the fast-reference subset.
 ## Stack
 
 TypeScript monorepo: pnpm + Turborepo.
-- `packages/sdk` — `<PayButton>` + `new Tab(sk)`, publishable npm package
-- `apps/web` — Next.js **16.2.10** App Router (merchant + Leash dashboards, checkout, backend)
-- `apps/agent` — Leash MCP stdio proxy + x402 fetch wrapper + cap engine
-- `apps/mobile` — PWA monitor (read + revoke only; **no on-device signing**)
+- `packages/sdk` — `<PayButton>` + `new Tab(sk)`, published as `@runtab/sdk`
+- `apps/web` — Next.js **16.2.10** App Router (merchant + agent dashboards, checkout, backend;
+  mobile monitor PWA at `app/mobile` — read + revoke only, **no on-device signing**)
+- `apps/site` — marketing site (runtab.xyz)
+- `apps/docs` — documentation site (docs.runtab.xyz, Fumadocs)
+- `apps/agent` — Tab MCP stdio proxy (`tab-mcp`, published as `@runtab/mcp`) + x402 fetch
+  wrapper + cap engine
 
 ## Commands
 

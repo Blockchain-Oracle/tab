@@ -27,8 +27,8 @@ export function OverviewActions({
   if (status === "cancelled" || status === "nuked") {
     return (
       <div className={styles.headerActions}>
-        <Link href={`/leash/provision${query}`}>Provision new agent</Link>
-        <Link className={styles.secondaryAction} href={`/leash/funds${query}`}>
+        <Link href={`/agents/provision${query}`}>Provision new agent</Link>
+        <Link className={styles.secondaryAction} href={`/agents/funds${query}`}>
           Review remaining floats
         </Link>
       </div>
@@ -37,8 +37,8 @@ export function OverviewActions({
   if (floatState === "empty" || floatState === "low") {
     return (
       <div className={styles.headerActions}>
-        <Link href={`/leash/funds${query}`}>Add funds</Link>
-        <Link className={styles.secondaryAction} href={`/leash/cap${query}`}>
+        <Link href={`/agents/funds${query}`}>Add funds</Link>
+        <Link className={styles.secondaryAction} href={`/agents/cap${query}`}>
           Adjust cap
         </Link>
       </div>
@@ -52,8 +52,8 @@ export function OverviewActions({
         : "Pause payments";
   return (
     <div className={styles.headerActions}>
-      <Link href={`/leash/cap${query}`}>{policy?.halted ? "Raise cap" : "Adjust cap"}</Link>
-      <Link className={styles.secondaryAction} href={`/leash/revocation${query}`}>
+      <Link href={`/agents/cap${query}`}>{policy?.halted ? "Raise cap" : "Adjust cap"}</Link>
+      <Link className={styles.secondaryAction} href={`/agents/revocation${query}`}>
         {policy?.halted
           ? "Revocation controls"
           : status === "provisioned"
@@ -90,11 +90,11 @@ export function OverviewStateNotices({
           </strong>
           <p>
             {status === "nuked"
-              ? "Leash cannot withdraw remaining floats after nuclear destruction. Review balances, then provision a new agent."
-              : "Every Leash key is invalid. Provisioning remains blocked on B-03."}
+              ? "Tab cannot withdraw remaining floats after nuclear destruction. Review balances, then provision a new agent."
+              : "Every agent key is invalid. Provisioning remains blocked on B-03."}
           </p>
         </div>
-        <Link href={`/leash/provision${query}`}>Provision new agent</Link>
+        <Link href={`/agents/provision${query}`}>Provision new agent</Link>
       </section>
     );
   }
@@ -113,7 +113,7 @@ export function OverviewStateNotices({
             <strong>Set a cap to enable payments.</strong>
             <p>The hosted signer currently refuses every payment for this agent.</p>
           </div>
-          <Link href={`/leash/cap${query}`}>Set cap</Link>
+          <Link href={`/agents/cap${query}`}>Set cap</Link>
         </section>
       ) : policy.halted ? (
         <section className={styles.warning} role="alert">
@@ -121,7 +121,7 @@ export function OverviewStateNotices({
             <strong>Payments halted at the cap.</strong>
             <p>New attempts are blocked before signing and recorded in the receipt ledger.</p>
           </div>
-          <Link href={`/leash/cap${query}`}>Raise cap</Link>
+          <Link href={`/agents/cap${query}`}>Raise cap</Link>
         </section>
       ) : policy.spend.approaching ? (
         <section className={styles.warning} role="status">
@@ -131,7 +131,7 @@ export function OverviewStateNotices({
               {formatBasisPoints(policy.spend.committedBasisPoints ?? "0")} committed this cycle.
             </p>
           </div>
-          <Link href={`/leash/cap${query}`}>Adjust cap</Link>
+          <Link href={`/agents/cap${query}`}>Adjust cap</Link>
         </section>
       ) : null}
       {floatEmpty || floatLow || storedFloatWarning ? (
@@ -152,7 +152,7 @@ export function OverviewStateNotices({
                   : "This warning comes from a stored real float event; the current live read is unavailable."}
             </p>
           </div>
-          <Link href={`/leash/funds${query}`}>Open funds</Link>
+          <Link href={`/agents/funds${query}`}>Open funds</Link>
         </section>
       ) : null}
     </>

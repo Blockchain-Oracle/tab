@@ -46,7 +46,7 @@ export async function provision(
   if (!agent) throw new Error("Expected an agent");
   const [key] = await connection.client<{ id: string }[]>`
     insert into leash_keys (agent_id, hashed_key, prefix, last4)
-    values (${agent.id}, ${randomBytes(32).toString("hex")}, 'leash_sk_', 'a1B2')
+    values (${agent.id}, ${randomBytes(32).toString("hex")}, 'agent_sk_', 'a1B2')
     returning id
   `;
   const [cycle] = await connection.client<{ id: string }[]>`
@@ -126,7 +126,7 @@ export async function insertCommitted(
       authorization_valid_before, origin, tx_hash, settlement_response, settled_at
     ) values (
       ${agentId}, ${cycleId}, ${status},
-      ${status === "failed" ? "FLOAT_EMPTY" : blocked ? "LEASH_CAP_EXCEEDED" : null},
+      ${status === "failed" ? "FLOAT_EMPTY" : blocked ? "CAP_EXCEEDED" : null},
       ${amount}, ${amount}::numeric / 1000000, ${baseUsdc}, 'eip155:8453',
       ${blocked ? "eip155:8453" : null}, ${payTo},
       ${`0x${randomBytes(32).toString("hex")}`}, ${randomBytes(32).toString("hex")},

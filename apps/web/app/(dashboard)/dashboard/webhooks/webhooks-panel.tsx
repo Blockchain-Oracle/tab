@@ -1,5 +1,6 @@
 "use client";
 
+import { Dialog } from "@tab/ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
@@ -250,27 +251,37 @@ function EnvironmentWebhooksPanel({ initialEndpoint, recentDeliveries }: Props) 
 
       {secret ? <SecretRevealDialog onClose={() => setSecret(null)} secret={secret} /> : null}
       {confirmDelete ? (
-        <div className={dialogStyles.overlay} role="presentation">
-          <div aria-modal="true" className={dialogStyles.dialog} role="dialog">
-            <h2>Remove this webhook URL?</h2>
+        <Dialog
+          onDismiss={busy === "delete" ? () => {} : () => setConfirmDelete(false)}
+          open
+          title="Remove this webhook URL?"
+        >
+          <div className={dialogStyles.dialogBody}>
             <p>
               Tab will stop delivering notifications until you add a new endpoint. The signing
               secret will be discarded.
             </p>
             <div className={dialogStyles.dialogActions}>
-              <button onClick={() => setConfirmDelete(false)} type="button">
+              <button
+                disabled={busy === "delete"}
+                onClick={() => setConfirmDelete(false)}
+                type="button"
+              >
                 Cancel
               </button>
               <button
                 className={dialogStyles.removeButton}
-                onClick={() => void remove()}
+                disabled={busy === "delete"}
+                onClick={() => {
+                  if (busy !== "delete") void remove();
+                }}
                 type="button"
               >
                 {busy === "delete" ? "Removing…" : "Remove webhook"}
               </button>
             </div>
           </div>
-        </div>
+        </Dialog>
       ) : null}
     </div>
   );

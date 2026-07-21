@@ -1,38 +1,38 @@
 export const LEASH_KEY_PLACEHOLDER = "<YOUR_ONE_TIME_KEY>";
 export const LEASH_UPSTREAM_PLACEHOLDER = "<ABSOLUTE_STREAMABLE_HTTP_MCP_URL>";
 
-type LeashMcpConfiguration = {
+type TabMcpConfiguration = {
   mcpServers: {
-    leash: {
+    tab: {
       args?: ["--upstream", string];
-      command: "leash-mcp";
+      command: "tab-mcp";
       env: {
-        LEASH_API_BASE_URL: string;
-        LEASH_API_KEY: string;
+        TAB_API_BASE_URL: string;
+        TAB_AGENT_KEY: string;
       };
     };
   };
 };
 
-export function buildLeashMcpConfiguration(
+export function buildTabMcpConfiguration(
   apiBaseUrl: string,
   upstreamUrl?: string,
-): LeashMcpConfiguration {
+): TabMcpConfiguration {
   return {
     mcpServers: {
-      leash: {
+      tab: {
         ...(upstreamUrl ? { args: ["--upstream", upstreamUrl] as ["--upstream", string] } : {}),
-        command: "leash-mcp",
+        command: "tab-mcp",
         env: {
-          LEASH_API_BASE_URL: apiBaseUrl,
-          LEASH_API_KEY: LEASH_KEY_PLACEHOLDER,
+          TAB_API_BASE_URL: apiBaseUrl,
+          TAB_AGENT_KEY: LEASH_KEY_PLACEHOLDER,
         },
       },
     },
   };
 }
 
-export function resolveLeashApiOrigin(value: string | undefined): {
+export function resolveTabApiOrigin(value: string | undefined): {
   apiBaseUrl: string | null;
   issue: string | null;
 } {

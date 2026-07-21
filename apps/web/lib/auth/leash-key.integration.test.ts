@@ -16,7 +16,7 @@ import {
 } from "./leash-key";
 
 const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) throw new Error("DATABASE_URL is required for Leash key integration tests");
+if (!databaseUrl) throw new Error("DATABASE_URL is required for agent key integration tests");
 
 const connection = createDatabase(databaseUrl, 4);
 
@@ -36,7 +36,7 @@ async function provisionAgent(label: string) {
       magicIssuer: `did:ethr:${randomUUID()}`,
     })
     .returning({ id: users.id });
-  if (!user) throw new Error("PostgreSQL did not return the Leash owner");
+  if (!user) throw new Error("PostgreSQL did not return the Agent owner");
 
   const [agent] = await connection.db
     .insert(agents)
@@ -46,11 +46,11 @@ async function provisionAgent(label: string) {
       signerSubject: `leash:${randomUUID()}`,
     })
     .returning({ id: agents.id });
-  if (!agent) throw new Error("PostgreSQL did not return the Leash agent");
+  if (!agent) throw new Error("PostgreSQL did not return the agent");
   return agent;
 }
 
-describe("Leash key lifecycle with real PostgreSQL", () => {
+describe("agent key lifecycle with real PostgreSQL", () => {
   it("issues show-once material while persisting only its SHA-256 hash and mask", async () => {
     const agent = await provisionAgent("issue");
 
@@ -64,16 +64,16 @@ describe("Leash key lifecycle with real PostgreSQL", () => {
       key: expect.objectContaining({
         agentId: agent.id,
         last4: created.secret.slice(-4),
-        prefix: "leash_sk_",
+        prefix: "agent_sk_",
         rotatedFromId: null,
       }),
-      secret: expect.stringMatching(/^leash_sk_[A-Za-z0-9_-]{43}$/),
+      secret: expect.stringMatching(/^agent_sk_[A-Za-z0-9_-]{43}$/),
     });
     expect(stored).toMatchObject({
       agentId: agent.id,
       hashedKey: hashLeashKey(created.secret),
       last4: created.secret.slice(-4),
-      prefix: "leash_sk_",
+      prefix: "agent_sk_",
     });
     expect(JSON.stringify(stored)).not.toContain(created.secret);
   });
@@ -123,12 +123,12 @@ describe("Leash key lifecycle with real PostgreSQL", () => {
       .set({ revokedAt: new Date() })
       .where(eq(leashKeys.id, created.key.id));
 
-    const unknown = `leash_sk_${"z".repeat(43)}`;
+    const unknown = `agent_sk_${"z".repeat(43)}`;
     for (const header of [null, created.secret, `Bearer ${unknown}`, `Bearer ${created.secret}`]) {
       await expect(authenticateLeashKey(connection.db, header)).rejects.toEqual(
         expect.objectContaining({
-          code: "INVALID_LEASH_KEY",
-          message: "The Leash key is invalid or revoked.",
+          code: "INVALID_AGENT_KEY",
+          message: "The agent key is invalid or revoked.",
           name: "InvalidLeashKeyError",
         }),
       );

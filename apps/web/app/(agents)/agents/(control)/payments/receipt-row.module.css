@@ -1,11 +1,11 @@
 .item {
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 11px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 .newest {
-  border-color: #cfe2db;
-  background: #f4faf7;
+  border-color: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
   animation: receipt-in 240ms ease-out both;
 }
 .row {
@@ -18,13 +18,13 @@
 }
 .row:hover {
   border-radius: 11px;
-  background: #fcfbf8;
+  background: var(--tab-canvas);
 }
 .resource {
   display: grid;
   min-width: 0;
   gap: 4px;
-  color: #1c1b18;
+  color: var(--tab-text);
   text-decoration: none;
 }
 .resource strong {
@@ -35,7 +35,7 @@
 }
 .resource small,
 .time {
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   font-variant-numeric: tabular-nums;
 }
@@ -56,35 +56,35 @@
   font-weight: 700;
 }
 .network {
-  background: #efede7;
-  color: #5f5d55;
+  background: var(--tab-canvas);
+  color: var(--tab-text-muted);
 }
 .target {
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 .settled {
-  background: #e7f3ef;
-  color: #17503a;
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  color: var(--tab-status-success);
 }
 .pending {
-  background: #fff2dc;
-  color: #8a5711;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 .failed {
-  background: #faecec;
-  color: #b4383d;
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, transparent);
+  color: var(--tab-status-danger);
 }
 .blocked {
-  background: #e8eff5;
-  color: #345a73;
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  color: var(--tab-text-muted);
 }
 .transaction {
   min-width: 0;
   font-size: 10px;
 }
 .transaction a {
-  color: #206b4e;
+  color: var(--tab-status-success);
   font-size: 9px;
   font-weight: 500;
 }
@@ -98,7 +98,7 @@
 .resource:focus-visible,
 .transaction a:focus-visible {
   border-radius: 4px;
-  outline: 2px solid #206b4e;
+  outline: 2px solid var(--tab-status-success);
   outline-offset: 2px;
 }
 @keyframes receipt-in {
@@ -140,5 +140,105 @@
     grid-column: 2;
     grid-row: 3;
     justify-self: end;
+  }
+}
+
+/* ————— Evidence flowline: 402 → Policy → Sign → Settle ————— */
+.flowline {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.flowStage {
+  display: grid;
+  flex: 1;
+  gap: 3px;
+  min-width: 0;
+}
+
+.flowBar {
+  border-radius: 2px;
+  display: block;
+  height: 2.5px;
+  transform-origin: left;
+}
+
+.flowline[data-animate] .flowBar {
+  animation: flowDraw var(--tab-motion-duration-base) var(--tab-motion-easing-settle) both;
+}
+
+.flowStage[data-state="done"] .flowBar {
+  background: var(--tab-text);
+}
+
+.flowStage[data-state="todo"] .flowBar {
+  background: var(--tab-line);
+}
+
+.flowStage[data-state="stop"] .flowBar {
+  background: var(--tab-status-danger);
+}
+
+.flowStage[data-state="inflight"] .flowBar {
+  background: var(--tab-accent);
+}
+
+.flowline[data-animate] .flowStage[data-state="inflight"] .flowBar {
+  animation:
+    flowDraw var(--tab-motion-duration-base) var(--tab-motion-easing-settle) both,
+    flowPulse 1.2s ease-in-out 400ms infinite;
+}
+
+.flowStage[data-state="settled"] .flowBar {
+  background: var(--tab-status-success);
+}
+
+.flowStage[data-state="failed"] .flowBar {
+  background: var(--tab-status-danger);
+}
+
+.flowLabel {
+  color: var(--tab-text-muted);
+  font-family: var(--tab-font-evidence);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.flowStage[data-state="stop"] .flowLabel,
+.flowStage[data-state="failed"] .flowLabel {
+  color: var(--tab-status-danger);
+}
+
+.flowStage[data-state="settled"] .flowLabel {
+  color: var(--tab-status-success);
+}
+
+@keyframes flowDraw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes flowPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flowline[data-animate] .flowBar {
+    animation: none;
   }
 }

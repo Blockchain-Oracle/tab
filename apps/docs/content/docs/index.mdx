@@ -1,0 +1,38 @@
+---
+title: What is Tab
+description: One payment rail, two kinds of payers — humans pay with an email, AI agents pay x402 under a hard cap.
+---
+
+Tab is a payments product with one rail and two payers:
+
+- **Humans** check out with an email. No wallet extension, no seed phrase — a
+  one-time code creates a wallet behind the scenes and the payment settles in
+  USDC.
+- **AI agents** pay [x402](https://x402.org) `402 Payment Required` responses
+  by themselves, through an MCP proxy that enforces a spending cap **outside
+  the model**. The agent never holds a key.
+
+Both payers settle on the same rail and leave the same evidence: a receipt
+with an amount, a network, and a transaction hash.
+
+## The three surfaces
+
+| Surface | Who it's for | What it does |
+| --- | --- | --- |
+| **`<PayButton>`** | Your customers | Embedded checkout: email → code → pay |
+| **Merchant dashboard** | You | Keys, webhooks, transactions, go-live |
+| **Agent dashboard** | Agent owners | Provision, cap, fund, connect, revoke |
+
+## Test mode is honest
+
+Tab's test mode runs on **Base Sepolia** with real on-chain test funds —
+never simulated balances under a real-money label. Everything labeled
+"Sandbox funds — no real value" is exactly that. Live execution is gated
+until the production money-mover spike is verified; test mode is fully
+functional end to end.
+
+## Where to start
+
+- Selling something? Start with the [Quickstart](/docs/quickstart).
+- Wiring an agent? Start with [Agents & x402](/docs/agents).
+- Want free test funds? See [Test funds](/docs/test-funds).

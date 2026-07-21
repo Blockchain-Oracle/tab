@@ -1,0 +1,185 @@
+.card {
+  background: var(--tab-surface);
+  border: 1px solid var(--tab-line);
+  border-radius: var(--tab-radius-m);
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 18px 20px;
+}
+
+.head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.head h2 {
+  font-size: 15px;
+  font-weight: 620;
+  margin: 0;
+}
+
+.head p {
+  color: var(--tab-text-muted);
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.address {
+  font-family: var(--tab-font-evidence);
+  font-size: 12px;
+}
+
+.claimButton {
+  background: var(--tab-action);
+  border: 0;
+  border-radius: var(--tab-radius-pill);
+  color: var(--tab-action-text);
+  font-size: 13.5px;
+  font-weight: 600;
+  height: 40px;
+  padding-inline: 20px;
+  transition: background var(--tab-motion-duration-fast) var(--tab-motion-easing);
+}
+
+.claimButton:hover:not(:disabled) {
+  background: var(--tab-action-hover);
+}
+
+.claimButton:disabled {
+  opacity: 0.75;
+}
+
+.travel {
+  align-items: center;
+  color: var(--tab-text-muted);
+  display: flex;
+  font-size: 12.5px;
+  gap: 12px;
+}
+
+.travelBar {
+  background: var(--tab-accent);
+  border-radius: 2px;
+  display: block;
+  flex: 0 0 72px;
+  height: 3px;
+  animation: travelPulse 1.2s ease-in-out infinite;
+  transform-origin: left;
+}
+
+@keyframes travelPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.notice {
+  color: var(--tab-status-warning);
+  font-size: 12.5px;
+  margin: 0;
+}
+
+.error {
+  color: var(--tab-status-danger);
+  font-size: 12.5px;
+  margin: 0;
+}
+
+.legs {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.leg {
+  align-items: center;
+  border: 1px solid var(--tab-line);
+  border-radius: var(--tab-radius-s);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  gap: 10px;
+  justify-content: space-between;
+  padding: 9px 12px;
+}
+
+.legLabel {
+  font-weight: 590;
+}
+
+.legResult {
+  align-items: center;
+  color: var(--tab-text-muted);
+  display: inline-flex;
+  font-family: var(--tab-font-evidence);
+  gap: 10px;
+}
+
+.legResult a {
+  color: var(--tab-text);
+  text-decoration: underline;
+}
+
+.legResult a:hover {
+  color: var(--tab-accent);
+}
+
+/* Funded is real money truth on-chain — the stamp earns its green. */
+.stamp {
+  animation: stampIn var(--tab-stamp-duration) var(--tab-motion-easing-settle) both;
+  border: 2px solid var(--tab-status-success);
+  border-radius: 6px;
+  color: var(--tab-status-success);
+  font-family: var(--tab-font-evidence);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 2px 7px;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+}
+
+@keyframes stampIn {
+  from {
+    opacity: 0;
+    transform: scale(1.16) rotate(-5deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(-2deg);
+  }
+}
+
+.legBlocked {
+  color: var(--tab-status-danger);
+}
+
+.leg[data-state="unavailable"] .legBlocked {
+  color: var(--tab-status-warning);
+}
+
+.foot {
+  color: var(--tab-status-warning);
+  font-family: var(--tab-font-evidence);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .travelBar,
+  .stamp {
+    animation: none;
+  }
+}

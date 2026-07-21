@@ -26,7 +26,7 @@ async function owner(request: NextRequest) {
 
 function notFound(error: unknown) {
   if (error instanceof LeashNotificationNotFoundError) {
-    return leashError("LEASH_RESOURCE_NOT_FOUND", error.message, 404);
+    return leashError("RESOURCE_NOT_FOUND", error.message, 404);
   }
   throw error;
 }

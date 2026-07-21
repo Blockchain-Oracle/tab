@@ -1,21 +1,22 @@
 .title {
   margin: 0;
-  color: #1c1b18;
+  color: var(--tab-text);
   font-size: 22px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
+  font-weight: 620;
+  letter-spacing: -0.02em;
   line-height: 1.25;
 }
 
 .subtitle {
   margin: 8px 0 0;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 14px;
   line-height: 1.5;
 }
 
 .subtitle strong {
-  color: #1c1b18;
+  color: var(--tab-text);
+  font-family: var(--tab-font-evidence);
   font-weight: 550;
 }
 
@@ -24,21 +25,21 @@
 .noticeBanner {
   margin-top: 20px;
   padding: 10px 12px;
-  border-radius: 9px;
+  border-radius: var(--tab-radius-s);
   font-size: 12px;
   line-height: 1.45;
 }
 
 .configBanner,
 .noticeBanner {
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 
 .errorBanner {
-  border: 1px solid #f0d7d7;
-  background: #faecec;
-  color: #8e2f34;
+  border: 1px solid color-mix(in srgb, var(--tab-status-danger) 24%, transparent);
+  background: color-mix(in srgb, var(--tab-status-danger) 9%, var(--tab-surface));
+  color: var(--tab-status-danger);
 }
 
 .form {
@@ -48,47 +49,47 @@
 
 .label {
   margin-bottom: 7px;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 13px;
   font-weight: 550;
 }
 
 .emailInput {
   width: 100%;
-  height: 42px;
+  height: 44px;
   padding: 0 13px;
-  border: 1px solid #dbd9d0;
-  border-radius: 9px;
+  border: 1px solid var(--tab-line);
+  border-radius: var(--tab-radius-s);
   outline: none;
-  background: #fff;
-  color: #1c1b18;
+  background: var(--tab-surface);
+  color: var(--tab-text);
   font-size: 14px;
   transition:
-    border-color 120ms ease,
-    box-shadow 120ms ease;
+    border-color var(--tab-motion-duration-fast) var(--tab-motion-easing),
+    box-shadow var(--tab-motion-duration-fast) var(--tab-motion-easing);
 }
 
 .emailInput::placeholder {
-  color: #b4b2a8;
+  color: var(--tab-status-unavailable);
 }
 
 .emailInput:focus {
-  border-color: #3b5bd9;
-  box-shadow: 0 0 0 3px rgba(59, 91, 217, 0.13);
+  border-color: var(--tab-text);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tab-text) 9%, transparent);
 }
 
 .emailInput[aria-invalid="true"] {
-  border-color: #c13a40;
+  border-color: var(--tab-status-danger);
 }
 
 .emailInput:disabled {
-  background: #f5f4f0;
-  color: #8c8a80;
+  background: var(--tab-canvas);
+  color: var(--tab-text-muted);
 }
 
 .inlineError {
   margin: 7px 0 0;
-  color: #8e2f34;
+  color: var(--tab-status-danger);
   font-size: 12px;
   line-height: 1.45;
 }
@@ -96,21 +97,22 @@
 .inlineError a,
 .alternate a,
 .textButton {
-  color: #3b5bd9;
-  font-weight: 550;
+  color: var(--tab-text);
+  font-weight: 570;
+  text-decoration: underline;
 }
 
 .inlineError a:hover,
 .alternate a:hover,
 .textButton:hover {
-  color: #2e48b8;
+  color: var(--tab-accent);
 }
 
 .primaryButton,
 .secondaryButton {
   width: 100%;
-  height: 42px;
-  border-radius: 9px;
+  height: 46px;
+  border-radius: var(--tab-radius-pill);
   font-size: 14px;
   font-weight: 600;
 }
@@ -118,36 +120,36 @@
 .primaryButton {
   margin-top: 18px;
   border: 0;
-  background: #3b5bd9;
-  color: #fff;
-  transition: background 120ms ease;
+  background: var(--tab-action);
+  color: var(--tab-action-text);
+  transition: background var(--tab-motion-duration-fast) var(--tab-motion-easing);
 }
 
 .primaryButton:hover:not(:disabled) {
-  background: #2e48b8;
+  background: var(--tab-action-hover);
 }
 
 .primaryButton:disabled {
-  background: #ebe9e3;
-  color: #8c8a80;
+  background: var(--tab-line);
+  color: var(--tab-text-muted);
 }
 
 .secondaryButton {
   margin-top: 24px;
-  border: 1px solid #dbd9d0;
-  background: #fff;
-  color: #1c1b18;
+  border: 1px solid var(--tab-line);
+  background: var(--tab-surface);
+  color: var(--tab-text);
+}
+
+.secondaryButton:hover {
+  border-color: var(--tab-text-muted);
 }
 
 .alternate {
   margin: 22px 0 0;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 13px;
   text-align: center;
-}
-
-.alternate a {
-  text-decoration: none;
 }
 
 .statusPanel {
@@ -164,19 +166,39 @@
   border-radius: 50%;
   font-size: 23px;
   font-weight: 650;
+  animation: stampIn var(--tab-stamp-duration) var(--tab-motion-easing-settle) both;
 }
 
+/* Auth success is an ink stamp, not green: green stays money-truth only. */
 .success {
-  background: #e8f3ec;
-  color: #257a46;
+  border: 2.5px solid var(--tab-text);
+  background: var(--tab-surface);
+  color: var(--tab-text);
 }
 
 .error {
-  background: #faecec;
-  color: #8e2f34;
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, var(--tab-surface));
+  color: var(--tab-status-danger);
 }
 
 .device {
-  background: #f5f4f0;
-  color: #3b5bd9;
+  background: var(--tab-canvas);
+  color: var(--tab-text);
+}
+
+@keyframes stampIn {
+  from {
+    opacity: 0;
+    transform: scale(1.15) rotate(-4deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .statusIcon {
+    animation: none;
+  }
 }

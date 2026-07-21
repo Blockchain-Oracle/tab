@@ -12,7 +12,7 @@ export async function connectStreamableHttpUpstream(
     lookup?: PaymentTargetLookup;
   } = {},
 ) {
-  const client = new Client({ name: "leash-mcp-upstream", version: "0.0.1" });
+  const client = new Client({ name: "tab-mcp-upstream", version: "0.0.1" });
   const policy = createPinnedPaymentFetch({
     allowDevelopmentLoopback: options.allowDevelopmentLoopback === true,
     fetch: options.fetch ?? globalThis.fetch,

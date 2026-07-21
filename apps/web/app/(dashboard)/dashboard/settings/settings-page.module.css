@@ -17,15 +17,20 @@
   gap: 22px;
   margin-top: 20px;
   padding: 24px;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .loadingCard span {
   display: block;
   border-radius: 7px;
-  background: linear-gradient(90deg, #edebe4 25%, #f5f4f0 50%, #edebe4 75%);
+  background: linear-gradient(
+    90deg,
+    var(--tab-line) 25%,
+    var(--tab-canvas) 50%,
+    var(--tab-line) 75%
+  );
   background-size: 400px 100%;
   animation: settings-shimmer 1.2s linear infinite;
 }

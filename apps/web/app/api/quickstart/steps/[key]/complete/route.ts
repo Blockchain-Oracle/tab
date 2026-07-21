@@ -8,26 +8,21 @@ import {
   QuickstartStepNotManualError,
 } from "../../../../../../lib/dashboard/quickstart";
 import { getServerDatabase } from "../../../../../../lib/db/server";
+import { jsonError } from "../../../../../../lib/http/responses";
 
 type RouteContext = { params: Promise<{ key: string }> };
 
-function error(code: string, message: string, status: number) {
-  return NextResponse.json(
-    { error: { code, message } },
-    { headers: { "cache-control": "no-store" }, status },
-  );
-}
-
 export async function POST(request: NextRequest, context: RouteContext) {
   if (!requestOriginIsAllowed(request)) {
-    return error("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
+    return jsonError("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
   }
   const principal = await authenticateMerchantRequest(request);
-  if (!principal) return error("SESSION_REQUIRED", "A valid merchant session is required.", 401);
+  if (!principal)
+    return jsonError("SESSION_REQUIRED", "A valid merchant session is required.", 401);
 
   const { key } = await context.params;
   if (!isQuickstartStepKey(key)) {
-    return error("INVALID_QUICKSTART_STEP", "Quickstart step is not recognized.", 400);
+    return jsonError("INVALID_QUICKSTART_STEP", "Quickstart step is not recognized.", 400);
   }
 
   try {
@@ -38,7 +33,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
   } catch (routeError) {
     if (routeError instanceof QuickstartStepNotManualError) {
-      return error(routeError.code, routeError.message, 409);
+      return jsonError(routeError.code, routeError.message, 409);
     }
     throw routeError;
   }

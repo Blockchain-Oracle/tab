@@ -1,0 +1,86 @@
+---
+title: Quickstart
+description: From install to your first settled test payment — the same steps the in-app Quickstart tracks from real integration events.
+---
+
+The merchant dashboard's Quickstart page tracks these exact steps and marks
+them done from **real integration events** — creating a key, receiving a
+webhook, settling a payment. Nothing checks itself off.
+
+## 1. Install the SDK
+
+```bash
+npm install @runtab/sdk
+```
+
+## 2. Create your API keys
+
+Create a **test secret key** (`sk_test_…`) and grab your **publishable key**
+(`pk_test_…`) from the dashboard. Secret keys are shown once and stay on
+your server. Publishable keys are safe for the browser.
+
+## 3. Create your intent endpoint
+
+Your server signs the amount. Tab derives the receiving address and asset —
+the browser never decides what to charge.
+
+The SDK calls this endpoint with **GET** when the checkout opens:
+
+```ts
+// app/api/payment-intent/route.ts (your server)
+export async function GET(request: Request) {
+  const response = await fetch(`${process.env.TAB_API_BASE_URL}/api/v1/payment-intents`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.TAB_SECRET_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ amount: "1.00", intentUrl: request.url }),
+  });
+  return Response.json(await response.json(), { status: response.status });
+}
+```
+
+The response is `{ intent, intentToken }` — a short-lived signed token the
+checkout presents back to Tab.
+
+## 4. Add the pay button
+
+```tsx
+import { PayButton } from "@runtab/sdk";
+
+<PayButton
+  apiBaseUrl="https://app.runtab.xyz"
+  publishableKey="pk_test_…"
+  intentUrl="/api/payment-intent"
+  onSuccess={(transactionId, tokenChanges) =>
+    showOrderConfirmation(transactionId, tokenChanges)}
+/>;
+```
+
+The component handles identity (email + one-time code), balance, confirmation,
+and completion. See [Checkout states](/docs/checkout-states) for every state
+it can show.
+
+## 5. Configure your webhook
+
+Webhooks are the trusted fulfillment signal — `onSuccess` is for UX only.
+Add an endpoint in the dashboard and verify the signature on every delivery.
+See [Webhooks](/docs/webhooks).
+
+## 6. Verify webhook delivery
+
+Send a real signed test delivery from the webhook page and get a `2xx` back
+from your endpoint — this is its own tracked step, and go-live requires it.
+
+## 7. Make a test payment
+
+Open your storefront in test mode and pay with any email. An empty wallet can
+claim [test funds](/docs/test-funds) without leaving the checkout. When the
+payment settles you'll have: a transaction row, a signed webhook delivery,
+and a receipt.
+
+## 8. Go live
+
+The Go Live page runs real readiness checks (live key, verified webhook,
+receiving address) before enabling live mode. Test keys never move real funds.

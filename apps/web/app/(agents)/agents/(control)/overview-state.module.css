@@ -8,17 +8,17 @@
 .warning a {
   padding: 9px 13px;
   border-radius: 8px;
-  background: #206b4e;
-  color: #fff;
+  background: var(--tab-status-success);
+  color: var(--tab-surface);
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
 }
 
 .headerActions .secondaryAction {
-  border: 1px solid #dbd9d0;
-  background: #fff;
-  color: #1c1b18;
+  border: 1px solid var(--tab-line);
+  background: var(--tab-surface);
+  color: var(--tab-text);
 }
 
 .warning {
@@ -27,10 +27,10 @@
   justify-content: space-between;
   gap: 16px;
   padding: 13px 16px;
-  border: 1px solid #f2e3c2;
+  border: 1px solid color-mix(in srgb, var(--tab-mode-test) 22%, transparent);
   border-radius: 11px;
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
   font-size: 12.5px;
 }
 
@@ -40,7 +40,7 @@
 
 .headerActions a:focus-visible,
 .warning a:focus-visible {
-  outline: 2px solid #206b4e;
+  outline: 2px solid var(--tab-status-success);
   outline-offset: 2px;
 }
 

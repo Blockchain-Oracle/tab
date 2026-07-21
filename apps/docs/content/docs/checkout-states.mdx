@@ -1,0 +1,57 @@
+---
+title: Checkout states
+description: Every state the embedded checkout can show, and the real event that drives each transition.
+---
+
+The checkout is a 16-stage state machine (`checkout-state.ts` in the SDK).
+Transitions fire on real events — API responses, on-chain reads, settlement
+reports — never on timers pretending to be progress.
+
+## The happy path
+
+<Steps>
+
+### Idle → intent loading
+
+The trigger button shows your amount. Clicking it loads the signed intent
+from your server and opens the payment.
+
+### Email → one-time code
+
+The buyer enters an email and receives a 6-digit code. Codes auto-submit on
+the 6th digit. Returning buyers with a live session skip this entirely
+(silent resume).
+
+### Device approval (conditional)
+
+A new device may require an email approval link. The checkout waits and
+continues automatically — this is a real state, not a failure.
+
+### Balance
+
+The buyer's balance is read for real — Base Sepolia USDC in test mode, the
+Universal Account total in live mode — and compared to the amount.
+
+### Confirming → success
+
+On confirmation the payment executes (test: simulated settlement on the test
+tenant; live: gated until the money-mover spike is verified). Success shows
+a receipt with a reference code and a stamped **402 → 200**.
+
+</Steps>
+
+## The honest edges
+
+| State | When | What the buyer sees |
+| --- | --- | --- |
+| `insufficient` | Balance below amount | Exact shortfall; in test mode, an in-flow [test funds grant](/docs/test-funds) |
+| `add-funds` | Buyer opts to top up | Their real deposit address + balance recheck |
+| `device-approval` | New device | "Approve from your inbox" — continues automatically |
+| `stuck` | Confirming exceeded 20s | "Still working — money may be in flight." Never claims failure while a transaction may exist |
+| `error` | Known pre-broadcast failure | "Nothing has been charged" — only promised when provably true |
+
+<Callout type="warn">
+  The checkout only says "Nothing has been charged" for failures known to
+  happen before broadcast. After broadcast, it says what it knows and keeps
+  reconciling — an honest "in flight" beats a comforting lie.
+</Callout>

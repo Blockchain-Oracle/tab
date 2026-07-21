@@ -8,15 +8,26 @@ const TOKEN_IMPLEMENTATION_URL = new URL("./tokens.ts", import.meta.url);
 const THEME_STYLES_URL = new URL("./theme.css", import.meta.url);
 
 const expectedPalette = {
-  cobalt: "#3157E8",
-  danger: "#B83F4A",
-  emerald: "#1F7A4D",
-  ink: "#15130F",
-  line: "#DDD6C8",
-  muted: "#6C665C",
-  paper: "#F4F0E7",
-  surface: "#FFFCF7",
-  testnetAmber: "#9A6400",
+  bone: "#F2EFE9",
+  boneMuted: "#A9A399",
+  boneSoft: "#DFDACF",
+  danger: "#B3382F",
+  dangerBright: "#E56A5E",
+  ink: "#161310",
+  inkSoft: "#2B2721",
+  line: "#E7E3DA",
+  muted: "#6E6961",
+  night: "#141210",
+  nightLine: "#302C26",
+  nightRaised: "#1C1915",
+  paper: "#FAF8F3",
+  surface: "#FFFFFF",
+  testnetAmber: "#8F6205",
+  testnetAmberBright: "#E3AA43",
+  verified: "#0E7A45",
+  verifiedBright: "#3FC98A",
+  vermilion: "#E8501F",
+  vermilionBright: "#FF6B35",
 };
 
 const expectedFontRoles = {
@@ -26,46 +37,58 @@ const expectedFontRoles = {
 };
 
 const expectedLightTheme = {
-  action: "#3157E8",
-  canvas: "#F4F0E7",
-  line: "#DDD6C8",
-  modeLive: "#15130F",
-  modeTest: "#9A6400",
-  statusDanger: "#B83F4A",
-  statusStale: "#6C665C",
-  statusSuccess: "#1F7A4D",
-  statusUnavailable: "#6C665C",
-  statusWarning: "#9A6400",
-  surface: "#FFFCF7",
-  text: "#15130F",
-  textMuted: "#6C665C",
+  accent: "#E8501F",
+  action: "#161310",
+  actionHover: "#2B2721",
+  actionText: "#FAF8F3",
+  canvas: "#FAF8F3",
+  focusColor: "#161310",
+  line: "#E7E3DA",
+  modeLive: "#161310",
+  modeTest: "#8F6205",
+  statusDanger: "#B3382F",
+  statusStale: "#6E6961",
+  statusSuccess: "#0E7A45",
+  statusUnavailable: "#6E6961",
+  statusWarning: "#8F6205",
+  surface: "#FFFFFF",
+  text: "#161310",
+  textMuted: "#6E6961",
 };
 
 const expectedDarkTheme = {
-  action: "#3157E8",
-  canvas: "#15130F",
-  line: "#6C665C",
-  modeLive: "#FFFCF7",
-  modeTest: "#9A6400",
-  statusDanger: "#B83F4A",
-  statusStale: "#DDD6C8",
-  statusSuccess: "#1F7A4D",
-  statusUnavailable: "#DDD6C8",
-  statusWarning: "#9A6400",
-  surface: "#15130F",
-  text: "#FFFCF7",
-  textMuted: "#DDD6C8",
+  accent: "#FF6B35",
+  action: "#F2EFE9",
+  actionHover: "#DFDACF",
+  actionText: "#141210",
+  canvas: "#141210",
+  focusColor: "#F2EFE9",
+  line: "#302C26",
+  modeLive: "#F2EFE9",
+  modeTest: "#E3AA43",
+  statusDanger: "#E56A5E",
+  statusStale: "#A9A399",
+  statusSuccess: "#3FC98A",
+  statusUnavailable: "#A9A399",
+  statusWarning: "#E3AA43",
+  surface: "#1C1915",
+  text: "#F2EFE9",
+  textMuted: "#A9A399",
 };
 
 const expectedLightVariables = {
-  "--tab-action": "var(--tab-color-cobalt)",
+  "--tab-accent": "var(--tab-color-vermilion)",
+  "--tab-action": "var(--tab-color-ink)",
+  "--tab-action-hover": "var(--tab-color-ink-soft)",
+  "--tab-action-text": "var(--tab-color-paper)",
   "--tab-canvas": "var(--tab-color-paper)",
+  "--tab-focus-color": "var(--tab-color-ink)",
   "--tab-line": "var(--tab-color-line)",
   "--tab-mode-live": "var(--tab-color-ink)",
   "--tab-mode-test": "var(--tab-color-testnet-amber)",
   "--tab-status-danger": "var(--tab-color-danger)",
   "--tab-status-stale": "var(--tab-color-muted)",
-  "--tab-status-success": "var(--tab-color-emerald)",
+  "--tab-status-success": "var(--tab-color-verified)",
   "--tab-status-unavailable": "var(--tab-color-muted)",
   "--tab-status-warning": "var(--tab-color-testnet-amber)",
   "--tab-surface": "var(--tab-color-surface)",
@@ -75,19 +98,23 @@ const expectedLightVariables = {
 };
 
 const expectedDarkVariables = {
-  "--tab-action": "var(--tab-color-cobalt)",
-  "--tab-canvas": "var(--tab-color-ink)",
-  "--tab-line": "var(--tab-color-muted)",
-  "--tab-mode-live": "var(--tab-color-surface)",
-  "--tab-mode-test": "var(--tab-color-testnet-amber)",
-  "--tab-status-danger": "var(--tab-color-danger)",
-  "--tab-status-stale": "var(--tab-color-line)",
-  "--tab-status-success": "var(--tab-color-emerald)",
-  "--tab-status-unavailable": "var(--tab-color-line)",
-  "--tab-status-warning": "var(--tab-color-testnet-amber)",
-  "--tab-surface": "var(--tab-color-ink)",
-  "--tab-text": "var(--tab-color-surface)",
-  "--tab-text-muted": "var(--tab-color-line)",
+  "--tab-accent": "var(--tab-color-vermilion-bright)",
+  "--tab-action": "var(--tab-color-bone)",
+  "--tab-action-hover": "var(--tab-color-bone-soft)",
+  "--tab-action-text": "var(--tab-color-night)",
+  "--tab-canvas": "var(--tab-color-night)",
+  "--tab-focus-color": "var(--tab-color-bone)",
+  "--tab-line": "var(--tab-color-night-line)",
+  "--tab-mode-live": "var(--tab-color-bone)",
+  "--tab-mode-test": "var(--tab-color-testnet-amber-bright)",
+  "--tab-status-danger": "var(--tab-color-danger-bright)",
+  "--tab-status-stale": "var(--tab-color-bone-muted)",
+  "--tab-status-success": "var(--tab-color-verified-bright)",
+  "--tab-status-unavailable": "var(--tab-color-bone-muted)",
+  "--tab-status-warning": "var(--tab-color-testnet-amber-bright)",
+  "--tab-surface": "var(--tab-color-night-raised)",
+  "--tab-text": "var(--tab-color-bone)",
+  "--tab-text-muted": "var(--tab-color-bone-muted)",
   "color-scheme": "dark",
 };
 
@@ -147,7 +174,7 @@ async function loadImplementation() {
   }
 }
 
-test("financial-atelier tokens are exact, themed, accessible, and motion-aware", async () => {
+test("ink-and-evidence tokens are exact, themed, accessible, and motion-aware", async () => {
   const implementation = await loadImplementation();
   const themeProvider = await import(THEME_PROVIDER_URL.href);
   const css = await readFile(THEME_STYLES_URL, "utf8");
@@ -158,29 +185,40 @@ test("financial-atelier tokens are exact, themed, accessible, and motion-aware",
   assert.deepEqual(implementation.TAB_LIGHT_THEME, expectedLightTheme);
   assert.deepEqual(implementation.TAB_DARK_THEME, expectedDarkTheme);
   assert.deepEqual(implementation.TAB_FOCUS_TOKENS, {
-    color: "#3157E8",
     offset: "3px",
     width: "2px",
   });
+  assert.deepEqual(implementation.TAB_RADIUS_TOKENS, {
+    l: "16px",
+    m: "12px",
+    pill: "999px",
+    s: "8px",
+  });
+  assert.deepEqual(Object.keys(implementation.TAB_SHADOW_TOKENS).sort(), ["raise", "sheet"]);
   assert.deepEqual(Object.keys(implementation.TAB_MOTION_TOKENS).sort(), [
     "durationBase",
     "durationFast",
     "durationSlow",
     "easing",
+    "easingSettle",
     "flowlineDrawDuration",
+    "stampDuration",
     "travelDistance",
   ]);
   assert.match(implementation.TAB_MOTION_TOKENS.durationFast, /^\d+ms$/);
   assert.match(implementation.TAB_MOTION_TOKENS.durationBase, /^\d+ms$/);
   assert.match(implementation.TAB_MOTION_TOKENS.durationSlow, /^\d+ms$/);
   assert.match(implementation.TAB_MOTION_TOKENS.easing, /^(cubic-bezier|linear)\(/);
+  assert.match(implementation.TAB_MOTION_TOKENS.easingSettle, /^(cubic-bezier|linear)\(/);
   assert.match(implementation.TAB_MOTION_TOKENS.flowlineDrawDuration, /^\d+ms$/);
+  assert.match(implementation.TAB_MOTION_TOKENS.stampDuration, /^\d+ms$/);
   assert.match(implementation.TAB_MOTION_TOKENS.travelDistance, /^\d+px$/);
   assert.deepEqual(implementation.TAB_REDUCED_MOTION_TOKENS, {
     durationBase: "1ms",
     durationFast: "1ms",
     durationSlow: "1ms",
     flowlineDrawDuration: "1ms",
+    stampDuration: "1ms",
     travelDistance: "0px",
   });
 
@@ -191,6 +229,8 @@ test("financial-atelier tokens are exact, themed, accessible, and motion-aware",
     implementation.TAB_LIGHT_THEME,
     implementation.TAB_DARK_THEME,
     implementation.TAB_FOCUS_TOKENS,
+    implementation.TAB_RADIUS_TOKENS,
+    implementation.TAB_SHADOW_TOKENS,
     implementation.TAB_MOTION_TOKENS,
     implementation.TAB_REDUCED_MOTION_TOKENS,
   ]) {
@@ -198,28 +238,46 @@ test("financial-atelier tokens are exact, themed, accessible, and motion-aware",
   }
 
   const baseDeclarations = assertDeclarations(css, "[data-tab-ui]", {
-    "--tab-color-cobalt": "#3157E8",
-    "--tab-color-danger": "#B83F4A",
-    "--tab-color-emerald": "#1F7A4D",
-    "--tab-color-ink": "#15130F",
-    "--tab-color-line": "#DDD6C8",
-    "--tab-color-muted": "#6C665C",
-    "--tab-color-paper": "#F4F0E7",
-    "--tab-color-surface": "#FFFCF7",
-    "--tab-color-testnet-amber": "#9A6400",
-    "--tab-focus-color": "var(--tab-color-cobalt)",
+    "--tab-color-bone": "#F2EFE9",
+    "--tab-color-bone-muted": "#A9A399",
+    "--tab-color-bone-soft": "#DFDACF",
+    "--tab-color-danger": "#B3382F",
+    "--tab-color-danger-bright": "#E56A5E",
+    "--tab-color-vermilion": "#E8501F",
+    "--tab-color-vermilion-bright": "#FF6B35",
+    "--tab-color-ink": "#161310",
+    "--tab-color-ink-soft": "#2B2721",
+    "--tab-color-line": "#E7E3DA",
+    "--tab-color-muted": "#6E6961",
+    "--tab-color-night": "#141210",
+    "--tab-color-night-line": "#302C26",
+    "--tab-color-night-raised": "#1C1915",
+    "--tab-color-paper": "#FAF8F3",
+    "--tab-color-surface": "#FFFFFF",
+    "--tab-color-testnet-amber": "#8F6205",
+    "--tab-color-testnet-amber-bright": "#E3AA43",
+    "--tab-color-verified": "#0E7A45",
+    "--tab-color-verified-bright": "#3FC98A",
     "--tab-focus-offset": "3px",
     "--tab-focus-width": "2px",
     "--tab-font-evidence": '"Geist Mono", "SFMono-Regular", Consolas, monospace',
     "--tab-font-marketing-emphasis": '"Instrument Serif", Georgia, serif',
     "--tab-font-product": '"Instrument Sans", "Helvetica Neue", Arial, sans-serif',
+    "--tab-radius-l": "16px",
+    "--tab-radius-m": "12px",
+    "--tab-radius-pill": "999px",
+    "--tab-radius-s": "8px",
   });
   assert.match(baseDeclarations["--tab-motion-duration-fast"], /^\d+ms$/);
   assert.match(baseDeclarations["--tab-motion-duration-base"], /^\d+ms$/);
   assert.match(baseDeclarations["--tab-motion-duration-slow"], /^\d+ms$/);
   assert.match(baseDeclarations["--tab-motion-easing"], /^(cubic-bezier|linear)\(/);
+  assert.match(baseDeclarations["--tab-motion-easing-settle"], /^(cubic-bezier|linear)\(/);
   assert.match(baseDeclarations["--tab-flowline-draw-duration"], /^\d+ms$/);
+  assert.match(baseDeclarations["--tab-stamp-duration"], /^\d+ms$/);
   assert.match(baseDeclarations["--tab-motion-travel-distance"], /^\d+px$/);
+  assert.equal(typeof baseDeclarations["--tab-shadow-raise"], "string");
+  assert.equal(typeof baseDeclarations["--tab-shadow-sheet"], "string");
 
   assertDeclarations(css, '[data-tab-ui][data-tab-theme="light"]', expectedLightVariables);
   assertDeclarations(css, '[data-tab-ui][data-tab-theme="dark"]', expectedDarkVariables);
@@ -244,6 +302,7 @@ test("financial-atelier tokens are exact, themed, accessible, and motion-aware",
     "--tab-motion-duration-fast": "1ms",
     "--tab-motion-duration-slow": "1ms",
     "--tab-motion-travel-distance": "0px",
+    "--tab-stamp-duration": "1ms",
   });
 
   const defaultTheme = themeProvider.TabThemeProvider({ children: "Tab" });

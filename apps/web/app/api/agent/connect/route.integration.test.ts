@@ -27,7 +27,7 @@ describe("POST /api/agent/connect with real PostgreSQL", () => {
     const bodies = await Promise.all([
       POST(request({ transport: "mcp" })),
       POST(request({ transport: "mcp" }, "not-a-key")),
-      POST(request({ transport: "mcp" }, `leash_sk_${"z".repeat(43)}`)),
+      POST(request({ transport: "mcp" }, `agent_sk_${"z".repeat(43)}`)),
       POST(request({ transport: "mcp" }, provisioned.secret)),
     ]);
 

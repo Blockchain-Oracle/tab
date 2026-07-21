@@ -20,7 +20,7 @@ export function OverviewReceipts({
           <span>RECENT PAYMENT ATTEMPTS</span>
           <h2>Recent payment attempts</h2>
         </div>
-        <Link href={`/leash/payments${query}`}>View all payments →</Link>
+        <Link href={`/agents/payments${query}`}>View all payments →</Link>
       </div>
       {receipts.length === 0 ? (
         <p className={receiptStyles.empty}>No payment attempts yet.</p>
@@ -28,7 +28,7 @@ export function OverviewReceipts({
         <ul className={receiptStyles.list}>
           {receipts.map((receipt) => (
             <li key={receipt.id}>
-              <Link href={`/leash/receipts/${receipt.id}${query}`}>
+              <Link href={`/agents/receipts/${receipt.id}${query}`}>
                 <span className={receiptStyles.amount}>{receipt.amountDisplay}</span>
                 <span className={receiptStyles.resource}>
                   {receipt.resourceUrl ?? receipt.resourceHost ?? "Resource unavailable"}

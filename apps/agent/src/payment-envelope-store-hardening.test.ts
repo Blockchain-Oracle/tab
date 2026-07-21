@@ -251,7 +251,7 @@ describe("PaymentEnvelopeStore hardening", () => {
   });
 
   it("resolves an explicit or XDG-backed default state root", () => {
-    expect(defaultPaymentStateDirectory({ LEASH_STATE_DIRECTORY: "/private/tab" }, "/home/a")).toBe(
+    expect(defaultPaymentStateDirectory({ TAB_STATE_DIRECTORY: "/private/tab" }, "/home/a")).toBe(
       "/private/tab",
     );
     expect(defaultPaymentStateDirectory({ XDG_STATE_HOME: "/state" }, "/home/a")).toBe(

@@ -22,13 +22,13 @@
 
 .header > p:last-child {
   margin-top: 5px;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 13px;
 }
 
 .eyebrow,
 .cardLabel {
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   font-weight: 650;
   letter-spacing: 0.07em;
@@ -49,7 +49,7 @@
 
 .sectionHeading p {
   margin-top: 4px;
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
   line-height: 1.45;
 }
@@ -65,13 +65,13 @@
 }
 
 .readChip {
-  background: #e7f3ef;
-  color: #17503a;
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  color: var(--tab-status-success);
 }
 
 .blockedChip {
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 
 .balanceGrid {
@@ -83,9 +83,9 @@
 .unifiedCard,
 .floatCard,
 .actionGrid article {
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .unifiedCard,
@@ -94,11 +94,11 @@
 }
 
 .unifiedCard {
-  border-top: 3px solid #206b4e;
+  border-top: 3px solid var(--tab-status-success);
 }
 
 .floatCard {
-  border-top: 3px solid #d6d3c8;
+  border-top: 3px solid var(--tab-line);
 }
 
 .unifiedCard .cardLabel {
@@ -111,16 +111,16 @@
 .cardLabel b {
   padding: 3px 6px;
   border-radius: 5px;
-  background: #f0f6f3;
-  color: #206b4e;
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  color: var(--tab-status-success);
   font-size: 9.5px;
   letter-spacing: 0;
   text-transform: none;
 }
 
 .cardLabel .lowLabel {
-  background: #fff0d8;
-  color: #8a5711;
+  background: color-mix(in srgb, var(--tab-mode-test) 14%, transparent);
+  color: var(--tab-status-warning);
 }
 
 .unifiedCard > strong,
@@ -135,7 +135,7 @@
 .unifiedCard p,
 .floatCard p {
   margin-top: 5px;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
   line-height: 1.45;
 }
@@ -145,7 +145,7 @@
   display: block;
   margin-top: 13px;
   overflow: hidden;
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -169,7 +169,7 @@
 
 .actionGrid p {
   margin-top: 7px;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
   line-height: 1.5;
 }
@@ -177,10 +177,10 @@
 .actionGrid button {
   height: 34px;
   margin-top: 18px;
-  border: 1px solid #dbd9d0;
+  border: 1px solid var(--tab-line);
   border-radius: 8px;
-  background: #f4f3ee;
-  color: #68665f;
+  background: var(--tab-canvas);
+  color: var(--tab-text-muted);
   font-size: 11.5px;
   font-weight: 650;
 }

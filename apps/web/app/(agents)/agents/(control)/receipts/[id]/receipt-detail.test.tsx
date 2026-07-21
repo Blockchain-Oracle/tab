@@ -14,6 +14,8 @@ function receipt(status: ReceiptItem["status"]): ReceiptItem {
     amountDisplay: "$0.42",
     amountUsd: "0.420000",
     asset: "USDC",
+    authorizationNonce: "0xab",
+    authorizationValidBefore: "2026-07-16T11:00:00.000Z",
     capContext: {
       capAtomic: "1000000",
       committedBeforeAtomic: blocked ? "680000" : "500000",
@@ -27,7 +29,7 @@ function receipt(status: ReceiptItem["status"]): ReceiptItem {
     network: { id: "eip155:8453", label: "Base", target: status === "blocked" },
     origin: { clientName: "Claude Code", toolName: "search", transport: "mcp" },
     payTo: "0x1111111111111111111111111111111111111111",
-    reason: status === "blocked" ? "LEASH_CAP_EXCEEDED" : null,
+    reason: status === "blocked" ? "CAP_EXCEEDED" : null,
     resourceHost: "api.example.test",
     resourceUrl: "https://api.example.test/search",
     settledAt: settled ? "2026-07-17T10:00:01.000Z" : null,

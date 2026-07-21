@@ -30,7 +30,7 @@ vi.mock("./owner-session", () => ({
 
 import { getCurrentOwner, requireCurrentOwner } from "./current-owner";
 
-describe("current Leash owner server helper", () => {
+describe("current Agent owner server helper", () => {
   beforeEach(() => {
     mocks.cookieValue = undefined;
     mocks.loadOwnerSession.mockReset();
@@ -58,9 +58,9 @@ describe("current Leash owner server helper", () => {
     await expect(getCurrentOwner()).resolves.toBeUndefined();
   });
 
-  it("redirects an unauthenticated owner to the dedicated Leash login", async () => {
-    await expect(requireCurrentOwner()).rejects.toThrow("redirect:/leash/login");
-    expect(mocks.redirect).toHaveBeenCalledWith("/leash/login");
+  it("redirects an unauthenticated owner to the dedicated Agent login", async () => {
+    await expect(requireCurrentOwner()).rejects.toThrow("redirect:/agents/login");
+    expect(mocks.redirect).toHaveBeenCalledWith("/agents/login");
   });
 
   it("does not hide unexpected owner lookup failures", async () => {

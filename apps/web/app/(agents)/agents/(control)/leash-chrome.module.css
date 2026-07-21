@@ -1,0 +1,125 @@
+.productNote {
+  color: var(--tab-text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+  padding: 0 10px;
+}
+
+.accountArea {
+  display: grid;
+  gap: 8px;
+}
+
+.accountArea :global([data-tab-theme-toggle]) {
+  background: transparent;
+  border: 1px solid var(--tab-line);
+  border-radius: var(--tab-radius-pill);
+  color: var(--tab-text-muted);
+  font-size: 12px;
+  font-weight: 550;
+  padding: 5px 12px;
+  width: fit-content;
+}
+
+.accountArea :global([data-tab-theme-toggle]):hover {
+  border-color: var(--tab-text-muted);
+  color: var(--tab-text);
+}
+
+.accountMenu {
+  position: relative;
+}
+
+.accountSummary {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--tab-radius-s);
+  cursor: pointer;
+  display: flex;
+  gap: 9px;
+  list-style: none;
+  padding: 7px 10px;
+}
+
+.accountSummary::-webkit-details-marker {
+  display: none;
+}
+
+.accountSummary:hover {
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+}
+
+.avatar {
+  align-items: center;
+  background: color-mix(in srgb, var(--tab-text) 8%, transparent);
+  border-radius: 50%;
+  color: var(--tab-text);
+  display: flex;
+  font-size: 11px;
+  font-weight: 650;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+
+.accountText {
+  display: grid;
+  min-width: 0;
+}
+
+.accountName {
+  color: var(--tab-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.accountEmail {
+  color: var(--tab-text-muted);
+  font-family: var(--tab-font-evidence);
+  font-size: 11.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuMark {
+  color: var(--tab-text-muted);
+  margin-left: auto;
+}
+
+.accountPopover {
+  background: var(--tab-surface);
+  border: 1px solid var(--tab-line);
+  border-radius: var(--tab-radius-m);
+  bottom: calc(100% + 6px);
+  box-shadow: var(--tab-shadow-raise);
+  display: grid;
+  gap: 6px;
+  left: 0;
+  padding: 8px;
+  position: absolute;
+  right: 0;
+  z-index: 30;
+}
+
+.accountPopover button {
+  background: transparent;
+  border: 0;
+  border-radius: var(--tab-radius-s);
+  color: var(--tab-text);
+  font-size: 13px;
+  padding: 7px 9px;
+  text-align: left;
+}
+
+.accountPopover button:hover {
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+}
+
+.accountPopover p {
+  color: var(--tab-status-danger);
+  font-size: 12px;
+  margin: 0;
+  padding: 0 9px 4px;
+}

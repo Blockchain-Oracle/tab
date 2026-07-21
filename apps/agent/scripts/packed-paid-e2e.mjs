@@ -14,7 +14,7 @@ if (!executable || !consumerDirectory || !stateDirectory) {
 }
 
 const account = privateKeyToAccount(`0x${"31".repeat(32)}`);
-const apiKey = `leash_sk_${"p".repeat(43)}`;
+const apiKey = `agent_sk_${"p".repeat(43)}`;
 const transaction = `0x${"ab".repeat(32)}`;
 const paymentRequired = {
   accepts: [
@@ -50,10 +50,10 @@ function mcpProcess(origin) {
     cwd: consumerDirectory,
     env: {
       ...process.env,
-      LEASH_ALLOW_DEVELOPMENT_LOOPBACK: "1",
-      LEASH_API_BASE_URL: origin,
-      LEASH_API_KEY: apiKey,
-      LEASH_STATE_DIRECTORY: stateDirectory,
+      TAB_ALLOW_DEVELOPMENT_LOOPBACK: "1",
+      TAB_API_BASE_URL: origin,
+      TAB_AGENT_KEY: apiKey,
+      TAB_STATE_DIRECTORY: stateDirectory,
     },
     stdio: ["pipe", "pipe", "pipe"],
   });

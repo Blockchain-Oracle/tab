@@ -10,6 +10,41 @@ const statusCopy = {
   settled: "Settled",
 };
 
+const FLOW_STAGES = ["402", "Policy", "Sign", "Settle"] as const;
+
+/**
+ * Truthful per-stage states derived from the receipt status: a receipt only
+ * exists after a 402 was observed; `blocked` stopped at policy before any
+ * signature; `pending` has provably passed 402/policy/sign and awaits
+ * settlement; `settled`/`failed` resolve the last node.
+ */
+function flowStates(status: ReceiptItem["status"]) {
+  switch (status) {
+    case "blocked":
+      return ["done", "stop", "todo", "todo"] as const;
+    case "pending":
+      return ["done", "done", "done", "inflight"] as const;
+    case "settled":
+      return ["done", "done", "done", "settled"] as const;
+    case "failed":
+      return ["done", "done", "done", "failed"] as const;
+  }
+}
+
+function ReceiptFlowline({ animate, status }: { animate: boolean; status: ReceiptItem["status"] }) {
+  const states = flowStates(status);
+  return (
+    <div aria-hidden="true" className={styles.flowline} data-animate={animate ? "" : undefined}>
+      {FLOW_STAGES.map((label, index) => (
+        <span className={styles.flowStage} data-state={states[index]} key={label}>
+          <span className={styles.flowBar} style={{ animationDelay: `${index * 90}ms` }} />
+          <span className={styles.flowLabel}>{label}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function formatTime(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
@@ -36,7 +71,7 @@ export function ReceiptRow({
   receipt: ReceiptItem;
 }) {
   const query = new URLSearchParams({ agentId }).toString();
-  const detailHref = `/leash/receipts/${receipt.id}?${query}`;
+  const detailHref = `/agents/receipts/${receipt.id}?${query}`;
   const explorer =
     (receipt.status === "settled" || receipt.status === "failed") && receipt.txHash
       ? receipt.explorer
@@ -75,6 +110,7 @@ export function ReceiptRow({
           {formatTime(receipt.createdAt)} UTC
         </time>
       </div>
+      <ReceiptFlowline animate={isNewest} status={receipt.status} />
     </li>
   );
 }

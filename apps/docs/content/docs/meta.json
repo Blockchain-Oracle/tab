@@ -1,0 +1,17 @@
+{
+  "title": "Tab",
+  "pages": [
+    "index",
+    "architecture",
+    "quickstart",
+    "paybutton",
+    "checkout-states",
+    "showcase",
+    "api-reference",
+    "webhooks",
+    "agents",
+    "test-funds",
+    "networks",
+    "security"
+  ]
+}

@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     target = parseAgentTarget({ agentId: request.nextUrl.searchParams.get("agentId") });
   } catch (error) {
     if (error instanceof InvalidCapInputError) {
-      return leashError("INVALID_AGENT", "Choose a valid Leash agent.", 400);
+      return leashError("INVALID_AGENT", "Choose a valid agent.", 400);
     }
     throw error;
   }

@@ -7,7 +7,7 @@
 .card h2,
 .recentCard h2 {
   margin: 0;
-  color: #1c1b18;
+  color: var(--tab-text);
   font-weight: 600;
 }
 
@@ -18,7 +18,7 @@
 
 .header p,
 .card p {
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12.5px;
   line-height: 1.55;
 }
@@ -47,20 +47,20 @@
 }
 
 .successNotice {
-  background: #e8f3ec;
-  color: #1d6237;
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  color: var(--tab-text);
 }
 
 .errorNotice {
-  background: #faecec;
-  color: #8e2f34;
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, transparent);
+  color: var(--tab-status-danger);
 }
 
 .card,
 .recentCard {
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .card {
@@ -91,10 +91,10 @@
   height: 42px;
   flex: 1;
   padding: 0 13px;
-  border: 1px solid #dbd9d0;
+  border: 1px solid var(--tab-line);
   border-radius: 9px;
-  background: #fff;
-  color: #1c1b18;
+  background: var(--tab-surface);
+  color: var(--tab-text);
   font:
     12.5px var(--font-geist-mono),
     monospace;
@@ -102,17 +102,17 @@
 }
 
 .urlRow input:focus {
-  border-color: #3b5bd9;
+  border-color: var(--tab-text);
   box-shadow: 0 0 0 3px rgb(59 91 217 / 12%);
 }
 
 .card button {
   height: 32px;
   padding: 0 12px;
-  border: 1px solid #dbd9d0;
+  border: 1px solid var(--tab-line);
   border-radius: 8px;
-  background: #fff;
-  color: #5f5d55;
+  background: var(--tab-surface);
+  color: var(--tab-text-muted);
   font: inherit;
   font-size: 12px;
   font-weight: 500;
@@ -127,10 +127,10 @@
 
 .card .primaryButton {
   height: 42px;
-  border-color: #3b5bd9;
+  border-color: var(--tab-text);
   border-radius: 9px;
-  background: #3b5bd9;
-  color: #fff;
+  background: var(--tab-text);
+  color: var(--tab-surface);
 }
 
 .cardHeading,
@@ -148,8 +148,8 @@
 }
 
 .card .dangerButton {
-  border-color: #f0d5d6;
-  color: #b4383d;
+  border-color: color-mix(in srgb, var(--tab-status-danger) 16%, transparent);
+  color: var(--tab-status-danger);
 }
 
 .endpointField {
@@ -160,9 +160,9 @@
   gap: 16px;
   margin-top: 10px;
   padding: 8px 13px;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 9px;
-  background: #f8f7f4;
+  background: var(--tab-canvas);
 }
 
 .endpointField code {
@@ -184,15 +184,15 @@
 }
 
 .listening {
-  color: #257a46;
+  color: var(--tab-text);
 }
 
 .awaiting {
-  color: #96650f;
+  color: var(--tab-status-warning);
 }
 
 .failing {
-  color: #b4383d;
+  color: var(--tab-status-danger);
 }
 
 .listening i,
@@ -207,7 +207,7 @@
 .secretRow {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #f0eee8;
+  border-top: 1px solid var(--tab-canvas);
 }
 
 .secretRow p {
@@ -219,7 +219,7 @@
 
 .secretRow span,
 .retryNote {
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
 }
 
@@ -234,11 +234,11 @@
 
 .recentCard header {
   padding: 14px 18px;
-  border-bottom: 1px solid #f0eee8;
+  border-bottom: 1px solid var(--tab-canvas);
 }
 
 .recentCard a {
-  color: #3b5bd9;
+  color: var(--tab-text);
   font-size: 11.5px;
   font-weight: 500;
   text-decoration: none;

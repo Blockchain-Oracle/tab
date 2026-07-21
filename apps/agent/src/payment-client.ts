@@ -2,7 +2,7 @@ import { x402Client } from "@x402/core/client";
 import { ExactEvmScheme } from "@x402/evm/exact/client";
 
 import type { PaymentProfile } from "./payment-profile.js";
-import type { LeashRemoteSigner } from "./remote-signer.js";
+import type { TabRemoteSigner } from "./remote-signer.js";
 import {
   ARBITRUM_NETWORK,
   BASE_NETWORK,
@@ -10,10 +10,7 @@ import {
   selectLeashPaymentRequirements,
 } from "./routing.js";
 
-export function createLeashPaymentClient(
-  signer: LeashRemoteSigner,
-  paymentProfile: PaymentProfile,
-) {
+export function createLeashPaymentClient(signer: TabRemoteSigner, paymentProfile: PaymentProfile) {
   const scheme = new ExactEvmScheme(signer);
   const client = new x402Client((version, requirements) =>
     selectLeashPaymentRequirements(paymentProfile, version, requirements),

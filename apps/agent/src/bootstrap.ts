@@ -42,7 +42,7 @@ function errorCode(value: unknown) {
 function invalidConnectResponse(): never {
   throw new LeashConnectError(
     "INVALID_CONNECT_RESPONSE",
-    "The Leash control plane returned an invalid response.",
+    "The agent control plane returned an invalid response.",
     502,
   );
 }
@@ -81,7 +81,7 @@ async function responseJson(response: Response, signal: AbortSignal) {
     cancelReader();
     throw new LeashConnectError(
       "CONNECT_FAILED",
-      "The Leash control plane could not be reached.",
+      "The agent control plane could not be reached.",
       503,
     );
   } finally {
@@ -129,7 +129,7 @@ export async function connectLeashAgent(
   } catch {
     throw new LeashConnectError(
       "CONNECT_FAILED",
-      "The Leash control plane could not be reached.",
+      "The agent control plane could not be reached.",
       503,
     );
   }
@@ -138,7 +138,7 @@ export async function connectLeashAgent(
   if (!response.ok) {
     throw new LeashConnectError(
       errorCode(body),
-      "The Leash control plane rejected the connection.",
+      "The agent control plane rejected the connection.",
       response.status,
     );
   }
@@ -150,7 +150,7 @@ export async function connectLeashAgent(
   ) {
     throw new LeashConnectError(
       "INVALID_CONNECT_RESPONSE",
-      "The Leash control plane returned an invalid response.",
+      "The agent control plane returned an invalid response.",
       502,
     );
   }
@@ -158,7 +158,7 @@ export async function connectLeashAgent(
   if (address !== null && (typeof address !== "string" || !isAddress(address))) {
     throw new LeashConnectError(
       "INVALID_CONNECT_RESPONSE",
-      "The Leash control plane returned an invalid response.",
+      "The agent control plane returned an invalid response.",
       502,
     );
   }

@@ -1,7 +1,6 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { createServer } from "node:http";
-
-import { LeashRemoteSigner } from "@tab/agent";
+import { TabRemoteSigner } from "@runtab/mcp";
 import { NextRequest } from "next/server";
 import { encodeAbiParameters, encodeEventTopics } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
@@ -229,7 +228,7 @@ describe("agent reporter -> web settlement route contract", () => {
     if (!receipt) throw new Error("Expected receipt");
     currentReceiptId = receipt.id;
 
-    const signer = new LeashRemoteSigner({
+    const signer = new TabRemoteSigner({
       address: account.address,
       apiBaseUrl: apiOrigin,
       apiKey: key.secret,
@@ -278,7 +277,7 @@ describe("agent reporter -> web settlement route contract", () => {
         success: true,
         transaction,
       },
-    } satisfies Parameters<LeashRemoteSigner["reportPaymentObservation"]>[0];
+    } satisfies Parameters<TabRemoteSigner["reportPaymentObservation"]>[0];
 
     await signer.reportPaymentObservation(context);
     await signer.flushPaymentObservations();

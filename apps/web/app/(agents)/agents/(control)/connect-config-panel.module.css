@@ -1,8 +1,8 @@
 .card {
   padding: 18px 20px;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .heading {
@@ -17,8 +17,8 @@
   height: 22px;
   place-items: center;
   border-radius: 50%;
-  background: #e7f3ef;
-  color: #17503a;
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  color: var(--tab-text);
   font-size: 10.5px;
   font-weight: 700;
 }
@@ -43,21 +43,21 @@
 }
 
 .packageNote {
-  border: 1px solid #f2e3c2;
-  background: #fbf1dc;
-  color: #7a5410;
+  border: 1px solid color-mix(in srgb, var(--tab-mode-test) 22%, transparent);
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 
 .configBlocked {
-  border: 1px solid #f0d5d6;
-  background: #faecec;
-  color: #8e2f34;
+  border: 1px solid color-mix(in srgb, var(--tab-status-danger) 16%, transparent);
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, transparent);
+  color: var(--tab-status-danger);
 }
 
 .packageNote span,
 .configBlocked span,
 .modes p {
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   line-height: 1.5;
 }
 
@@ -89,8 +89,8 @@
   padding: 13px;
   overflow-x: auto;
   border-radius: 9px;
-  background: #26251f;
-  color: #e4e2d8;
+  background: var(--tab-action-hover);
+  color: var(--tab-line);
   font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
   font-size: 11px;
   line-height: 1.6;

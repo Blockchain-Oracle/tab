@@ -1,0 +1,31 @@
+---
+title: Component showcase
+description: Every checkout state, rendered live from the real SDK components — click any card to flip it and see the code.
+---
+
+These are not screenshots — every card below renders the **actual
+components** from `@runtab/sdk`, the same code that runs inside a real
+checkout. Every value on the cards (amounts, addresses, `you@example.com`)
+is sample display data — nothing here touches the network. Use the
+**Code** button on any card to flip it and copy the JSX.
+
+<ShowcaseGallery />
+
+<Callout type="info">
+  The full interactive checkout — with a real intent, real balance reads,
+  and in-flow test funds — runs at `/demo` on your app origin.
+</Callout>
+
+## Theming
+
+Every component above responds to the `appearance` prop on `<PayButton>`:
+
+```tsx
+<PayButton
+  // …
+  appearance={{
+    actionColor: "#161310", // primary pay button
+    accentColor: "#0e4fd7", // progress / emphasis
+  }}
+/>
+```

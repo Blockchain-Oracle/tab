@@ -42,7 +42,7 @@ function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export class LeashRemoteSigner implements ClientEvmSigner {
+export class TabRemoteSigner implements ClientEvmSigner {
   readonly address: `0x${string}`;
   readonly #apiKey: string;
   readonly #correlations: PaymentCorrelations;
@@ -58,8 +58,8 @@ export class LeashRemoteSigner implements ClientEvmSigner {
   readonly #signTimeoutMs: number;
 
   constructor(options: RemoteSignerOptions) {
-    if (!isAddress(options.address)) throw new Error("Leash signer address is invalid");
-    if (!options.apiKey) throw new Error("LEASH_API_KEY is required");
+    if (!isAddress(options.address)) throw new Error("Agent signer address is invalid");
+    if (!options.apiKey) throw new Error("TAB_AGENT_KEY is required");
     this.address = options.address;
     this.#apiKey = options.apiKey;
     const apiBaseUrl = validateControlPlaneOrigin(options.apiBaseUrl);
@@ -86,7 +86,7 @@ export class LeashRemoteSigner implements ClientEvmSigner {
       !Number.isSafeInteger(this.#signTimeoutMs) ||
       this.#signTimeoutMs < 1
     ) {
-      throw new Error("Leash result-report timeout is invalid");
+      throw new Error("Agent result-report timeout is invalid");
     }
     this.#observationReporter = new PaymentObservationReporter({
       apiKey: this.#apiKey,

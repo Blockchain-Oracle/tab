@@ -9,16 +9,10 @@ import {
 } from "../../../lib/auth/session-principal";
 import { getServerDatabase } from "../../../lib/db/server";
 import { updateMerchantSettings } from "../../../lib/db/update-merchant-settings";
+import { jsonError } from "../../../lib/http/responses";
 import { normalizeReceivingAddress } from "../../../lib/merchant/receiving-address";
 
 const MAX_BUSINESS_NAME_LENGTH = 100;
-
-function error(code: string, message: string, status: number) {
-  return NextResponse.json(
-    { error: { code, message } },
-    { headers: { "cache-control": "no-store" }, status },
-  );
-}
 
 async function authenticatedMerchant(request: NextRequest) {
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
@@ -40,7 +34,7 @@ async function authenticatedMerchant(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const principal = await authenticatedMerchant(request);
   if (!principal) {
-    return error("SESSION_REQUIRED", "A valid merchant session is required.", 401);
+    return jsonError("SESSION_REQUIRED", "A valid merchant session is required.", 401);
   }
 
   return NextResponse.json(
@@ -59,12 +53,12 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   if (!requestOriginIsAllowed(request)) {
-    return error("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
+    return jsonError("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
   }
 
   const principal = await authenticatedMerchant(request);
   if (!principal) {
-    return error("SESSION_REQUIRED", "A valid merchant session is required.", 401);
+    return jsonError("SESSION_REQUIRED", "A valid merchant session is required.", 401);
   }
 
   let body: unknown;
@@ -79,7 +73,7 @@ export async function PATCH(request: NextRequest) {
       ? body.businessName
       : undefined;
   if (typeof businessName !== "string" || businessName.trim().length > MAX_BUSINESS_NAME_LENGTH) {
-    return error(
+    return jsonError(
       "INVALID_BUSINESS_NAME",
       `Business name must be ${MAX_BUSINESS_NAME_LENGTH} characters or fewer.`,
       400,
@@ -93,7 +87,7 @@ export async function PATCH(request: NextRequest) {
   const normalizedAddress =
     typeof receivingAddress === "string" ? normalizeReceivingAddress(receivingAddress) : undefined;
   if (!normalizedAddress) {
-    return error("INVALID_RECEIVING_ADDRESS", "Enter a valid EVM receiving address.", 400);
+    return jsonError("INVALID_RECEIVING_ADDRESS", "Enter a valid EVM receiving address.", 400);
   }
 
   const addressChanged =
@@ -105,7 +99,7 @@ export async function PATCH(request: NextRequest) {
     body.confirmReceivingAddressChange === true;
 
   if (addressChanged && !addressConfirmed) {
-    return error(
+    return jsonError(
       "RECEIVING_ADDRESS_CONFIRMATION_REQUIRED",
       "Confirm the new receiving address before saving.",
       409,
@@ -122,7 +116,7 @@ export async function PATCH(request: NextRequest) {
   });
 
   if (!updated) {
-    return error(
+    return jsonError(
       "MERCHANT_SETTINGS_CHANGED",
       "Settings changed in another request. Reload the current values before saving again.",
       409,

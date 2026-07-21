@@ -68,7 +68,7 @@ async function insertReceipt(
       intendedNetwork: options.blocked ? "eip155:8453" : null,
       network: "eip155:8453",
       payTo,
-      reason: options.blocked ? "LEASH_CAP_EXCEEDED" : null,
+      reason: options.blocked ? "CAP_EXCEEDED" : null,
       requestFingerprint: randomBytes(32).toString("hex"),
       resourceHost: options.resourceHost,
       resourceUrl: options.resourceHost ? `https://${options.resourceHost}/paid` : undefined,
@@ -79,7 +79,7 @@ async function insertReceipt(
   return row.id;
 }
 
-describe("transactional Leash notifier with real PostgreSQL", () => {
+describe("transactional Agent notifier with real PostgreSQL", () => {
   it("emits cap_75 once per cycle under concurrent transactions", async () => {
     const identity = await provision("cap-75");
     const now = new Date("2026-07-17T00:01:00.000Z");

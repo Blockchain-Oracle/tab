@@ -43,7 +43,7 @@ async function provision(capCents = "200") {
   if (!agent) throw new Error("Expected agent");
   const [key] = await connection.client<{ id: string }[]>`
     insert into leash_keys (agent_id, hashed_key, prefix, last4)
-    values (${agent.id}, ${randomBytes(32).toString("hex")}, 'leash_sk_', 'a1B2')
+    values (${agent.id}, ${randomBytes(32).toString("hex")}, 'agent_sk_', 'a1B2')
     returning id
   `;
   const [cycle] = await connection.client<{ id: string }[]>`
@@ -151,7 +151,7 @@ describe("final hosted-signer policy decision", () => {
     `;
 
     await expect(finalCheck(identity, pending.receiptId)).resolves.toMatchObject({
-      code: "LEASH_CAP_EXCEEDED",
+      code: "CAP_EXCEEDED",
       kind: "blocked",
     });
   });

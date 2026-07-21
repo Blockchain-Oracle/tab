@@ -10,8 +10,8 @@
 }
 
 .dialog {
-  background: #fffdfa;
-  border: 1px solid #ded9cf;
+  background: var(--tab-surface);
+  border: 1px solid var(--tab-line);
   border-radius: 16px;
   box-shadow: 0 24px 80px rgb(31 25 17 / 22%);
   max-width: 520px;
@@ -20,14 +20,14 @@
 }
 
 .dialog > h2 {
-  color: #211f1b;
+  color: var(--tab-action-hover);
   font-size: 25px;
   letter-spacing: -0.025em;
   margin: 10px 0 18px;
 }
 
 .consequences {
-  color: #514d46;
+  color: var(--tab-text-muted);
   line-height: 1.55;
   margin: -8px 0 20px;
 }
@@ -35,29 +35,29 @@
 .error {
   margin: 0 0 18px;
   padding: 10px 12px;
-  border: 1px solid #e5b5ae;
+  border: 1px solid color-mix(in srgb, var(--tab-status-danger) 28%, transparent);
   border-radius: 9px;
-  background: #fbe9e6;
-  color: #8e2f34;
+  background: color-mix(in srgb, var(--tab-status-danger) 9%, transparent);
+  color: var(--tab-status-danger);
   line-height: 1.45;
 }
 
 .warningMark,
 .dangerMark,
 .balanceWarning > span {
-  color: #8a5711;
+  color: var(--tab-status-warning);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.1em;
 }
 
 .dangerMark {
-  color: #9a3025;
+  color: var(--tab-status-danger);
 }
 
 .balanceWarning {
-  background: #f8f3e9;
-  border: 1px solid #ead9b9;
+  background: var(--tab-canvas);
+  border: 1px solid color-mix(in srgb, var(--tab-mode-test) 24%, transparent);
   border-radius: 11px;
   display: grid;
   gap: 8px;
@@ -67,7 +67,7 @@
 
 .balanceWarning p,
 .balanceWarning small {
-  color: #68635b;
+  color: var(--tab-text-muted);
   line-height: 1.55;
   margin: 0;
 }
@@ -86,15 +86,15 @@
 }
 
 .dialog label {
-  color: #514d46;
+  color: var(--tab-text-muted);
   display: grid;
   font-size: 13px;
   gap: 8px;
 }
 
 .dialog input {
-  background: #fff;
-  border: 1px solid #cfc9bd;
+  background: var(--tab-surface);
+  border: 1px solid var(--tab-line);
   border-radius: 9px;
   font: inherit;
   min-height: 44px;
@@ -109,7 +109,7 @@
 }
 
 .dialogButton {
-  border: 1px solid #cbc5b9;
+  border: 1px solid var(--tab-line);
   border-radius: 9px;
   cursor: pointer;
   font: inherit;
@@ -123,9 +123,9 @@
 }
 
 .confirmDanger {
-  background: #a33a2e;
-  border-color: #a33a2e;
-  color: #fff;
+  background: var(--tab-status-danger);
+  border-color: var(--tab-status-danger);
+  color: var(--tab-surface);
 }
 
 @media (max-width: 760px) {

@@ -14,7 +14,7 @@ function response(paymentProfile: "mainnet" | "base_sepolia_integration", floats
     paymentProfile,
     readAt,
     testFunds,
-    testFundsLabel: testFunds ? "Test funds — not real money" : null,
+    testFundsLabel: testFunds ? "Sandbox funds — no real value" : null,
   };
 }
 

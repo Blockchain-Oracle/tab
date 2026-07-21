@@ -17,7 +17,7 @@ import { agents, leashKeys, users } from "../../../../lib/db/schema";
 import { GET, PATCH, POST } from "./route";
 
 const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) throw new Error("DATABASE_URL is required for Leash key route tests");
+if (!databaseUrl) throw new Error("DATABASE_URL is required for agent key route tests");
 
 const connection = createDatabase(databaseUrl, 2);
 const appOrigin = new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost").origin;
@@ -76,16 +76,16 @@ function request(
   });
 }
 
-describe("owner-authenticated Leash key routes", () => {
+describe("owner-authenticated agent key routes", () => {
   it("requires a shared owner session and same-origin mutation", async () => {
     const owner = await provision("auth");
-    const unauthorized = await GET(request("GET", `/api/leash/keys?agentId=${owner.agentId}`));
+    const unauthorized = await GET(request("GET", `/api/agents/keys?agentId=${owner.agentId}`));
     expect(unauthorized.status).toBe(401);
 
     const crossOrigin = await POST(
       request(
         "POST",
-        "/api/leash/keys",
+        "/api/agents/keys",
         owner.token,
         { agentId: owner.agentId },
         "https://attacker.example.test",
@@ -97,14 +97,14 @@ describe("owner-authenticated Leash key routes", () => {
   it("issues show-once material and only returns its durable mask afterward", async () => {
     const owner = await provision("issue");
     const response = await POST(
-      request("POST", "/api/leash/keys", owner.token, { agentId: owner.agentId }),
+      request("POST", "/api/agents/keys", owner.token, { agentId: owner.agentId }),
     );
     expect(response.status).toBe(201);
     expect(response.headers.get("cache-control")).toBe("no-store");
     const created = await response.json();
     expect(created).toMatchObject({
-      key: { agentId: owner.agentId, prefix: "leash_sk_" },
-      secret: expect.stringMatching(/^leash_sk_[A-Za-z0-9_-]{43}$/),
+      key: { agentId: owner.agentId, prefix: "agent_sk_" },
+      secret: expect.stringMatching(/^agent_sk_[A-Za-z0-9_-]{43}$/),
     });
 
     const [stored] = await connection.db
@@ -117,14 +117,16 @@ describe("owner-authenticated Leash key routes", () => {
     });
     expect(JSON.stringify(stored)).not.toContain(created.secret);
 
-    const read = await GET(request("GET", `/api/leash/keys?agentId=${owner.agentId}`, owner.token));
+    const read = await GET(
+      request("GET", `/api/agents/keys?agentId=${owner.agentId}`, owner.token),
+    );
     expect(read.status).toBe(200);
     const readBody = await read.json();
     expect(readBody).toEqual({ key: created.key });
     expect(JSON.stringify(readBody)).not.toContain(created.secret);
 
     const duplicate = await POST(
-      request("POST", "/api/leash/keys", owner.token, { agentId: owner.agentId }),
+      request("POST", "/api/agents/keys", owner.token, { agentId: owner.agentId }),
     );
     expect(duplicate.status).toBe(409);
   });
@@ -132,12 +134,12 @@ describe("owner-authenticated Leash key routes", () => {
   it("rotates atomically, reveals once, and rejects the old bearer", async () => {
     const owner = await provision("rotate");
     const issued = await POST(
-      request("POST", "/api/leash/keys", owner.token, { agentId: owner.agentId }),
+      request("POST", "/api/agents/keys", owner.token, { agentId: owner.agentId }),
     );
     const original = await issued.json();
 
     const rotated = await PATCH(
-      request("PATCH", "/api/leash/keys", owner.token, {
+      request("PATCH", "/api/agents/keys", owner.token, {
         agentId: owner.agentId,
         keyId: original.key.id,
       }),
@@ -146,7 +148,7 @@ describe("owner-authenticated Leash key routes", () => {
     const replacement = await rotated.json();
     expect(replacement).toMatchObject({
       key: { agentId: owner.agentId, rotatedFromId: original.key.id },
-      secret: expect.stringMatching(/^leash_sk_[A-Za-z0-9_-]{43}$/),
+      secret: expect.stringMatching(/^agent_sk_[A-Za-z0-9_-]{43}$/),
     });
     expect(replacement.secret).not.toBe(original.secret);
 
@@ -167,15 +169,15 @@ describe("owner-authenticated Leash key routes", () => {
     const owned = await provision("owned");
     const foreign = await provision("foreign");
     const issued = await POST(
-      request("POST", "/api/leash/keys", owned.token, { agentId: owned.agentId }),
+      request("POST", "/api/agents/keys", owned.token, { agentId: owned.agentId }),
     );
     const original = await issued.json();
 
     for (const response of [
-      await GET(request("GET", `/api/leash/keys?agentId=${owned.agentId}`, foreign.token)),
-      await POST(request("POST", "/api/leash/keys", foreign.token, { agentId: owned.agentId })),
+      await GET(request("GET", `/api/agents/keys?agentId=${owned.agentId}`, foreign.token)),
+      await POST(request("POST", "/api/agents/keys", foreign.token, { agentId: owned.agentId })),
       await PATCH(
-        request("PATCH", "/api/leash/keys", foreign.token, {
+        request("PATCH", "/api/agents/keys", foreign.token, {
           agentId: owned.agentId,
           keyId: original.key.id,
         }),
@@ -183,12 +185,12 @@ describe("owner-authenticated Leash key routes", () => {
     ]) {
       expect(response.status).toBe(404);
       await expect(response.json()).resolves.toMatchObject({
-        error: { code: "LEASH_AGENT_NOT_FOUND" },
+        error: { code: "AGENT_NOT_FOUND" },
       });
     }
 
     const malformed = await PATCH(
-      request("PATCH", "/api/leash/keys", owned.token, {
+      request("PATCH", "/api/agents/keys", owned.token, {
         agentId: owned.agentId,
         extra: true,
         keyId: original.key.id,
@@ -203,11 +205,11 @@ describe("owner-authenticated Leash key routes", () => {
   ] as const)("does not issue or rotate key material for a %s agent", async (status) => {
     const issueTarget = await provision(`inactive-issue-${status}`, status);
     const issuedForInactive = await POST(
-      request("POST", "/api/leash/keys", issueTarget.token, { agentId: issueTarget.agentId }),
+      request("POST", "/api/agents/keys", issueTarget.token, { agentId: issueTarget.agentId }),
     );
     expect(issuedForInactive.status).toBe(409);
     await expect(issuedForInactive.json()).resolves.toMatchObject({
-      error: { code: "LEASH_AGENT_INACTIVE" },
+      error: { code: "AGENT_INACTIVE" },
     });
     expect(
       await connection.db
@@ -218,7 +220,7 @@ describe("owner-authenticated Leash key routes", () => {
 
     const rotateTarget = await provision(`inactive-rotate-${status}`);
     const initialResponse = await POST(
-      request("POST", "/api/leash/keys", rotateTarget.token, {
+      request("POST", "/api/agents/keys", rotateTarget.token, {
         agentId: rotateTarget.agentId,
       }),
     );
@@ -235,14 +237,14 @@ describe("owner-authenticated Leash key routes", () => {
       .where(eq(agents.id, rotateTarget.agentId));
 
     const rotatedForInactive = await PATCH(
-      request("PATCH", "/api/leash/keys", rotateTarget.token, {
+      request("PATCH", "/api/agents/keys", rotateTarget.token, {
         agentId: rotateTarget.agentId,
         keyId: initial.key.id,
       }),
     );
     expect(rotatedForInactive.status).toBe(409);
     await expect(rotatedForInactive.json()).resolves.toMatchObject({
-      error: { code: "LEASH_AGENT_INACTIVE" },
+      error: { code: "AGENT_INACTIVE" },
     });
     expect(
       await connection.db

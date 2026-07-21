@@ -52,7 +52,16 @@ export function ReceiptDetail({
         if (controller === pollController) controller = null;
         if (active) setLoading(false);
         inFlight = false;
-        if (active) nextPoll = window.setTimeout(() => void poll(), RECEIPT_POLL_INTERVAL_MS);
+        if (active) {
+          nextPoll = window.setTimeout(() => {
+            // Skip the network read while the tab is hidden; keep the cadence.
+            if (document.hidden) {
+              nextPoll = window.setTimeout(() => void poll(), RECEIPT_POLL_INTERVAL_MS);
+              return;
+            }
+            void poll();
+          }, RECEIPT_POLL_INTERVAL_MS);
+        }
       }
     }
     void poll();

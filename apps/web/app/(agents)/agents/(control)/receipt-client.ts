@@ -13,6 +13,8 @@ export interface ReceiptItem {
   amountDisplay: string;
   amountUsd: string;
   asset: "USDC";
+  authorizationNonce: string;
+  authorizationValidBefore: string;
   capContext: {
     capAtomic: string;
     committedBeforeAtomic: string;
@@ -117,7 +119,7 @@ export async function loadReceiptResult({
   signal?: AbortSignal;
 }) {
   const query = new URLSearchParams({ agentId, limit: "100" });
-  const response = await request(`/api/leash/receipts?${query}`, {
+  const response = await request(`/api/agents/receipts?${query}`, {
     cache: "no-store",
     ...(signal ? { signal } : {}),
   });
@@ -136,7 +138,7 @@ export async function loadCapSnapshot({
   signal?: AbortSignal;
 }): Promise<{ policy: CapPolicyView | null; resetNotice: CapResetNotice | null }> {
   const query = new URLSearchParams({ agentId });
-  const response = await request(`/api/leash/caps?${query}`, {
+  const response = await request(`/api/agents/caps?${query}`, {
     cache: "no-store",
     ...(signal ? { signal } : {}),
   });
@@ -165,7 +167,7 @@ export async function loadReceiptDetail({
   request?: ReceiptRequest;
   signal?: AbortSignal;
 }) {
-  const response = await request(`/api/leash/receipts/${encodeURIComponent(receiptId)}`, {
+  const response = await request(`/api/agents/receipts/${encodeURIComponent(receiptId)}`, {
     cache: "no-store",
     ...(signal ? { signal } : {}),
   });

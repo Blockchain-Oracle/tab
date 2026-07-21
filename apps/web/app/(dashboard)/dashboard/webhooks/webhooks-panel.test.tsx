@@ -53,6 +53,8 @@ describe("webhook endpoint environment state", () => {
       globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }
     ).IS_REACT_ACT_ENVIRONMENT = true;
     container = document.createElement("div");
+    // Mirror the app root: Dialog portals into the closest [data-tab-ui].
+    container.setAttribute("data-tab-ui", "");
     document.body.append(container);
     root = createRoot(container);
   });

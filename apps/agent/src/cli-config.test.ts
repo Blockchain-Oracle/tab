@@ -3,18 +3,18 @@ import { describe, expect, it } from "vitest";
 import { CliConfigurationError, parseLeashCliConfig } from "./cli-config.js";
 
 const validEnvironment = {
-  LEASH_API_BASE_URL: "https://tab.example.test",
-  LEASH_API_KEY: `leash_sk_${"a".repeat(43)}`,
+  TAB_API_BASE_URL: "https://tab.example.test",
+  TAB_AGENT_KEY: `agent_sk_${"a".repeat(43)}`,
 };
 
-describe("Leash MCP CLI configuration", () => {
+describe("Tab MCP CLI configuration", () => {
   it("parses the required environment and one absolute HTTP upstream", () => {
     expect(
       parseLeashCliConfig(["--upstream", "https://mcp.example.test/rpc"], validEnvironment),
     ).toEqual({
       allowDevelopmentLoopback: false,
       apiBaseUrl: "https://tab.example.test/",
-      apiKey: validEnvironment.LEASH_API_KEY,
+      apiKey: validEnvironment.TAB_AGENT_KEY,
       upstreamUrl: "https://mcp.example.test/rpc",
     });
   });
@@ -23,7 +23,7 @@ describe("Leash MCP CLI configuration", () => {
     expect(parseLeashCliConfig([], validEnvironment)).toEqual({
       allowDevelopmentLoopback: false,
       apiBaseUrl: "https://tab.example.test/",
-      apiKey: validEnvironment.LEASH_API_KEY,
+      apiKey: validEnvironment.TAB_AGENT_KEY,
       upstreamUrl: null,
     });
   });
@@ -35,7 +35,7 @@ describe("Leash MCP CLI configuration", () => {
     expect(
       parseLeashCliConfig(["--upstream", "http://127.0.0.1:8787/mcp"], {
         ...validEnvironment,
-        LEASH_ALLOW_DEVELOPMENT_LOOPBACK: "1",
+        TAB_ALLOW_DEVELOPMENT_LOOPBACK: "1",
       }),
     ).toMatchObject({
       allowDevelopmentLoopback: true,
@@ -44,7 +44,7 @@ describe("Leash MCP CLI configuration", () => {
     expect(() =>
       parseLeashCliConfig([], {
         ...validEnvironment,
-        LEASH_ALLOW_DEVELOPMENT_LOOPBACK: "true",
+        TAB_ALLOW_DEVELOPMENT_LOOPBACK: "true",
       }),
     ).toThrow(CliConfigurationError);
   });
@@ -63,22 +63,22 @@ describe("Leash MCP CLI configuration", () => {
 
   it("allows cleartext control-plane traffic only on loopback development origins", () => {
     expect(
-      parseLeashCliConfig([], { ...validEnvironment, LEASH_API_BASE_URL: "http://127.0.0.1:8787" }),
+      parseLeashCliConfig([], { ...validEnvironment, TAB_API_BASE_URL: "http://127.0.0.1:8787" }),
     ).toMatchObject({ apiBaseUrl: "http://127.0.0.1:8787/" });
     expect(() =>
       parseLeashCliConfig([], {
         ...validEnvironment,
-        LEASH_API_BASE_URL: "http://tab.example.test",
+        TAB_API_BASE_URL: "http://tab.example.test",
       }),
     ).toThrow(CliConfigurationError);
   });
 
   it.each([
     [{}, []],
-    [{ ...validEnvironment, LEASH_API_KEY: "secret" }, []],
-    [{ ...validEnvironment, LEASH_API_BASE_URL: "tab.example.test" }, []],
-    [{ ...validEnvironment, LEASH_API_BASE_URL: "ftp://tab.example.test" }, []],
-    [{ ...validEnvironment, LEASH_API_BASE_URL: "https://tab.example.test/api" }, []],
+    [{ ...validEnvironment, TAB_AGENT_KEY: "secret" }, []],
+    [{ ...validEnvironment, TAB_API_BASE_URL: "tab.example.test" }, []],
+    [{ ...validEnvironment, TAB_API_BASE_URL: "ftp://tab.example.test" }, []],
+    [{ ...validEnvironment, TAB_API_BASE_URL: "https://tab.example.test/api" }, []],
     [validEnvironment, ["--upstream"]],
     [validEnvironment, ["--upstream", "/mcp"]],
     [validEnvironment, ["--upstream", "file:///tmp/mcp"]],

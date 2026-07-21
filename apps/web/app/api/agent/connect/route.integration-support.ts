@@ -41,7 +41,7 @@ export async function provisionAgent(
       magicIssuer: `did:ethr:${randomUUID()}`,
     })
     .returning({ id: users.id });
-  if (!user) throw new Error("PostgreSQL did not return the Leash owner");
+  if (!user) throw new Error("PostgreSQL did not return the Agent owner");
 
   const [agent] = await connection.db
     .insert(agents)
@@ -53,7 +53,7 @@ export async function provisionAgent(
       status,
     })
     .returning({ id: agents.id });
-  if (!agent) throw new Error("PostgreSQL did not return the Leash agent");
+  if (!agent) throw new Error("PostgreSQL did not return the agent");
 
   const key = await issueLeashKey(connection.db, { agentId: agent.id });
   return { agentId: agent.id, keyId: key.key.id, ownerId: user.id, secret: key.secret };

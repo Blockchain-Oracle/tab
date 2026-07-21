@@ -4,6 +4,7 @@ import baseStyles from "./auth.module.css";
 import styles from "./auth-challenge.module.css";
 import type { AuthState } from "./auth-state";
 import { OtpInput } from "./otp-input";
+import { useResendCooldown } from "./use-resend-cooldown";
 
 type AuthChallengePanelProps = {
   email: string;
@@ -39,8 +40,13 @@ export function AuthChallengePanel({
   onResend,
   state,
 }: AuthChallengePanelProps) {
+  const cooldown = useResendCooldown(30);
   const isVerifying = state.stage === "verifying";
   const isLimited = state.stage === "limited";
+  const resend = () => {
+    cooldown.arm();
+    onResend();
+  };
   const feedback =
     state.stage === "wrong"
       ? { kind: "error", text: "That code didn’t match. Try again." }
@@ -92,10 +98,14 @@ export function AuthChallengePanel({
           <span className={styles.verifying}>
             <span className={styles.smallSpinner} aria-hidden="true" /> Verifying…
           </span>
-        ) : isLimited ? null : (
+        ) : isLimited ? null : cooldown.coolingDown ? (
+          <span>
+            Resend in <span className={styles.countdown}>{cooldown.secondsLeft}s</span>
+          </span>
+        ) : (
           <span>
             Didn’t get it?{" "}
-            <button className={styles.textButton} onClick={onResend} type="button">
+            <button className={styles.textButton} onClick={resend} type="button">
               Resend code
             </button>
           </span>

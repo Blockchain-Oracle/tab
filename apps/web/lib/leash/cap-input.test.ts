@@ -4,7 +4,7 @@ import { InvalidCapInputError, parseCapMutation } from "./cap-input";
 
 const agentId = "11111111-1111-4111-8111-111111111111";
 
-describe("Leash cap mutation input", () => {
+describe("Agent cap mutation input", () => {
   it.each([
     ["10", "1000"],
     ["10.5", "1050"],

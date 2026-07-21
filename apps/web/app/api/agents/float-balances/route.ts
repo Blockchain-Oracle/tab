@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
   if (owner instanceof Response) return owner;
 
   const agentId = parseAgentQuery(request.nextUrl.searchParams);
-  if (!agentId) return leashError("INVALID_AGENT", "Choose a valid Leash agent.", 400);
+  if (!agentId) return leashError("INVALID_AGENT", "Choose a valid agent.", 400);
 
   try {
     const selection = await readOwnerAgentSelection(getServerDatabase().db, {
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     const selected = selection.selected;
     const paymentProfile = selected?.paymentProfile ?? null;
     if (!selected || !paymentProfile) {
-      return leashError("LEASH_AGENT_NOT_FOUND", "The Leash agent was not found.", 404);
+      return leashError("AGENT_NOT_FOUND", "The agent was not found.", 404);
     }
     const floats = await readLeashFloatBalances(selected.agentAddress, paymentProfile);
     const testFunds = paymentProfile === BASE_SEPOLIA_INTEGRATION_PROFILE;
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     if (error instanceof LeashAgentSelectionError) {
-      return leashError("LEASH_AGENT_NOT_FOUND", "The Leash agent was not found.", 404);
+      return leashError("AGENT_NOT_FOUND", "The agent was not found.", 404);
     }
     throw error;
   }

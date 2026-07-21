@@ -10,7 +10,7 @@ const originalEnv = {
 };
 
 function request(body: unknown, origin = "http://localhost") {
-  return new Request("http://localhost/api/leash/auth/precheck", {
+  return new Request("http://localhost/api/agents/auth/precheck", {
     body: JSON.stringify(body),
     headers: { "content-type": "application/json", origin },
     method: "POST",
@@ -23,7 +23,7 @@ function restore(name: keyof typeof originalEnv, environmentName: string) {
   else process.env[environmentName] = value;
 }
 
-describe("POST /api/leash/auth/precheck", () => {
+describe("POST /api/agents/auth/precheck", () => {
   beforeEach(() => {
     process.env.DATABASE_URL = "postgresql://configured.example/tab";
     process.env.MAGIC_SECRET_KEY = "configured-magic-boundary";

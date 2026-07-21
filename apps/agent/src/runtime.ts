@@ -9,7 +9,7 @@ import { createPaidFetchServer } from "./paid-fetch-server.js";
 import { createLeashPaymentClient } from "./payment-client.js";
 import { defaultPaymentStateDirectory, PaymentEnvelopeStore } from "./payment-envelope-store.js";
 import { createLeashProxyServer } from "./proxy.js";
-import { LeashRemoteSigner } from "./remote-signer.js";
+import { TabRemoteSigner } from "./remote-signer.js";
 import { connectStreamableHttpUpstream } from "./upstream.js";
 
 interface StartLeashMcpOptions {
@@ -31,10 +31,10 @@ export async function startLeashMcp(options: StartLeashMcpOptions): Promise<Leas
     fetch: fetch_,
   });
 
-  let signer: LeashRemoteSigner | undefined;
+  let signer: TabRemoteSigner | undefined;
   let upstreamConnection: Awaited<ReturnType<typeof connectStreamableHttpUpstream>> | undefined;
   if (agent.address) {
-    signer = new LeashRemoteSigner({
+    signer = new TabRemoteSigner({
       address: agent.address,
       apiBaseUrl: options.config.apiBaseUrl,
       apiKey: options.config.apiKey,

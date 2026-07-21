@@ -1,0 +1,19 @@
+{
+  "name": "Tab agent monitor",
+  "short_name": "Tab",
+  "description": "Monitor Tab agent payment activity and control agent access.",
+  "id": "/mobile/",
+  "start_url": "/mobile/",
+  "scope": "/mobile/",
+  "display": "standalone",
+  "background_color": "#FAF8F3",
+  "theme_color": "#141210",
+  "icons": [
+    {
+      "src": "/mobile/icon-v1.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

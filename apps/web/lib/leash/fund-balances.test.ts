@@ -9,7 +9,7 @@ const particle = {
   PARTICLE_PROJECT_ID: "particle-project",
 };
 
-describe("Leash live fund projection", () => {
+describe("Agent live fund projection", () => {
   it("returns not-provisioned without inventing an address or balance", async () => {
     const readFloatBalance = vi.fn();
     const createUniversalAccountClient = vi.fn();

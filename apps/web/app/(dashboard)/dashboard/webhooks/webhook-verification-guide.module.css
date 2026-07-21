@@ -1,6 +1,6 @@
 .guide {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--tab-surface);
+  border: 1px solid var(--tab-line);
   border-radius: 14px;
   padding: 22px;
 }
@@ -23,16 +23,16 @@
 }
 
 .guide p {
-  color: #5f6876;
+  color: var(--tab-text-muted);
   font-size: 13px;
   line-height: 1.55;
   margin-bottom: 12px;
 }
 
 .guide pre {
-  background: #111827;
+  background: var(--tab-text);
   border-radius: 10px;
-  color: #e5e7eb;
+  color: var(--tab-line);
   font-size: 12px;
   line-height: 1.55;
   margin: 12px 0 0;
@@ -42,7 +42,7 @@
 }
 
 .contract {
-  background: #f4f6f8;
+  background: var(--tab-canvas);
   border-radius: 6px;
   display: block;
   font-size: 12px;

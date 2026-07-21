@@ -50,7 +50,7 @@ function textResult(result: unknown) {
 }
 
 function cliProcessArguments(arguments_: string[]) {
-  const builtEntry = process.env.LEASH_CLI_ENTRY;
+  const builtEntry = process.env.TAB_CLI_ENTRY;
   return builtEntry
     ? { args: [path.resolve(builtEntry), ...arguments_], command: process.execPath }
     : {
@@ -59,7 +59,7 @@ function cliProcessArguments(arguments_: string[]) {
       };
 }
 
-describe("leash-mcp stdio CLI", () => {
+describe("tab-mcp stdio CLI", () => {
   const connectBodiesByApiKey = new Map<string, unknown[]>();
   const upstreamCalls: string[] = [];
   const upstream = new Server(
@@ -140,7 +140,7 @@ describe("leash-mcp stdio CLI", () => {
   it(
     "boots the actual TypeScript bin over stdio without corrupting protocol stdout",
     async () => {
-      const apiKey = `leash_sk_${"d".repeat(42)}1`;
+      const apiKey = `agent_sk_${"d".repeat(42)}1`;
       const connectBodies: unknown[] = [];
       connectBodiesByApiKey.set(apiKey, connectBodies);
       const requestOptions = {
@@ -154,9 +154,9 @@ describe("leash-mcp stdio CLI", () => {
         cwd: process.cwd(),
         env: definedEnvironment({
           ...process.env,
-          LEASH_ALLOW_DEVELOPMENT_LOOPBACK: "1",
-          LEASH_API_BASE_URL: origin,
-          LEASH_API_KEY: apiKey,
+          TAB_ALLOW_DEVELOPMENT_LOOPBACK: "1",
+          TAB_API_BASE_URL: origin,
+          TAB_AGENT_KEY: apiKey,
         }),
         stderr: "pipe",
       });
@@ -193,7 +193,7 @@ describe("leash-mcp stdio CLI", () => {
   it(
     "wires stdio through a real Streamable HTTP upstream and keeps free tools usable",
     async () => {
-      const apiKey = `leash_sk_${"d".repeat(42)}2`;
+      const apiKey = `agent_sk_${"d".repeat(42)}2`;
       const connectBodies: unknown[] = [];
       connectBodiesByApiKey.set(apiKey, connectBodies);
       upstreamCalls.length = 0;
@@ -208,9 +208,9 @@ describe("leash-mcp stdio CLI", () => {
         cwd: process.cwd(),
         env: definedEnvironment({
           ...process.env,
-          LEASH_ALLOW_DEVELOPMENT_LOOPBACK: "1",
-          LEASH_API_BASE_URL: origin,
-          LEASH_API_KEY: apiKey,
+          TAB_ALLOW_DEVELOPMENT_LOOPBACK: "1",
+          TAB_API_BASE_URL: origin,
+          TAB_AGENT_KEY: apiKey,
         }),
         stderr: "pipe",
       });

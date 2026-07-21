@@ -211,6 +211,41 @@
       "when": 1784357841623,
       "tag": "0029_new_nick_fury",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1784424980153,
+      "tag": "0030_dusty_ted_forrester",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1784442483678,
+      "tag": "0031_open_speed",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1784442930791,
+      "tag": "0032_acoustic_shiva",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1784455923232,
+      "tag": "0033_fixed_firebrand",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1784457507632,
+      "tag": "0034_nappy_jubilee",
+      "breakpoints": true
     }
   ]
 }

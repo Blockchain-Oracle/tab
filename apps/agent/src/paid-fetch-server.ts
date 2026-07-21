@@ -8,12 +8,12 @@ import {
   readBoundedResponse,
   readResponseHeaders,
 } from "./fetch-wire.js";
-import { createLeashFetch } from "./fetch-wrapper.js";
+import { createTabFetch } from "./fetch-wrapper.js";
 import { withPaymentIdempotencyKey } from "./payment-idempotency.js";
 import type { PaymentProfile } from "./payment-profile.js";
 import { withPaymentSignal } from "./payment-signal.js";
 import { createPinnedPaymentFetch, type PaymentTargetLookup } from "./payment-target-network.js";
-import type { LeashRemoteSigner } from "./remote-signer.js";
+import type { TabRemoteSigner } from "./remote-signer.js";
 
 interface PaidFetchServerOptions {
   address: `0x${string}` | null;
@@ -23,7 +23,7 @@ interface PaidFetchServerOptions {
   fetch?: typeof globalThis.fetch;
   lookup?: PaymentTargetLookup;
   paymentProfile: PaymentProfile;
-  signer?: LeashRemoteSigner;
+  signer?: TabRemoteSigner;
 }
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -45,10 +45,7 @@ function invalidRequest() {
 }
 
 export function createPaidFetchServer(options: PaidFetchServerOptions) {
-  const server = new Server(
-    { name: "leash-mcp", version: "0.0.1" },
-    { capabilities: { tools: {} } },
-  );
+  const server = new Server({ name: "tab-mcp", version: "0.0.1" }, { capabilities: { tools: {} } });
   const allowDevelopmentLoopback = options.allowDevelopmentLoopback === true;
   const baseFetch = options.fetch ?? globalThis.fetch;
   const standalonePolicy = options.address
@@ -59,7 +56,7 @@ export function createPaidFetchServer(options: PaidFetchServerOptions) {
         ...(options.lookup ? { lookup: options.lookup } : {}),
       });
   const leashFetch = options.address
-    ? createLeashFetch({
+    ? createTabFetch({
         address: options.address,
         allowDevelopmentLoopback,
         apiBaseUrl: options.apiBaseUrl,
@@ -80,7 +77,7 @@ export function createPaidFetchServer(options: PaidFetchServerOptions) {
     tools: [
       {
         description:
-          "Fetch an HTTP resource and pay a supported x402 challenge within Leash policy.",
+          "Fetch an HTTP resource and pay a supported x402 challenge within owner policy.",
         inputSchema: PAID_FETCH_INPUT_SCHEMA,
         name: "paid_fetch",
       },
@@ -114,7 +111,7 @@ export function createPaidFetchServer(options: PaidFetchServerOptions) {
           {
             error: {
               code: "SIGNER_NOT_CONFIGURED",
-              message: "Leash signing is not configured for this agent.",
+              message: "Agent signing is not configured for this agent.",
             },
           },
           true,

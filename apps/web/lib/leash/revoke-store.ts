@@ -129,7 +129,7 @@ export async function revokeOwnerAgent(
       .set({ ...lifecycle, status: nextStatus })
       .where(eq(agents.id, agent.id))
       .returning({ id: agents.id });
-    if (!updated) throw new Error("PostgreSQL did not update the Leash agent state");
+    if (!updated) throw new Error("PostgreSQL did not update the agent state");
 
     const [event] = await transaction
       .insert(agentEvents)

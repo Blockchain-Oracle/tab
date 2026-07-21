@@ -17,7 +17,7 @@ import {
   writeInput,
 } from "./revocation-panel.test-support";
 
-describe("Leash revocation dialog accessibility", () => {
+describe("Agent revocation dialog accessibility", () => {
   let harness: RevocationHarness;
 
   beforeEach(() => {

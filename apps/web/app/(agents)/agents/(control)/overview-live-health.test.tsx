@@ -29,7 +29,7 @@ describe("overview live read health", () => {
     vi.unstubAllGlobals();
   });
 
-  it("claims Live only after receipts, cap, and float reads all succeed", async () => {
+  it("claims Live from a single healthy float read — no redundant fetches", async () => {
     const request = vi.fn().mockImplementation((input: RequestInfo | URL) => {
       const body = String(input).includes("/float-balances") ? { health: "healthy" } : {};
       return Promise.resolve(new Response(JSON.stringify(body), { status: 200 }));
@@ -41,9 +41,9 @@ describe("overview live read health", () => {
       await Promise.resolve();
     });
 
-    expect(request).toHaveBeenCalledTimes(3);
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(String(request.mock.calls[0]?.[0])).toContain("/float-balances");
     expect(container.textContent).toContain("Live");
-    expect(container.textContent).not.toContain("3s refresh");
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
@@ -64,12 +64,8 @@ describe("overview live read health", () => {
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
-  it("reports delayed updates when any real read fails", async () => {
-    const request = vi
-      .fn()
-      .mockResolvedValueOnce(new Response("{}", { status: 200 }))
-      .mockResolvedValueOnce(new Response("{}", { status: 503 }))
-      .mockResolvedValueOnce(new Response("{}", { status: 200 }));
+  it("reports delayed updates when the float read fails", async () => {
+    const request = vi.fn().mockResolvedValue(new Response("{}", { status: 503 }));
     vi.stubGlobal("fetch", request);
     await act(async () => {
       root.render(<OverviewLiveHealth agentId="11111111-1111-4111-8111-111111111111" />);

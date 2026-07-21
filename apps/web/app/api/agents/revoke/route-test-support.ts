@@ -34,7 +34,7 @@ export function createRevokeRouteHarness(databaseUrl: string) {
   }
 
   function request(body: unknown, token?: string, origin = appOrigin, raw = false) {
-    return new NextRequest(new URL("/api/leash/revoke", appOrigin), {
+    return new NextRequest(new URL("/api/agents/revoke", appOrigin), {
       body: raw ? String(body) : JSON.stringify(body),
       headers: {
         "content-type": "application/json",

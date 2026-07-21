@@ -36,21 +36,21 @@ async function requestBody(request: NextRequest) {
 }
 
 function inputError() {
-  return leashError("INVALID_KEY_INPUT", "Choose a valid Leash agent and key.", 400);
+  return leashError("INVALID_KEY_INPUT", "Choose a valid agent and key.", 400);
 }
 
 function lifecycleError(error: unknown) {
   if (error instanceof LeashAgentNotFoundError) {
-    return leashError("LEASH_AGENT_NOT_FOUND", "The Leash agent was not found.", 404);
+    return leashError("AGENT_NOT_FOUND", "The agent was not found.", 404);
   }
   if (error instanceof LeashAgentInactiveError) {
-    return leashError("LEASH_AGENT_INACTIVE", error.message, 409);
+    return leashError("AGENT_INACTIVE", error.message, 409);
   }
   if (error instanceof ActiveLeashKeyNotFoundError) {
-    return leashError("LEASH_KEY_NOT_FOUND", "The active Leash key was not found.", 404);
+    return leashError("AGENT_KEY_NOT_FOUND", "The active agent key was not found.", 404);
   }
   if (error instanceof ActiveLeashKeyExistsError) {
-    return leashError("LEASH_KEY_ALREADY_EXISTS", "Rotate the active Leash key instead.", 409);
+    return leashError("AGENT_KEY_ALREADY_EXISTS", "Rotate the active agent key instead.", 409);
   }
   throw error;
 }

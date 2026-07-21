@@ -1,0 +1,147 @@
+.canvas {
+  align-items: center;
+  background: var(--tab-canvas);
+  display: grid;
+  justify-items: center;
+  min-height: 100dvh;
+  padding: 32px 16px;
+}
+
+/* Receipt-as-artifact: mono evidence, perforated foot, earned green stamp. */
+.receipt {
+  background: var(--tab-surface);
+  border: 1px solid var(--tab-line);
+  border-radius: var(--tab-radius-l);
+  box-shadow: var(--tab-shadow-raise);
+  display: grid;
+  gap: 18px;
+  max-width: 520px;
+  padding: 28px 30px 22px;
+  width: 100%;
+}
+
+.testBanner {
+  border: 1px solid color-mix(in srgb, var(--tab-status-warning) 45%, transparent);
+  border-radius: var(--tab-radius-s);
+  color: var(--tab-status-warning);
+  font-family: var(--tab-font-evidence);
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  margin: 0;
+  padding: 7px 10px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.head {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.tally {
+  color: var(--tab-text);
+  display: inline-flex;
+}
+
+.tally svg {
+  height: 26px;
+  width: 26px;
+}
+
+.badge {
+  color: var(--tab-text-muted);
+  font-family: var(--tab-font-evidence);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.amount {
+  font-family: var(--tab-font-evidence);
+  font-size: 52px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 0;
+}
+
+.subtitle {
+  color: var(--tab-text-muted);
+  font-size: 14px;
+  margin: -6px 0 0;
+}
+
+.subtitle strong {
+  color: var(--tab-text);
+  font-weight: 600;
+}
+
+.evidence {
+  border-block: 1px dashed var(--tab-line-strong, var(--tab-line));
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 0;
+}
+
+.evidence > div {
+  align-items: baseline;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.evidence dt {
+  color: var(--tab-text-muted);
+  font-size: 12.5px;
+}
+
+.evidence dd {
+  font-family: var(--tab-font-evidence);
+  font-size: 13px;
+  margin: 0;
+  text-align: right;
+}
+
+.evidence a {
+  color: var(--tab-text);
+  text-decoration: underline;
+}
+
+.evidence a:hover {
+  color: var(--tab-accent);
+}
+
+.stampRow {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+/* Settled money truth — the one place green belongs. */
+.stamp {
+  border: 2.5px solid var(--tab-status-success);
+  border-radius: 8px;
+  color: var(--tab-status-success);
+  font-family: var(--tab-font-evidence);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 4px 12px;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+}
+
+.stampNote {
+  color: var(--tab-text-muted);
+  font-size: 12px;
+}
+
+.foot {
+  border-top: 1px dashed var(--tab-line);
+  color: var(--tab-text-muted);
+  font-size: 11.5px;
+  padding-top: 12px;
+  text-align: center;
+}

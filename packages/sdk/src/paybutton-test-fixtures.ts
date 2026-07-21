@@ -58,6 +58,7 @@ export const openedPayment: OpenedPayment = {
 
 export function baseServices(): MockedCheckoutServices {
   return {
+    claimTestFunds: vi.fn(),
     createTestPayment: vi.fn(),
     executePayment: vi.fn(),
     loadAccount: vi.fn(),

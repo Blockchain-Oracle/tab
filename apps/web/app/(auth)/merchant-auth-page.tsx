@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
 import { getCurrentMerchant } from "../../lib/auth/current-merchant";
 import type { AuthFlow } from "./auth-copy";
-import styles from "./auth-page.module.css";
+import { AuthSplitLayout } from "./auth-split-layout";
 import { MerchantAuthCard } from "./merchant-auth-card";
 
 function authConfiguration() {
@@ -33,21 +32,11 @@ export async function MerchantAuthPage({ flow }: { flow: AuthFlow }) {
   const configuration = authConfiguration();
 
   return (
-    <main className={styles.page}>
-      <header className={styles.brandBar}>
-        <Link aria-label="Tab home" className={styles.brand} href="/">
-          <span className={styles.brandTile} aria-hidden="true">
-            T
-          </span>
-          <span>Tab</span>
-        </Link>
-      </header>
-      <div className={styles.authStack}>
-        <section className={styles.card}>
-          <MerchantAuthCard flow={flow} {...configuration} />
-        </section>
-        <p className={styles.footer}>One account per merchant · Test mode by default</p>
-      </div>
-    </main>
+    <AuthSplitLayout
+      brandVariant="merchant"
+      footer="One account per merchant · Test mode by default"
+    >
+      <MerchantAuthCard flow={flow} {...configuration} />
+    </AuthSplitLayout>
   );
 }

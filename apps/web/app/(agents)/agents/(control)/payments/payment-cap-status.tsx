@@ -1,3 +1,4 @@
+import { RollingAmount } from "@tab/ui";
 import Link from "next/link";
 
 import { blockedReceiptEvidence, type CapPolicyView } from "../../../../../lib/leash/cap-view";
@@ -17,12 +18,14 @@ export function PaymentCapStatus({
   policy: CapPolicyView | null;
 }) {
   if (!policy) return null;
-  const href = `/leash/cap?agentId=${encodeURIComponent(agentId)}`;
+  const href = `/agents/cap?agentId=${encodeURIComponent(agentId)}`;
   return (
     <>
       <section aria-label="Current cap usage" className={styles.capMirror}>
         <div>
-          <strong>{formatUsdAtomic(policy.spend.committedAtomic)}</strong>
+          <strong>
+            <RollingAmount value={formatUsdAtomic(policy.spend.committedAtomic)} />
+          </strong>
           <span>/ {formatUsdCents(policy.cap.amountUsdCents)}</span>
           <b>{formatBasisPoints(policy.spend.committedBasisPoints ?? "0")}</b>
         </div>

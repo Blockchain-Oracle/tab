@@ -13,7 +13,7 @@ export class UnsupportedPaymentNetworkError extends Error {
   readonly code = "UNSUPPORTED_NETWORK";
 
   constructor() {
-    super("The resource does not accept a supported Leash payment network.");
+    super("The resource does not accept a supported Agent payment network.");
     this.name = "UnsupportedPaymentNetworkError";
   }
 }

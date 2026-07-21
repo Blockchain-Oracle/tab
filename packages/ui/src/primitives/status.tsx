@@ -1,6 +1,8 @@
 import { getNetworkProfile, type NetworkProfileId } from "@tab/networks";
 import type { HTMLAttributes, ReactNode } from "react";
 
+import { ArbitrumMark, BaseMark } from "../assets/marks";
+
 export type StatusTone =
   | "neutral"
   | "info"
@@ -25,6 +27,23 @@ export function StatusBadge({ children, tone = "neutral", ...elementProps }: Sta
   );
 }
 
+const NETWORK_MARKS = {
+  arbitrum: ArbitrumMark,
+  base: BaseMark,
+} as const;
+
+export interface NetworkMarkProps {
+  assetId: keyof typeof NETWORK_MARKS;
+  size?: number;
+  title?: string;
+}
+
+/** Official chain mark for a canonical network asset id. */
+export function NetworkMark({ assetId, size, title }: NetworkMarkProps) {
+  const Mark = NETWORK_MARKS[assetId];
+  return <Mark size={size} title={title} />;
+}
+
 export interface NetworkIdentityProps extends HTMLAttributes<HTMLFieldSetElement> {
   profileId: NetworkProfileId;
 }
@@ -39,10 +58,11 @@ export function NetworkIdentity({ profileId, ...elementProps }: NetworkIdentityP
       data-official-asset={profile.officialAssetId}
       data-tab-network=""
     >
+      <NetworkMark assetId={profile.officialAssetId} size={18} />
       <span data-tab-network-name="">{profile.displayName}</span>
       <code data-tab-network-id="">{profile.caip2}</code>
       {profile.testFunds ? (
-        <StatusBadge tone="test">Test funds — not real money</StatusBadge>
+        <StatusBadge tone="test">Sandbox funds — no real value</StatusBadge>
       ) : null}
     </fieldset>
   );

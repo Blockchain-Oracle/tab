@@ -5,12 +5,16 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 13px;
 }
 
+.backButton:hover:not(:disabled) {
+  color: var(--tab-text);
+}
+
 .backButton:disabled {
-  color: #b4b2a8;
+  color: var(--tab-status-unavailable);
 }
 
 .challengeHeading {
@@ -25,8 +29,9 @@
   margin: 0 auto 14px;
   place-items: center;
   border-radius: 11px;
-  background: #f5f4f0;
-  color: #3b5bd9;
+  background: var(--tab-canvas);
+  border: 1px solid var(--tab-line);
+  color: var(--tab-text);
 }
 
 .otpGroup {
@@ -56,38 +61,39 @@
   width: 100%;
   height: 52px;
   padding: 0;
-  border: 1px solid #dbd9d0;
-  border-radius: 10px;
+  border: 1px solid var(--tab-line);
+  border-radius: var(--tab-radius-s);
   outline: none;
-  background: #fff;
-  color: #1c1b18;
+  background: var(--tab-surface);
+  color: var(--tab-text);
+  font-family: var(--tab-font-evidence);
   font-size: 20px;
   font-weight: 600;
   text-align: center;
   transition:
-    border-color 120ms ease,
-    box-shadow 120ms ease;
+    border-color var(--tab-motion-duration-fast) var(--tab-motion-easing),
+    box-shadow var(--tab-motion-duration-fast) var(--tab-motion-easing);
 }
 
 .otpInput:focus {
-  border-color: #3b5bd9;
-  box-shadow: 0 0 0 3px rgba(59, 91, 217, 0.13);
+  border-color: var(--tab-text);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tab-text) 9%, transparent);
 }
 
 .otpInput[aria-invalid="true"] {
-  border-color: #c13a40;
-  background: #fdf4f4;
+  border-color: var(--tab-status-danger);
+  background: color-mix(in srgb, var(--tab-status-danger) 6%, var(--tab-surface));
 }
 
 .otpInput:disabled {
-  background: #f5f4f0;
-  color: #8c8a80;
+  background: var(--tab-canvas);
+  color: var(--tab-text-muted);
 }
 
 .challengeAction {
   min-height: 20px;
   margin-top: 18px;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 13px;
   text-align: center;
 }
@@ -96,34 +102,40 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #3b5bd9;
+  color: var(--tab-text);
   font-size: inherit;
-  font-weight: 550;
+  font-weight: 570;
+  text-decoration: underline;
 }
 
 .textButton:hover {
-  color: #2e48b8;
+  color: var(--tab-accent);
+}
+
+.countdown {
+  font-family: var(--tab-font-evidence);
+  font-variant-numeric: tabular-nums;
 }
 
 .verifying {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
 }
 
 .smallSpinner {
   width: 13px;
   height: 13px;
-  border: 1.5px solid #d4d2ca;
-  border-top-color: #3b5bd9;
+  border: 1.5px solid var(--tab-line);
+  border-top-color: var(--tab-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
 .otpHelp {
   margin: 9px 0 0;
-  color: #b4b2a8;
+  color: var(--tab-text-muted);
   font-size: 11px;
   text-align: center;
 }

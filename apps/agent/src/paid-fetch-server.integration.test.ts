@@ -68,7 +68,7 @@ describe("standalone paid_fetch MCP tool", () => {
     address: null,
     allowDevelopmentLoopback: true,
     apiBaseUrl: "https://tab.example.test",
-    apiKey: `leash_sk_${"c".repeat(43)}`,
+    apiKey: `agent_sk_${"c".repeat(43)}`,
     fetch: globalThis.fetch,
     paymentProfile: "mainnet",
   });
@@ -139,7 +139,7 @@ describe("standalone paid_fetch MCP tool", () => {
     expect(toolJson(result)).toEqual({
       error: {
         code: "SIGNER_NOT_CONFIGURED",
-        message: "Leash signing is not configured for this agent.",
+        message: "Agent signing is not configured for this agent.",
       },
     });
   });

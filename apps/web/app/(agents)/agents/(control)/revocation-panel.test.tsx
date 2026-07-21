@@ -16,7 +16,7 @@ import {
   type RevocationHarness,
 } from "./revocation-panel.test-support";
 
-describe("Leash revocation spectrum", () => {
+describe("Agent revocation spectrum", () => {
   let harness: RevocationHarness;
 
   beforeEach(() => {
@@ -66,7 +66,7 @@ describe("Leash revocation spectrum", () => {
       await Promise.resolve();
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/leash/revoke",
+      "/api/agents/revoke",
       expect.objectContaining({
         body: JSON.stringify({ action, agentId: agent.id }),
         method: "POST",
@@ -88,11 +88,11 @@ describe("Leash revocation spectrum", () => {
     );
   });
 
-  it("shows a post-nuclear exit and warns that Leash withdrawal is unavailable", () => {
+  it("shows a post-nuclear exit and warns that Agent withdrawal is unavailable", () => {
     const html = renderToStaticMarkup(<RevocationPanel agent={{ ...agent, status: "nuked" }} />);
     expect(html).toContain("Provision new agent");
     expect(html).toContain("Not provisioned — destroyed");
-    expect(html).toContain("Leash withdrawal is unavailable after nuclear destruction");
-    expect(html).toContain("/leash/provision?agentId=");
+    expect(html).toContain("Agent withdrawal is unavailable after nuclear destruction");
+    expect(html).toContain("/agents/provision?agentId=");
   });
 });

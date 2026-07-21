@@ -2,31 +2,31 @@ import { describe, expect, it } from "vitest";
 
 import { parseLeashCliConfig } from "../../../../../agent/src/cli-config.js";
 import {
-  buildLeashMcpConfiguration,
+  buildTabMcpConfiguration,
   LEASH_KEY_PLACEHOLDER,
-  resolveLeashApiOrigin,
+  resolveTabApiOrigin,
 } from "./connect-config";
 
-const realKey = `leash_sk_${"a".repeat(43)}`;
+const realKey = `agent_sk_${"a".repeat(43)}`;
 
-function parseRenderedConfiguration(configuration: ReturnType<typeof buildLeashMcpConfiguration>) {
-  const rendered = configuration.mcpServers.leash;
+function parseRenderedConfiguration(configuration: ReturnType<typeof buildTabMcpConfiguration>) {
+  const rendered = configuration.mcpServers.tab;
   return parseLeashCliConfig(rendered.args ?? [], {
     ...rendered.env,
-    LEASH_API_KEY:
-      rendered.env.LEASH_API_KEY === LEASH_KEY_PLACEHOLDER ? realKey : rendered.env.LEASH_API_KEY,
+    TAB_AGENT_KEY:
+      rendered.env.TAB_AGENT_KEY === LEASH_KEY_PLACEHOLDER ? realKey : rendered.env.TAB_AGENT_KEY,
   });
 }
 
 describe("Connect MCP configuration", () => {
   it("renders both required environment keys for the real standalone CLI mode", () => {
-    const configuration = buildLeashMcpConfiguration("https://tab.example.test");
+    const configuration = buildTabMcpConfiguration("https://tab.example.test");
 
-    expect(configuration.mcpServers.leash).toEqual({
-      command: "leash-mcp",
+    expect(configuration.mcpServers.tab).toEqual({
+      command: "tab-mcp",
       env: {
-        LEASH_API_BASE_URL: "https://tab.example.test",
-        LEASH_API_KEY: LEASH_KEY_PLACEHOLDER,
+        TAB_API_BASE_URL: "https://tab.example.test",
+        TAB_AGENT_KEY: LEASH_KEY_PLACEHOLDER,
       },
     });
     expect(parseRenderedConfiguration(configuration)).toEqual({
@@ -38,12 +38,12 @@ describe("Connect MCP configuration", () => {
   });
 
   it("renders the real proxy arguments accepted by the CLI parser", () => {
-    const configuration = buildLeashMcpConfiguration(
+    const configuration = buildTabMcpConfiguration(
       "https://tab.example.test",
       "https://existing-mcp.example.test/rpc",
     );
 
-    expect(configuration.mcpServers.leash.args).toEqual([
+    expect(configuration.mcpServers.tab.args).toEqual([
       "--upstream",
       "https://existing-mcp.example.test/rpc",
     ]);
@@ -53,25 +53,25 @@ describe("Connect MCP configuration", () => {
   });
 
   it("canonicalizes the configured deployment origin and blocks absent or unsafe values", () => {
-    expect(resolveLeashApiOrigin("https://tab.example.test/")).toEqual({
+    expect(resolveTabApiOrigin("https://tab.example.test/")).toEqual({
       apiBaseUrl: "https://tab.example.test",
       issue: null,
     });
-    expect(resolveLeashApiOrigin(undefined)).toMatchObject({ apiBaseUrl: null });
-    expect(resolveLeashApiOrigin("https://tab.example.test/path")).toMatchObject({
+    expect(resolveTabApiOrigin(undefined)).toMatchObject({ apiBaseUrl: null });
+    expect(resolveTabApiOrigin("https://tab.example.test/path")).toMatchObject({
       apiBaseUrl: null,
     });
-    expect(resolveLeashApiOrigin("https://user:secret@tab.example.test")).toMatchObject({
+    expect(resolveTabApiOrigin("https://user:secret@tab.example.test")).toMatchObject({
       apiBaseUrl: null,
     });
-    expect(resolveLeashApiOrigin("http://tab.example.test")).toMatchObject({
+    expect(resolveTabApiOrigin("http://tab.example.test")).toMatchObject({
       apiBaseUrl: null,
     });
-    expect(resolveLeashApiOrigin("http://localhost:3000")).toEqual({
+    expect(resolveTabApiOrigin("http://localhost:3000")).toEqual({
       apiBaseUrl: "http://localhost:3000",
       issue: null,
     });
-    expect(resolveLeashApiOrigin("http://127.0.0.1:3000")).toEqual({
+    expect(resolveTabApiOrigin("http://127.0.0.1:3000")).toEqual({
       apiBaseUrl: "http://127.0.0.1:3000",
       issue: null,
     });

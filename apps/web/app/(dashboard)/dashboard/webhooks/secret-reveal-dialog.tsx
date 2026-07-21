@@ -1,29 +1,40 @@
+import { Dialog } from "@tab/ui";
 import { useState } from "react";
 
 import styles from "./webhook-dialog.module.css";
 
 export function SecretRevealDialog({ onClose, secret }: { onClose: () => void; secret: string }) {
-  const [copied, setCopied] = useState(false);
+  const [copyState, setCopyState] = useState<"copied" | "failed" | "idle">("idle");
 
   async function copy() {
-    await navigator.clipboard.writeText(secret);
-    setCopied(true);
+    // A rejected clipboard write must never look like success: the secret is
+    // shown exactly once, so a silent failure here loses it forever.
+    try {
+      await navigator.clipboard.writeText(secret);
+      setCopyState("copied");
+    } catch {
+      setCopyState("failed");
+    }
   }
 
   return (
-    <div className={styles.overlay} role="presentation">
-      <div aria-modal="true" className={styles.dialog} role="dialog">
-        <h2>Your signing secret</h2>
+    <Dialog onDismiss={() => {}} open title="Your signing secret">
+      <div className={styles.dialogBody}>
         <p className={styles.warning}>
           For security reasons, you can only view this signing secret once. Save it to a secure
           location.
         </p>
         <div className={styles.secretReveal}>
-          <code>{secret}</code>
+          <code style={{ userSelect: "all" }}>{secret}</code>
           <button onClick={() => void copy()} type="button">
-            {copied ? "Copied" : "Copy"}
+            {copyState === "copied" ? "Copied" : copyState === "failed" ? "Copy again" : "Copy"}
           </button>
         </div>
+        {copyState === "failed" ? (
+          <p className={styles.warning} role="alert">
+            Copy didn’t work. Select the secret above and copy it manually before closing.
+          </p>
+        ) : null}
         <p>
           Verify every delivery by checking <code>X-Tab-Signature</code> with this secret.
         </p>
@@ -33,6 +44,6 @@ export function SecretRevealDialog({ onClose, secret }: { onClose: () => void; s
           </button>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 }

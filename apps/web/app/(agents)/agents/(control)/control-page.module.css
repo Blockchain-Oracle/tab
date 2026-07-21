@@ -8,9 +8,9 @@
 .emptyCard {
   width: min(100%, 620px);
   padding: 34px;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 14px;
-  background: #fff;
+  background: var(--tab-surface);
   box-shadow: 0 1px 3px rgb(28 27 24 / 6%);
   text-align: center;
 }
@@ -19,8 +19,8 @@
   display: inline-flex;
   padding: 4px 8px;
   border-radius: 6px;
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -35,7 +35,7 @@
 .emptyCard p {
   max-width: 510px;
   margin: 8px auto 0;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -46,17 +46,17 @@
   height: 36px;
   margin-top: 18px;
   padding: 0 15px;
-  border: 1px solid #dbd9d0;
+  border: 1px solid var(--tab-line);
   border-radius: 9px;
-  background: #206b4e;
-  color: #fff;
+  background: var(--tab-text);
+  color: var(--tab-surface);
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
 }
 
 .emptyCard a:focus-visible {
-  outline: 2px solid #206b4e;
+  outline: 2px solid var(--tab-text);
   outline-offset: 3px;
 }
 
@@ -70,7 +70,7 @@
 .agentPicker label {
   display: grid;
   gap: 5px;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -80,10 +80,10 @@
 .agentPicker select,
 .agentPicker button {
   height: 34px;
-  border: 1px solid #dbd9d0;
+  border: 1px solid var(--tab-line);
   border-radius: 8px;
-  background: #fff;
-  color: #1c1b18;
+  background: var(--tab-surface);
+  color: var(--tab-text);
   font-size: 12px;
 }
 
@@ -99,7 +99,7 @@
 
 .agentPicker select:focus-visible,
 .agentPicker button:focus-visible {
-  outline: 2px solid #206b4e;
+  outline: 2px solid var(--tab-text);
   outline-offset: 2px;
 }
 

@@ -21,6 +21,8 @@ function receipt(): ReceiptItem {
     amountDisplay: "$0.42",
     amountUsd: "0.420000",
     asset: "USDC",
+    authorizationNonce: "0xab",
+    authorizationValidBefore: "2026-07-16T11:00:00.000Z",
     capContext: null,
     createdAt: start.toISOString(),
     explorer: null,

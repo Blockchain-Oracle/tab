@@ -1,4 +1,5 @@
 import type { Database } from "../db/client";
+import { sendSettledReceiptEmail } from "../email/receipt-email";
 import { dispatchWebhookAfterSettlement } from "../webhooks/deliver";
 import type { reportPayment } from "./payment-report";
 import { verifyLivePaymentById } from "./settlement-worker";
@@ -15,4 +16,10 @@ export async function processPaymentReportAfterCommit(
     return;
   }
   await dispatchWebhookAfterSettlement(db, result.webhookDeliveryId);
+  // Bounded send (4s timeout inside): the settlement is already committed,
+  // and a failed email never fails the report — the outcome is only logged.
+  const email = await sendSettledReceiptEmail(db, paymentId);
+  if (email.state === "failed") {
+    console.error("receipt email failed", paymentId, email.detail);
+  }
 }

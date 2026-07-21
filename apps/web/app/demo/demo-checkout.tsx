@@ -1,6 +1,6 @@
 "use client";
 
-import { PayButton } from "@tab/sdk";
+import { PayButton } from "@runtab/sdk";
 import { useState } from "react";
 
 import styles from "./demo.module.css";

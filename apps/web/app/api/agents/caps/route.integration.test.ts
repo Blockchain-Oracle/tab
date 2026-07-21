@@ -12,7 +12,7 @@ import { POST as resetCycle } from "../cycles/reset/route";
 import { GET, PATCH, POST } from "./route";
 
 const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) throw new Error("DATABASE_URL is required for Leash cap route tests");
+if (!databaseUrl) throw new Error("DATABASE_URL is required for agent cap route tests");
 
 const connection = createDatabase(databaseUrl, 2);
 const appOrigin = new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost").origin;
@@ -58,16 +58,16 @@ function request(
   });
 }
 
-describe("owner-authenticated Leash cap routes", () => {
+describe("owner-authenticated Agent cap routes", () => {
   it("requires a shared owner session and same-origin mutations", async () => {
     const owner = await provision("auth");
-    const unauthorized = await GET(request("GET", `/api/leash/caps?agentId=${owner.agentId}`));
+    const unauthorized = await GET(request("GET", `/api/agents/caps?agentId=${owner.agentId}`));
     expect(unauthorized.status).toBe(401);
 
     const crossOrigin = await POST(
       request(
         "POST",
-        "/api/leash/caps",
+        "/api/agents/caps",
         owner.token,
         { agentId: owner.agentId, amount: "10.00", frequency: "daily" },
         "https://attacker.example.test",
@@ -79,7 +79,7 @@ describe("owner-authenticated Leash cap routes", () => {
   it("sets, reads, and adjusts an exact owner-scoped cap", async () => {
     const owner = await provision("lifecycle");
     const created = await POST(
-      request("POST", "/api/leash/caps", owner.token, {
+      request("POST", "/api/agents/caps", owner.token, {
         agentId: owner.agentId,
         amount: "10.00",
         frequency: "daily",
@@ -95,7 +95,7 @@ describe("owner-authenticated Leash cap routes", () => {
     });
 
     const adjusted = await PATCH(
-      request("PATCH", "/api/leash/caps", owner.token, {
+      request("PATCH", "/api/agents/caps", owner.token, {
         agentId: owner.agentId,
         amount: "7.50",
         frequency: "daily",
@@ -108,7 +108,9 @@ describe("owner-authenticated Leash cap routes", () => {
       cycle: { id: first.policy.cycle.id },
     });
 
-    const read = await GET(request("GET", `/api/leash/caps?agentId=${owner.agentId}`, owner.token));
+    const read = await GET(
+      request("GET", `/api/agents/caps?agentId=${owner.agentId}`, owner.token),
+    );
     expect(read.status).toBe(200);
     expect(await read.json()).toEqual(second);
   });
@@ -117,7 +119,7 @@ describe("owner-authenticated Leash cap routes", () => {
     const owner = await provision("owned");
     const foreign = await provision("foreign");
     const response = await POST(
-      request("POST", "/api/leash/caps", foreign.token, {
+      request("POST", "/api/agents/caps", foreign.token, {
         agentId: owner.agentId,
         amount: "10.00",
         frequency: "daily",
@@ -125,11 +127,11 @@ describe("owner-authenticated Leash cap routes", () => {
     );
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toMatchObject({
-      error: { code: "LEASH_AGENT_NOT_FOUND" },
+      error: { code: "AGENT_NOT_FOUND" },
     });
 
     const malformed = await POST(
-      request("POST", "/api/leash/caps", owner.token, {
+      request("POST", "/api/agents/caps", owner.token, {
         agentId: owner.agentId,
         amount: "10.00",
         extra: true,
@@ -142,7 +144,7 @@ describe("owner-authenticated Leash cap routes", () => {
   it("performs a real manual reset and returns a clean active cycle", async () => {
     const owner = await provision("manual");
     const created = await POST(
-      request("POST", "/api/leash/caps", owner.token, {
+      request("POST", "/api/agents/caps", owner.token, {
         agentId: owner.agentId,
         amount: "10.00",
         frequency: "never",
@@ -151,7 +153,7 @@ describe("owner-authenticated Leash cap routes", () => {
     const first = await created.json();
 
     const reset = await resetCycle(
-      request("POST", "/api/leash/cycles/reset", owner.token, { agentId: owner.agentId }),
+      request("POST", "/api/agents/cycles/reset", owner.token, { agentId: owner.agentId }),
     );
     expect(reset.status).toBe(200);
     const body = await reset.json();
@@ -159,7 +161,7 @@ describe("owner-authenticated Leash cap routes", () => {
     expect(body.policy.cycle.id).not.toBe(first.policy.cycle.id);
 
     const refreshed = await GET(
-      request("GET", `/api/leash/caps?agentId=${owner.agentId}`, owner.token),
+      request("GET", `/api/agents/caps?agentId=${owner.agentId}`, owner.token),
     );
     await expect(refreshed.json()).resolves.toMatchObject({
       resetNotice: { reason: "manual", resetAt: body.policy.cycle.startedAt },

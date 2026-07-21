@@ -8,9 +8,9 @@ import type { PaymentRequired, SettleResponse } from "@x402/core/types";
 import { privateKeyToAccount } from "viem/accounts";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { createLeashFetch } from "./fetch-wrapper.js";
+import { createTabFetch } from "./fetch-wrapper.js";
 import { PaymentEnvelopeStore } from "./payment-envelope-store.js";
-import { LeashRemoteSigner } from "./remote-signer.js";
+import { TabRemoteSigner } from "./remote-signer.js";
 
 const account = privateKeyToAccount(`0x${"41".repeat(32)}`);
 const transaction = `0x${"42".repeat(32)}`;
@@ -171,19 +171,19 @@ describe("durable HTTP settlement acknowledgement guard", () => {
     sellerResponse = testCase.sellerResponse;
     const stateDirectory = await mkdtemp(join(tmpdir(), "tab-http-settlement-guard-"));
     try {
-      const signer = new LeashRemoteSigner({
+      const signer = new TabRemoteSigner({
         address: account.address,
         apiBaseUrl: origin,
-        apiKey: "leash_sk_guard",
+        apiKey: "agent_sk_guard",
         fetch: globalThis.fetch,
         paymentProfile: "mainnet",
         reportAttempts: 1,
       });
-      const response = await createLeashFetch({
+      const response = await createTabFetch({
         address: account.address,
         allowDevelopmentLoopback: true,
         apiBaseUrl: origin,
-        apiKey: "leash_sk_guard",
+        apiKey: "agent_sk_guard",
         fetch: globalThis.fetch,
         idempotencyKey: () => "http-settlement-guard",
         paymentProfile: "mainnet",
@@ -203,10 +203,10 @@ describe("durable HTTP settlement acknowledgement guard", () => {
   it("reposts a crash-surviving observation before retrying the seller after restart", async () => {
     const stateDirectory = await mkdtemp(join(tmpdir(), "tab-http-observation-restart-"));
     const options = () => {
-      const signer = new LeashRemoteSigner({
+      const signer = new TabRemoteSigner({
         address: account.address,
         apiBaseUrl: origin,
-        apiKey: "leash_sk_guard",
+        apiKey: "agent_sk_guard",
         fetch: globalThis.fetch,
         paymentProfile: "mainnet",
         reportAttempts: 1,
@@ -215,7 +215,7 @@ describe("durable HTTP settlement acknowledgement guard", () => {
         address: account.address,
         allowDevelopmentLoopback: true,
         apiBaseUrl: origin,
-        apiKey: "leash_sk_guard",
+        apiKey: "agent_sk_guard",
         fetch: globalThis.fetch,
         idempotencyKey: () => "http-observation-restart",
         paymentProfile: "mainnet" as const,
@@ -226,7 +226,7 @@ describe("durable HTTP settlement acknowledgement guard", () => {
     try {
       acknowledgement = { body: { error: { code: "OUTAGE" } }, status: 503 };
       sellerResponse = succeeded;
-      await createLeashFetch(options())(`${origin}/protected`);
+      await createTabFetch(options())(`${origin}/protected`);
       const unsettled = await new PaymentEnvelopeStore(
         account.address,
         stateDirectory,
@@ -242,7 +242,7 @@ describe("durable HTTP settlement acknowledgement guard", () => {
         body: { receiptId: "receipt-http-guard", status: "settled", verified: true },
         status: 200,
       };
-      await createLeashFetch(options())(`${origin}/protected`);
+      await createTabFetch(options())(`${origin}/protected`);
 
       expect(events[0]).toBe("result");
       expect(resultBodies[0]).toMatchObject({

@@ -222,3 +222,33 @@
     border-radius: 1rem;
   }
 }
+
+/* ————— RollingAmount ————— */
+[data-tab-rolling-amount] {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+[data-tab-rolling-value] {
+  animation: tab-amount-roll var(--tab-motion-duration-base) var(--tab-motion-easing-settle) both;
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes tab-amount-roll {
+  from {
+    opacity: 0;
+    transform: translateY(78%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-tab-rolling-value] {
+    animation: none;
+  }
+}

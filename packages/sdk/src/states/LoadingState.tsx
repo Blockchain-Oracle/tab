@@ -1,17 +1,26 @@
 import { BUYER_COPY } from "../copy";
-import { center, colors } from "../styles";
+import { center, useTokens } from "../styles";
 
 type Props = { label?: string };
 
 export function LoadingState({ label = BUYER_COPY.loading }: Props) {
+  const tokens = useTokens();
   return (
-    <div aria-live="polite" style={{ ...center, color: colors.muted, gap: 12, padding: "28px 0" }}>
+    <div aria-live="polite" style={{ ...center, color: tokens.muted, gap: 12, padding: "28px 0" }}>
       <svg aria-hidden="true" height="24" viewBox="0 0 24 24" width="24">
-        <circle cx="12" cy="12" fill="none" opacity="0.35" r="9" stroke="#DBD9D0" strokeWidth="2" />
+        <circle
+          cx="12"
+          cy="12"
+          fill="none"
+          opacity="0.35"
+          r="9"
+          stroke={tokens.border}
+          strokeWidth="2"
+        />
         <path
           d="M12 3a9 9 0 0 1 9 9"
           fill="none"
-          stroke="#5F5D55"
+          stroke={tokens.accent}
           strokeLinecap="round"
           strokeWidth="2"
         >

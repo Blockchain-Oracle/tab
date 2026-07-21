@@ -1,0 +1,52 @@
+.theme-toggle {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--tab-line);
+  border-radius: 999px;
+  color: var(--tab-text);
+  cursor: pointer;
+  display: inline-flex;
+  gap: 0.45rem;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.75rem;
+  white-space: nowrap;
+}
+
+.theme-toggle:hover {
+  background: color-mix(in srgb, var(--tab-text) 6%, transparent);
+}
+
+.theme-toggle__icon {
+  display: grid;
+  height: 1rem;
+  place-items: center;
+  width: 1rem;
+}
+
+.theme-toggle__icon svg {
+  fill: none;
+  height: 100%;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+  width: 100%;
+}
+
+.theme-toggle__label {
+  font-family: var(--tab-font-evidence);
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+}
+
+.theme-toggle__arrow {
+  color: var(--tab-text-muted);
+}
+
+.mobile-menu .theme-toggle {
+  border-radius: 0.45rem;
+  justify-content: flex-start;
+  margin-top: 0.25rem;
+  width: 100%;
+}

@@ -68,9 +68,15 @@ export function useCheckoutAuth(options: Options) {
       patch({ otpIssue });
       dispatch({ type: "otp-rejected" });
     };
+    // A new device is a recoverable waiting state: Magic emails an approval
+    // link and the SAME attempt resolves once the buyer approves. Keep the
+    // attempt alive and show the waiting panel instead of failing.
+    const deviceApproval = () => {
+      if (isActive()) dispatch({ type: "device-approval-needed" });
+    };
     try {
       const attempt = await services.startBuyerAuth(context, model.email, {
-        onDeviceApproval: authFailed,
+        onDeviceApproval: deviceApproval,
         onExpired: () => issue("expired"),
         onInvalid: () => issue("invalid"),
         onOtpSent: () => {

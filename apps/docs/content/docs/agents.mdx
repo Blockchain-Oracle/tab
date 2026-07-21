@@ -1,0 +1,96 @@
+---
+title: Agents & x402
+description: Let an AI agent pay 402 Payment Required responses by itself — capped, keyless, and fully evidenced.
+---
+
+An agent on Tab pays [x402](https://x402.org) resources through an MCP proxy.
+The design has one rule: **the model never touches money directly.**
+
+- The agent's signing key lives in a hosted signer — never in the agent's
+  context, environment, or tool output.
+- The spending cap is enforced in the proxy, outside the model. A
+  prompt-injected agent cannot raise its own cap.
+- Every attempt — settled, failed, or blocked — writes a receipt with the
+  full cap context at the moment of the attempt.
+
+## Setup
+
+The `/agents/start` page walks these steps and completes each one from real
+evidence (the same derivations power the wizard):
+
+<Steps>
+
+### Provision
+
+Creates the agent's hosted signing wallet. You get an address you can verify
+on-chain — Tab never shows an address it didn't derive.
+
+### Set the cap
+
+A per-cycle USD ceiling. Payments that would exceed it are **blocked** and
+still leave a receipt saying exactly why.
+
+### Fund
+
+x402 spends USDC already sitting at the signing address. On Base Sepolia,
+[test funds](/docs/test-funds) are granted in-app — the wizard fires the
+grant automatically when funding is the next step.
+
+### Connect your MCP client
+
+Install the proxy, then add it to your MCP client config:
+
+```bash
+npm install -g @runtab/mcp   # provides the tab-mcp command
+```
+
+Add the proxy to your MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "tab": {
+      "command": "tab-mcp",
+      "env": {
+        "TAB_API_BASE_URL": "https://app.runtab.xyz",
+        "TAB_AGENT_KEY": "<YOUR_ONE_TIME_KEY>"
+      }
+    }
+  }
+}
+```
+
+The `TAB_AGENT_KEY` (`agent_sk_…`) is shown once at provisioning. The
+connect step completes when the proxy first sees your agent — a real
+connection event, not a checkbox.
+
+### First paid call
+
+Point the agent at any x402 resource. The proxy pays the `402`, retries the
+request, and the resource answers `200`. The receipt appears in the live
+payments feed as it happens.
+
+### Review the evidence
+
+Open the first receipt and check the trail — amount, network, transaction
+hash, and the cap context at the moment of the attempt. The wizard closes
+once you've acknowledged the review.
+
+</Steps>
+
+## The emergency ladder
+
+Owner controls, in escalating order — each is server-confirmed, never
+optimistic:
+
+1. **Pause** — new payments are blocked; the agent stays connected.
+2. **Freeze** — pause plus key rotation lockout.
+3. **Cancel** — the agent's key is revoked and its signer subject destroyed.
+4. **Nuke** — cancel plus credential destruction. The address remains
+   visible as history; deposits to it are explicitly warned against.
+
+## Monitoring
+
+The mobile monitor (installable PWA) shows live receipts and cap burn, and
+can revoke — but **signs nothing**. There is no signing path in the mobile
+surface at all.

@@ -4,7 +4,7 @@ import { readLeashFloatBalances } from "./fund-balances";
 
 const ownerAddress = process.env.TAB_PARTICLE_READ_OWNER_ADDRESS ?? "";
 
-describe.skipIf(!ownerAddress)("Leash float live reads", () => {
+describe.skipIf(!ownerAddress)("Agent float live reads", () => {
   it("reads native USDC balances from the real Base and Arbitrum RPCs", async () => {
     const balances = await readLeashFloatBalances(ownerAddress, "mainnet");
 

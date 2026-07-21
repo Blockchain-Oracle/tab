@@ -21,7 +21,7 @@ function notificationTitle(type: string) {
     float_low: "Agent float is low",
     unusual_domain: "First payment to a new destination",
   };
-  return titles[type] ?? "Leash notification";
+  return titles[type] ?? "Agent notification";
 }
 
 function notificationDestination(notification: NotificationPreview) {
@@ -47,7 +47,9 @@ export function OverviewNotifications({
           <span>Notifications</span>
           <b>{unreadCount} unread</b>
         </div>
-        <Link href={`/leash/notifications?agentId=${encodeURIComponent(agentId)}`}>View all →</Link>
+        <Link href={`/agents/notifications?agentId=${encodeURIComponent(agentId)}`}>
+          View all →
+        </Link>
       </div>
       {notifications.length === 0 ? (
         <p className={styles.empty}>No real alert or action-required event has fired.</p>

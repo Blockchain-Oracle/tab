@@ -1,6 +1,6 @@
 .modeLabel {
   padding: 0 6px;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.07em;
@@ -11,7 +11,7 @@
   margin-top: 6px;
   padding: 2px;
   border-radius: 8px;
-  background: #e9e7e0;
+  background: color-mix(in srgb, var(--tab-text) 6%, transparent);
 }
 
 .modeButton,
@@ -22,28 +22,28 @@
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
   font-weight: 500;
 }
 
 .selectedTest,
 .selectedLive {
-  background: #fff;
+  background: var(--tab-surface);
   box-shadow: 0 1px 2px rgba(28, 27, 24, 0.08);
   font-weight: 600;
 }
 
 .selectedTest {
-  color: #96650f;
+  color: var(--tab-status-warning);
 }
 
 .selectedLive {
-  color: #257a46;
+  color: var(--tab-text);
 }
 
 .modeButton:disabled {
-  color: #b4b2a8;
+  color: var(--tab-status-unavailable);
 }
 
 .modeNote,
@@ -54,18 +54,18 @@
 }
 
 .modeNote {
-  color: #8c8a80;
+  color: var(--tab-text-muted);
 }
 
 .controlError {
-  color: #8e2f34;
+  color: var(--tab-status-danger);
 }
 
 .accountMenu {
   position: relative;
   margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px solid #e8e6df;
+  border-top: 1px solid var(--tab-line);
 }
 
 .accountSummary {
@@ -83,7 +83,7 @@
 }
 
 .accountSummary:hover {
-  background: #edebe4;
+  background: var(--tab-line);
 }
 
 .avatar {
@@ -92,9 +92,9 @@
   height: 26px;
   flex: none;
   place-items: center;
-  border: 1px solid #e4e2da;
+  border: 1px solid var(--tab-line);
   border-radius: 7px;
-  background: #f1efe9;
+  background: var(--tab-canvas);
   font-size: 11px;
   font-weight: 600;
 }
@@ -121,12 +121,12 @@
 
 .accountEmail {
   margin-top: 2px;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
 }
 
 .menuMark {
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 12px;
 }
 
@@ -137,9 +137,9 @@
   left: 0;
   z-index: 3;
   padding: 6px;
-  border: 1px solid #e4e2da;
+  border: 1px solid var(--tab-line);
   border-radius: 9px;
-  background: #fff;
+  background: var(--tab-surface);
   box-shadow: 0 8px 24px rgba(28, 27, 24, 0.12);
 }
 
@@ -149,18 +149,18 @@
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: #8e2f34;
+  color: var(--tab-status-danger);
   font-size: 12px;
   text-align: left;
 }
 
 .accountPopover button:hover:not(:disabled) {
-  background: #faecec;
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, transparent);
 }
 
 .accountPopover p {
   margin: 5px 8px;
-  color: #8e2f34;
+  color: var(--tab-status-danger);
   font-size: 10.5px;
 }
 
@@ -176,6 +176,6 @@
   .accountMenu {
     margin-top: 12px;
     padding-top: 10px;
-    border-top: 1px solid #e8e6df;
+    border-top: 1px solid var(--tab-line);
   }
 }

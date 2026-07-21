@@ -10,7 +10,7 @@ export const BASE_SEPOLIA_USDC = "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as
 export const X402_TESTNET_FACILITATOR = "https://x402.org/facilitator" as const;
 export const X402_TESTNET_AMOUNT = "1000" as const;
 export const X402_TESTNET_PATH = "/api/x402/testnet" as const;
-export const TEST_FUNDS_LABEL = "Test funds — not real money" as const;
+export const TEST_FUNDS_LABEL = "Sandbox funds — no real value" as const;
 
 const BYTES_32 = /^0x[\da-f]{64}$/i;
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -84,7 +84,7 @@ function canonicalHttpsOrigin(value: string | undefined) {
 export function readX402TestnetResourceConfig(
   environment: Readonly<Record<string, string | undefined>> = process.env,
 ): X402TestnetResourceConfig {
-  if (environment.LEASH_PROVISIONING_PROFILE !== BASE_SEPOLIA_INTEGRATION_PROFILE) {
+  if (environment.TAB_AGENT_PROVISIONING_PROFILE !== BASE_SEPOLIA_INTEGRATION_PROFILE) {
     throw new X402TestnetConfigurationError(
       "The Base Sepolia x402 integration profile is not enabled.",
     );

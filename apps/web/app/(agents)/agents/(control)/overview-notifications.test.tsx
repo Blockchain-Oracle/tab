@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { OverviewNotifications } from "./overview-notifications";
 
-describe("Leash overview notifications", () => {
+describe("Agent overview notifications", () => {
   it("shows the canonical MCP resource instead of the collapsed MCP host", () => {
     const html = renderToStaticMarkup(
       <OverviewNotifications
@@ -37,7 +37,7 @@ describe("Leash overview notifications", () => {
             metadata: {
               network: "eip155:84532",
               testFunds: true,
-              testFundsLabel: "Test funds — not real money",
+              testFundsLabel: "Sandbox funds — no real value",
             },
             resourceHost: null,
             tier: "2",
@@ -48,7 +48,7 @@ describe("Leash overview notifications", () => {
       />,
     );
 
-    expect(html).toContain("Test funds — not real money");
+    expect(html).toContain("Sandbox funds — no real value");
     expect(html).not.toContain("Cap policy event");
   });
 });

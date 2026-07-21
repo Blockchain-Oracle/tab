@@ -109,13 +109,13 @@ describe("merchant provisioning with real PostgreSQL", () => {
     expect(keys.find((key) => key.env === "live")?.public_key).toMatch(/^pk_live_/);
   });
 
-  it("attaches merchant resources to an exact verified Leash-first principal", async () => {
+  it("attaches merchant resources to an exact verified agent-first principal", async () => {
     const input = signupInput("leash-first@example.test");
     const [owner] = await connection.db
       .insert(users)
       .values({ email: input.email, magicIssuer: input.magicIssuer })
       .returning({ userId: users.id });
-    if (!owner) throw new Error("PostgreSQL did not return the Leash-first owner");
+    if (!owner) throw new Error("PostgreSQL did not return the agent-first owner");
 
     const result = await provisionMerchant(connection.db, input);
 

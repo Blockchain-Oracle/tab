@@ -65,7 +65,7 @@ async function report(merchantId: string, paymentId: string, transactionId: stri
     { env: "test", merchantId },
     paymentId,
     { tokenChanges: [{ source: "dashboard-test" }], transactionId },
-    { payerAddress },
+    { payerAddress, payerEmail: "buyer@example.test" },
   );
 }
 
@@ -185,7 +185,7 @@ describe("merchant dashboard transaction reads with real PostgreSQL", () => {
       { env: "live", merchantId: identity.merchantId },
       row.id,
       { tokenChanges: [{ source: "live-candidate" }], transactionId },
-      { payerAddress },
+      { payerAddress, payerEmail: "buyer@example.test" },
     );
 
     const page = await listDashboardTransactions(connection.db, {

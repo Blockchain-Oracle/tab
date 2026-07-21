@@ -12,7 +12,7 @@ import {
   sql,
 } from "./leash-schema.integration-support";
 
-describe("Phase 6 Leash PostgreSQL schema", () => {
+describe("Phase 6 Agent PostgreSQL schema", () => {
   beforeEach(async () => {
     await sql`truncate table users cascade`;
   });
@@ -21,7 +21,7 @@ describe("Phase 6 Leash PostgreSQL schema", () => {
     await sql.end();
   });
 
-  it("creates every canonical Leash ledger table", async () => {
+  it("creates every canonical Agent ledger table", async () => {
     const rows = await sql<{ table_name: string }[]>`
       select table_name
       from information_schema.tables
@@ -109,16 +109,16 @@ describe("Phase 6 Leash PostgreSQL schema", () => {
     ).rejects.toMatchObject({ code: "22P02" });
   });
 
-  it("enforces one active Leash key, a positive cap, and one active cycle", async () => {
+  it("enforces one active agent key, a positive cap, and one active cycle", async () => {
     const { agentId } = await createOwnerAgent("key-cap-cycle");
     const hash = randomBytes(32).toString("hex");
     await sql`
       insert into leash_keys (agent_id, hashed_key, prefix, last4)
-      values (${agentId}, ${hash}, 'leash_sk_', 'a1B2')
+      values (${agentId}, ${hash}, 'agent_sk_', 'a1B2')
     `;
     await expect(sql`
       insert into leash_keys (agent_id, hashed_key, prefix, last4)
-      values (${agentId}, ${randomBytes(32).toString("hex")}, 'leash_sk_', 'c3D4')
+      values (${agentId}, ${randomBytes(32).toString("hex")}, 'agent_sk_', 'c3D4')
     `).rejects.toMatchObject({ code: "23505" });
     await expect(sql`
       insert into caps (agent_id, amount_usd_cents, frequency)

@@ -2,7 +2,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 
 export class InvalidLeashKeyInputError extends Error {
   constructor() {
-    super("Choose a valid Leash agent and key.");
+    super("Choose a valid agent and key.");
     this.name = "InvalidLeashKeyInputError";
   }
 }

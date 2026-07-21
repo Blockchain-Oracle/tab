@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     target = parseAgentTarget(body);
   } catch (error) {
     if (error instanceof InvalidCapInputError) {
-      return leashError("INVALID_AGENT", "Choose a valid Leash agent.", 400);
+      return leashError("INVALID_AGENT", "Choose a valid agent.", 400);
     }
     throw error;
   }

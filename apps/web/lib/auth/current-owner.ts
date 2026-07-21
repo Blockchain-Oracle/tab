@@ -27,6 +27,6 @@ export async function getCurrentOwner() {
 
 export async function requireCurrentOwner() {
   const owner = await getCurrentOwner();
-  if (!owner) redirect("/leash/login");
+  if (!owner) redirect("/agents/login");
   return owner;
 }

@@ -95,7 +95,7 @@ describe("owner notification API", () => {
   it("requires an owner session, strict filters, and same-origin mutations", async () => {
     const owner = await provision("auth");
     const unauthorized = await GET(
-      request("GET", `/api/leash/notifications?agentId=${owner.agentId}`),
+      request("GET", `/api/agents/notifications?agentId=${owner.agentId}`),
     );
     expect(unauthorized.status).toBe(401);
     expect(unauthorized.headers.get("cache-control")).toBe("no-store");
@@ -103,7 +103,7 @@ describe("owner notification API", () => {
     const malformed = await GET(
       request(
         "GET",
-        `/api/leash/notifications?agentId=${owner.agentId}&tier=1&surprise=true`,
+        `/api/agents/notifications?agentId=${owner.agentId}&tier=1&surprise=true`,
         owner.token,
       ),
     );
@@ -112,7 +112,7 @@ describe("owner notification API", () => {
     const crossOrigin = await PATCH(
       request(
         "PATCH",
-        "/api/leash/notifications",
+        "/api/agents/notifications",
         owner.token,
         { action: "read_all", agentId: owner.agentId },
         "https://attacker.example.test",
@@ -147,7 +147,7 @@ describe("owner notification API", () => {
     });
 
     const response = await GET(
-      request("GET", `/api/leash/notifications?agentId=${owner.agentId}`, owner.token),
+      request("GET", `/api/agents/notifications?agentId=${owner.agentId}`, owner.token),
     );
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store");
@@ -161,7 +161,7 @@ describe("owner notification API", () => {
     ]);
     expect(body.notifications[0]).toMatchObject({
       cta: {
-        href: `/leash/cap?agentId=${owner.agentId}#cap-controls`,
+        href: `/agents/cap?agentId=${owner.agentId}#cap-controls`,
         kind: "cap_remediation",
         label: "Review cap",
       },
@@ -175,7 +175,7 @@ describe("owner notification API", () => {
     const filtered = await GET(
       request(
         "GET",
-        `/api/leash/notifications?agentId=${owner.agentId}&tier=2&read=unread&resolution=active&type=float_low`,
+        `/api/agents/notifications?agentId=${owner.agentId}&tier=2&read=unread&resolution=active&type=float_low`,
         owner.token,
       ),
     );
@@ -201,7 +201,7 @@ describe("owner notification API", () => {
     ).sort((left, right) => right.localeCompare(left));
 
     const first = await GET(
-      request("GET", `/api/leash/notifications?agentId=${owner.agentId}&limit=2`, owner.token),
+      request("GET", `/api/agents/notifications?agentId=${owner.agentId}&limit=2`, owner.token),
     );
     const firstBody = await first.json();
     expect(firstBody.notifications.map((item: { id: string }) => item.id)).toEqual(
@@ -213,7 +213,7 @@ describe("owner notification API", () => {
     const second = await GET(
       request(
         "GET",
-        `/api/leash/notifications?agentId=${owner.agentId}&limit=2&cursor=${encodeURIComponent(firstBody.nextCursor)}`,
+        `/api/agents/notifications?agentId=${owner.agentId}&limit=2&cursor=${encodeURIComponent(firstBody.nextCursor)}`,
         owner.token,
       ),
     );
@@ -234,10 +234,10 @@ describe("owner notification API", () => {
     });
 
     const foreignAgent = await GET(
-      request("GET", `/api/leash/notifications?agentId=${foreign.agentId}`, owner.token),
+      request("GET", `/api/agents/notifications?agentId=${foreign.agentId}`, owner.token),
     );
     const foreignNotification = await PATCH(
-      request("PATCH", "/api/leash/notifications", owner.token, {
+      request("PATCH", "/api/agents/notifications", owner.token, {
         action: "read_one",
         agentId: owner.agentId,
         notificationId: foreignNotificationId,
@@ -262,7 +262,7 @@ describe("owner notification API", () => {
     });
     const readOne = { action: "read_one", agentId: owner.agentId, notificationId: firstId };
 
-    const first = await PATCH(request("PATCH", "/api/leash/notifications", owner.token, readOne));
+    const first = await PATCH(request("PATCH", "/api/agents/notifications", owner.token, readOne));
     await expect(first.json()).resolves.toEqual({ unreadCount: 1, updatedCount: 1 });
     const [stored] = await connection.db
       .select({ readAt: notifications.readAt })
@@ -271,7 +271,7 @@ describe("owner notification API", () => {
     expect(stored?.readAt).toBeInstanceOf(Date);
 
     const repeated = await PATCH(
-      request("PATCH", "/api/leash/notifications", owner.token, readOne),
+      request("PATCH", "/api/agents/notifications", owner.token, readOne),
     );
     await expect(repeated.json()).resolves.toEqual({ unreadCount: 1, updatedCount: 0 });
     const [unchanged] = await connection.db
@@ -281,10 +281,10 @@ describe("owner notification API", () => {
     expect(unchanged?.readAt).toEqual(stored?.readAt);
 
     const readAll = { action: "read_all", agentId: owner.agentId };
-    const all = await PATCH(request("PATCH", "/api/leash/notifications", owner.token, readAll));
+    const all = await PATCH(request("PATCH", "/api/agents/notifications", owner.token, readAll));
     await expect(all.json()).resolves.toEqual({ unreadCount: 0, updatedCount: 1 });
     const allRepeated = await PATCH(
-      request("PATCH", "/api/leash/notifications", owner.token, readAll),
+      request("PATCH", "/api/agents/notifications", owner.token, readAll),
     );
     await expect(allRepeated.json()).resolves.toEqual({ unreadCount: 0, updatedCount: 0 });
   });

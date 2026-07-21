@@ -55,10 +55,10 @@ export function defaultPaymentStateDirectory(
   environment: Readonly<Record<string, string | undefined>> = process.env,
   home: string = homedir(),
 ) {
-  const configured = environment.LEASH_STATE_DIRECTORY;
+  const configured = environment.TAB_STATE_DIRECTORY;
   if (configured !== undefined) {
     if (!configured || configured.trim() !== configured) {
-      invalidConfiguration("LEASH_STATE_DIRECTORY is invalid.");
+      invalidConfiguration("TAB_STATE_DIRECTORY is invalid.");
     }
     return resolve(configured);
   }

@@ -99,7 +99,7 @@ async function reportTestPayment(principal: Awaited<ReturnType<typeof scope>>) {
     { env: "test", merchantId: principal.merchantId },
     paymentId,
     { tokenChanges: [], transactionId: `test_${randomUUID()}` },
-    { payerAddress: payer },
+    { payerAddress: payer, payerEmail: "buyer@example.test" },
   );
   return { paymentId, result };
 }

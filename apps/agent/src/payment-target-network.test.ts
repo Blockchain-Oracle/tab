@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createLeashFetch } from "./fetch-wrapper.js";
+import { createTabFetch } from "./fetch-wrapper.js";
 import { createPinnedPaymentFetch } from "./payment-target-network.js";
 import { PaymentTargetPolicyError } from "./payment-target-policy.js";
 
@@ -95,10 +95,10 @@ describe("pinned payment target networking", () => {
 
   it("protects the exported fetch wrapper before its transport can reach a private DNS answer", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
-    const leashFetch = createLeashFetch({
+    const leashFetch = createTabFetch({
       address: "0x1111111111111111111111111111111111111111",
       apiBaseUrl: "https://tab.example.test",
-      apiKey: "leash_sk_test",
+      apiKey: "agent_sk_test",
       fetch,
       lookup: async () => [{ address: "169.254.169.254", family: 4 }],
       paymentProfile: "mainnet",

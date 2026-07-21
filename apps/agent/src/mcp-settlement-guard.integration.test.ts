@@ -12,7 +12,7 @@ import {
 } from "./durable-mcp-payment.js";
 import { createLeashPaymentClient } from "./payment-client.js";
 import { PaymentEnvelopeStore } from "./payment-envelope-store.js";
-import { LeashRemoteSigner } from "./remote-signer.js";
+import { TabRemoteSigner } from "./remote-signer.js";
 
 const account = privateKeyToAccount(`0x${"51".repeat(32)}`);
 const transaction = `0x${"52".repeat(32)}`;
@@ -107,10 +107,10 @@ describe("durable MCP settlement acknowledgement guard", () => {
       });
     };
     try {
-      const signer = new LeashRemoteSigner({
+      const signer = new TabRemoteSigner({
         address: account.address,
         apiBaseUrl: "https://tab.example.test",
-        apiKey: "leash_sk_guard",
+        apiKey: "agent_sk_guard",
         fetch: remoteFetch,
         paymentProfile: "mainnet",
         reportAttempts: 1,
@@ -157,10 +157,10 @@ describe("durable MCP settlement acknowledgement guard", () => {
       return new Response(null, { status: 404 });
     };
     const start = () => {
-      const signer = new LeashRemoteSigner({
+      const signer = new TabRemoteSigner({
         address: account.address,
         apiBaseUrl: "https://tab.example.test",
-        apiKey: "leash_sk_guard",
+        apiKey: "agent_sk_guard",
         fetch: remoteFetch,
         paymentProfile: "mainnet",
         reportAttempts: 1,

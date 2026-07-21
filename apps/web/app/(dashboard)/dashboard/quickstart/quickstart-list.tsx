@@ -68,7 +68,7 @@ export function formatWebhookDeliverySummary(
 
 export function tabServerSnippet(appUrl: string, maskedSecretKey: string | null) {
   return `// Server environment: TAB_API_BASE_URL=${appUrl}
-import { Tab } from "@tab/sdk";
+import { Tab } from "@runtab/sdk";
 
 const tab = new Tab(process.env.TAB_SECRET_KEY!);
 await tab.payments.list();
@@ -81,7 +81,7 @@ function stepContent(key: StepKey, state: QuickstartState, appUrl: string) {
     { code?: string; description: string; href?: string; note?: string }
   > = {
     install: {
-      code: "npm install @tab/sdk",
+      code: "npm install @runtab/sdk",
       description: "Add the checkout component to your merchant application.",
       note: "Package publication is still blocked. Use the local workspace package until it is published.",
     },

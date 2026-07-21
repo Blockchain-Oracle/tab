@@ -114,7 +114,10 @@ describe("test callback and webhook settlement parity", () => {
       { env: "test", merchantId: identity.merchantId },
       payment.id,
       { tokenChanges: [{ caller: "candidate-only" }], transactionId },
-      { payerAddress: "0x9999999999999999999999999999999999999999" },
+      {
+        payerAddress: "0x9999999999999999999999999999999999999999",
+        payerEmail: "buyer@example.test",
+      },
     );
     if (result.status !== "settled") throw new Error("Expected test settlement");
     const responseBody = paymentReportResponseBody(payment.id, result);

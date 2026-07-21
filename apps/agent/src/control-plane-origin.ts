@@ -2,7 +2,7 @@ const LOOPBACK_HOSTS = new Set(["127.0.0.1", "[::1]", "localhost"]);
 
 export class InvalidControlPlaneOriginError extends Error {
   constructor() {
-    super("The Leash control-plane origin is invalid.");
+    super("The agent control-plane origin is invalid.");
     this.name = "InvalidControlPlaneOriginError";
   }
 }

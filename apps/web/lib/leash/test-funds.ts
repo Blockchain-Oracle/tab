@@ -1,1 +1,1 @@
-export const TEST_FUNDS_LABEL = "Test funds — not real money" as const;
+export const TEST_FUNDS_LABEL = "Sandbox funds — no real value" as const;

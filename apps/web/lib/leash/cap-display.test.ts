@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { deriveCapDisplay } from "./cap-display";
 
-describe("Leash cap display", () => {
+describe("Agent cap display", () => {
   it("keeps settled and pending spend separate while matching the committed cap total", () => {
     expect(
       deriveCapDisplay({

@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result, { headers: LEASH_RESPONSE_HEADERS, status: 200 });
   } catch (error) {
     if (error instanceof LeashAgentNotFoundError) {
-      return leashError("LEASH_AGENT_NOT_FOUND", "The Leash agent was not found.", 404);
+      return leashError("AGENT_NOT_FOUND", "The agent was not found.", 404);
     }
     if (error instanceof InvalidAgentTransitionError) {
       return leashError("INVALID_AGENT_TRANSITION", error.message, 409);

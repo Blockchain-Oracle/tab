@@ -19,7 +19,7 @@ export function LeashAuthEmailPanel(props: LeashAuthEmailPanelProps) {
 
   return (
     <div>
-      <h1 className={styles.title}>Log in to Leash</h1>
+      <h1 className={styles.title}>Log in to Tab</h1>
       <p className={styles.subtitle}>
         A trusted browser signs in instantly. Otherwise, Magic emails a one-time code.
       </p>

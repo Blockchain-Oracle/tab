@@ -1,9 +1,12 @@
 import { type KeyboardEvent, type ReactNode, type RefObject, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 import type { CheckoutContext } from "./checkout-api";
 import type { CheckoutStage } from "./checkout-state";
 import { BUYER_COPY } from "./copy";
-import { colors, font, overlay, sheet } from "./styles";
+import { Flowline } from "./Flowline";
+import { TabGlyph } from "./marks";
+import { font, monoFamily, overlay, sheet, useTokens } from "./styles";
 
 type Props = {
   amount: string;
@@ -25,14 +28,36 @@ export function CheckoutShell({
   returnFocusRef,
   stage,
 }: Props) {
+  const tokens = useTokens();
   const dialogRef = useRef<HTMLDivElement>(null);
   const name = context.merchant.businessName?.trim() || BUYER_COPY.merchant;
-  const initial = name.slice(0, 1).toUpperCase();
   const canClose = stage !== "confirming";
+
   useEffect(() => {
     dialogRef.current?.focus();
     return () => returnFocusRef.current?.focus();
   }, [returnFocusRef]);
+
+  // The sheet renders in a portal, so every other body child is the merchant
+  // page: make it inert for assistive tech and lock scroll while open.
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const siblings = [...document.body.children].filter(
+      (node) => !node.contains(dialogRef.current) && node.tagName !== "SCRIPT",
+    );
+    for (const node of siblings) {
+      node.setAttribute("aria-hidden", "true");
+      node.setAttribute("inert", "");
+    }
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      for (const node of siblings) {
+        node.removeAttribute("aria-hidden");
+        node.removeAttribute("inert");
+      }
+    };
+  }, []);
 
   const keyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Escape" && canClose) {
@@ -55,65 +80,82 @@ export function CheckoutShell({
       first?.focus();
     }
   };
-  return (
-    <div style={overlay}>
+
+  return createPortal(
+    <div data-tab-checkout-overlay="" style={overlay}>
+      <style>{`
+        [data-tab-checkout-overlay] :where(a, button, input, [tabindex]):focus-visible {
+          outline: 2px solid ${tokens.ink};
+          outline-offset: 3px;
+        }
+      `}</style>
       <div
         aria-label={BUYER_COPY.checkout}
         aria-modal="true"
         onKeyDown={keyDown}
         ref={dialogRef}
         role="dialog"
-        style={sheet}
+        style={sheet(tokens)}
         tabIndex={-1}
       >
         <div
           style={{
             alignItems: "center",
-            borderBottom: "1px solid #F0EEE8",
+            borderBottom: `1px solid ${tokens.border}`,
             display: "flex",
             gap: 10,
-            padding: "12px 14px",
+            padding: "13px 14px",
           }}
         >
-          {context.merchant.logoUrl ? (
-            <img
-              alt=""
-              height={28}
-              src={context.merchant.logoUrl}
-              style={{ borderRadius: 8, objectFit: "cover", width: 28 }}
-              width={28}
-            />
-          ) : (
-            <div
-              aria-hidden="true"
-              style={{
-                alignItems: "center",
-                background: "#F1EFE9",
-                border: `1px solid ${colors.border}`,
-                borderRadius: 8,
-                display: "flex",
-                fontSize: 13,
-                fontWeight: 600,
-                height: 28,
-                justifyContent: "center",
-                width: 28,
-              }}
-            >
-              {initial}
-            </div>
-          )}
-          <div style={{ flex: 1, fontSize: 13, fontWeight: 600, minWidth: 0 }}>{name}</div>
-          <div style={{ color: colors.muted, fontSize: 13, fontWeight: 600 }}>${amount}</div>
+          <span aria-hidden="true" style={{ alignItems: "center", display: "flex", gap: 6 }}>
+            <TabGlyph size={15} />
+            <span style={{ fontSize: 15, fontWeight: 640, letterSpacing: "-0.02em" }}>tab</span>
+          </span>
+          <span
+            style={{
+              borderLeft: `1px solid ${tokens.border}`,
+              color: tokens.muted,
+              flex: 1,
+              fontSize: 13,
+              fontWeight: 560,
+              minWidth: 0,
+              overflow: "hidden",
+              paddingLeft: 10,
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {context.merchant.logoUrl ? (
+              <img
+                alt=""
+                height={18}
+                src={context.merchant.logoUrl}
+                style={{
+                  borderRadius: 5,
+                  marginRight: 6,
+                  objectFit: "cover",
+                  verticalAlign: "-4px",
+                  width: 18,
+                }}
+                width={18}
+              />
+            ) : null}
+            {name}
+          </span>
+          <span style={{ fontFamily: monoFamily, fontSize: 13, fontWeight: 620 }}>${amount}</span>
           {canClose ? (
             <button
               aria-label={BUYER_COPY.buttons.close}
               onClick={onCancel}
               style={{
-                ...font,
+                ...font(tokens),
                 background: "transparent",
                 border: 0,
+                borderRadius: 8,
                 cursor: "pointer",
                 fontSize: 20,
+                lineHeight: 1,
+                padding: "2px 6px",
               }}
               type="button"
             >
@@ -124,21 +166,23 @@ export function CheckoutShell({
         {context.mode === "test" ? (
           <div
             style={{
-              background: "#FBF1DC",
-              color: colors.warning,
+              background: tokens.amberBackground,
+              color: tokens.amber,
               fontSize: 11,
+              fontWeight: 560,
               padding: "7px 14px",
             }}
           >
             {BUYER_COPY.testMode}
           </div>
         ) : null}
-        <div style={{ padding: "26px 22px 24px" }}>{children}</div>
+        <Flowline stage={stage} />
+        <div style={{ padding: "22px 22px 24px" }}>{children}</div>
         <div
           style={{
-            background: "#FCFBF9",
-            borderTop: "1px solid #F0EEE8",
-            color: "#8C8A80",
+            background: tokens.paper,
+            borderTop: `1px solid ${tokens.border}`,
+            color: tokens.muted,
             fontSize: 11,
             padding: 11,
             textAlign: "center",
@@ -147,6 +191,7 @@ export function CheckoutShell({
           {BUYER_COPY.footer}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

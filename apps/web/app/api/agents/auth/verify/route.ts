@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 import {
   InvalidMagicIdentityError,
   InvalidMagicTokenError,
@@ -20,19 +18,9 @@ import {
   OwnerIdentityConflictError,
 } from "../../../../../lib/db/owner-identity";
 import { getServerDatabase } from "../../../../../lib/db/server";
+import { jsonError, jsonNoStore } from "../../../../../lib/http/responses";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function json(body: unknown, status: number) {
-  return NextResponse.json(body, {
-    headers: { "cache-control": "no-store" },
-    status,
-  });
-}
-
-function error(code: string, message: string, status: number) {
-  return json({ error: { code, message } }, status);
-}
 
 function authInput(body: unknown) {
   if (typeof body !== "object" || body === null) return undefined;
@@ -45,7 +33,7 @@ function authInput(body: unknown) {
 
 export async function POST(request: Request) {
   if (!requestOriginIsAllowed(request)) {
-    return error("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
+    return jsonError("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
   }
 
   let body: unknown;
@@ -57,13 +45,13 @@ export async function POST(request: Request) {
 
   const input = authInput(body);
   if (!input) {
-    return error("INVALID_AUTH_REQUEST", "A DID token and valid email are required.", 400);
+    return jsonError("INVALID_AUTH_REQUEST", "A DID token and valid email are required.", 400);
   }
   if (!magicAuthenticationConfigured()) {
-    return error("MAGIC_NOT_CONFIGURED", "Magic authentication is not configured.", 503);
+    return jsonError("MAGIC_NOT_CONFIGURED", "Magic authentication is not configured.", 503);
   }
   if (!sessionSigningConfigured()) {
-    return error("SESSION_NOT_CONFIGURED", "Session signing is not configured.", 503);
+    return jsonError("SESSION_NOT_CONFIGURED", "Session signing is not configured.", 503);
   }
 
   let identity: Awaited<ReturnType<typeof verifyOwnerDidToken>>;
@@ -74,16 +62,20 @@ export async function POST(request: Request) {
       authError instanceof InvalidMagicTokenError ||
       authError instanceof InvalidMagicIdentityError
     ) {
-      return error("INVALID_DID_TOKEN", "Magic authentication could not be verified.", 401);
+      return jsonError("INVALID_DID_TOKEN", "Magic authentication could not be verified.", 401);
     }
     if (authError instanceof MagicServiceUnavailableError) {
-      return error("MAGIC_UNAVAILABLE", "Magic authentication is temporarily unavailable.", 502);
+      return jsonError(
+        "MAGIC_UNAVAILABLE",
+        "Magic authentication is temporarily unavailable.",
+        502,
+      );
     }
     throw authError;
   }
 
   if (!magicEmailMatchesRequest(identity.email, input.email)) {
-    return error(
+    return jsonError(
       "MAGIC_EMAIL_MISMATCH",
       "This browser's saved Magic session belongs to a different email.",
       409,
@@ -95,7 +87,7 @@ export async function POST(request: Request) {
     owner = await findOrCreateOwnerIdentity(getServerDatabase().db, identity);
   } catch (ownerError) {
     if (ownerError instanceof OwnerIdentityConflictError) {
-      return error(
+      return jsonError(
         "MAGIC_IDENTITY_CONFLICT",
         "This Magic identity is already bound to a different Tab account.",
         409,
@@ -105,7 +97,7 @@ export async function POST(request: Request) {
   }
 
   const token = await createSessionToken(owner);
-  const response = json({ redirectTo: "/leash" }, 200);
+  const response = jsonNoStore({ redirectTo: "/agents" }, 200);
   response.cookies.set(SESSION_COOKIE_NAME, token, sessionCookieOptions());
   return response;
 }

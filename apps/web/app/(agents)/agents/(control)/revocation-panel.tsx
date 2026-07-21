@@ -46,7 +46,7 @@ export function RevocationPanel({
     setPending(true);
     setMessage(null);
     try {
-      const response = await fetch("/api/leash/revoke", {
+      const response = await fetch("/api/agents/revoke", {
         body: JSON.stringify({
           action,
           agentId: agent.id,
@@ -167,11 +167,11 @@ export function RevocationPanel({
               </strong>
               <p>
                 {status === "nuked"
-                  ? "Leash withdrawal is unavailable after nuclear destruction. Remaining floats may be stranded."
-                  : "Every Leash key is invalid. B-03 must clear before a replacement credential can be issued."}
+                  ? "Agent withdrawal is unavailable after nuclear destruction. Remaining floats may be stranded."
+                  : "Every agent key is invalid. B-03 must clear before a replacement credential can be issued."}
               </p>
             </div>
-            <Link href={`/leash/provision?agentId=${encodeURIComponent(agent.id)}`}>
+            <Link href={`/agents/provision?agentId=${encodeURIComponent(agent.id)}`}>
               Provision new agent
             </Link>
           </section>

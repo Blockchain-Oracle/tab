@@ -7,7 +7,7 @@ export class PaymentTargetPolicyError extends Error {
   readonly code = "UNSAFE_PAYMENT_TARGET";
 
   constructor() {
-    super("The payment target is not permitted by Leash network policy.");
+    super("The payment target is not permitted by Agent network policy.");
     this.name = "PaymentTargetPolicyError";
   }
 }

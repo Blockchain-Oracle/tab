@@ -1,13 +1,13 @@
 export class LeashAgentNotFoundError extends Error {
   constructor() {
-    super("The Leash agent was not found");
+    super("The agent was not found");
     this.name = "LeashAgentNotFoundError";
   }
 }
 
 export class LeashCapNotFoundError extends Error {
   constructor() {
-    super("The Leash cap was not found");
+    super("The Agent cap was not found");
     this.name = "LeashCapNotFoundError";
   }
 }

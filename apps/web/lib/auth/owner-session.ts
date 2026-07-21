@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 
 import type { Database } from "../db/client";
 import { users } from "../db/schema";
-import { InvalidSessionTokenError, readSessionToken } from "./session";
+import { InvalidSessionTokenError, isMerchantSession, readSessionToken } from "./session";
 
 export class InactiveOwnerSessionError extends Error {
   constructor() {
@@ -30,6 +30,13 @@ export async function loadOwnerSession(db: Database, token: string, secret?: str
       throw new InvalidOwnerSessionError({ cause: error });
     }
     throw error;
+  }
+
+  // Merchant-scoped tokens never grant agent-owner control: the dashboards
+  // are separate privilege domains. Magic session persistence makes the
+  // owner login silent for a dual-role user, so strictness costs no OTP.
+  if (isMerchantSession(session)) {
+    throw new InvalidOwnerSessionError();
   }
 
   const [owner] = await db

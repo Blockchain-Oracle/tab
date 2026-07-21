@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Tab</title>
+  <rect width="512" height="512" rx="112" fill="#141210"/>
+  <g stroke="#F2EFE9" stroke-width="34" stroke-linecap="round" fill="none">
+    <line x1="150" y1="160" x2="150" y2="352"/>
+    <line x1="221" y1="160" x2="221" y2="352"/>
+    <line x1="291" y1="160" x2="291" y2="352"/>
+    <line x1="362" y1="160" x2="362" y2="352"/>
+  </g>
+  <line x1="110" y1="318" x2="402" y2="194" stroke="#FF6B35" stroke-width="34" stroke-linecap="round"/>
+</svg>

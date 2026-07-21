@@ -1,0 +1,77 @@
+---
+title: PayButton reference
+description: Props, theming, and behavior of the embedded checkout component.
+---
+
+`<PayButton>` renders a payment trigger and a full modal checkout.
+`react`, `react-dom`, `viem`, and `magic-sdk` are peer dependencies. The
+Particle Universal Account SDK is a regular dependency but is code-split:
+it loads only when a live checkout needs a balance read, so importing
+`PayButton` never puts it in your main bundle — and test-mode checkouts
+never load it at all.
+
+## Props
+
+<TypeTable
+  type={{
+    apiBaseUrl: {
+      description: "Origin of your Tab deployment (the app that serves /api/v1/*).",
+      type: "string",
+      required: true,
+    },
+    publishableKey: {
+      description: "pk_test_… or pk_live_…. Safe for the browser; scopes the checkout to your merchant account and mode.",
+      type: "string",
+      required: true,
+    },
+    intentUrl: {
+      description: "Your server endpoint that mints a signed payment intent. Called with GET at checkout start.",
+      type: "string",
+      required: true,
+    },
+    onSuccess: {
+      description: "Called after settlement is reported with (transactionId, tokenChanges). UX only — fulfill from the webhook.",
+      type: "(transactionId: string, tokenChanges: object) => void",
+      required: true,
+    },
+    appearance: {
+      description: "Brand overrides for the embedded checkout (accent color, radius, fonts). Values merge over Tab defaults.",
+      type: "CheckoutAppearance",
+    },
+  }}
+/>
+
+## Behavior guarantees
+
+- **The amount comes from your server.** The browser presents a signed
+  `intentToken`; tampering with the amount invalidates it.
+- **Progress advances only on real events.** The flowline strip at the top of
+  the checkout moves when the payment actually opens, verifies, and settles —
+  never on a timer.
+- **`onSuccess` is not fulfillment.** It fires after the settlement report;
+  ship goods from the signed webhook, which retries with backoff.
+- **Executed money is never silently unreported.** If the settlement report
+  fails transiently, the SDK retries (1s / 4s / 10s) before surfacing state.
+- **Test mode is labeled.** Every test surface carries
+  "Sandbox funds — no real value", and test balances are real Base Sepolia
+  USDC — see [Test funds](/docs/test-funds).
+
+## Theming
+
+```tsx
+<PayButton
+  // …
+  appearance={{
+    actionColor: "#161310", // primary pay button
+    accentColor: "#0e4fd7", // progress / emphasis
+  }}
+/>
+```
+
+The checkout ships its own type stack and isolates its styles; your CSS
+cannot leak into the modal, and the modal's cannot leak out.
+
+## See it live
+
+The public storefront demo at `/demo` on your app origin runs a complete
+test checkout against a real test tenant.

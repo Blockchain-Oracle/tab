@@ -36,7 +36,7 @@ export function ConnectAgent({
           <p className={styles.eyebrow}>CONNECT YOUR AGENT</p>
           <h1>One credential for x402 payments</h1>
           <span className={styles.subtitle}>
-            Leash has no model. It only pays requests your own agent makes, within your cap.
+            Agent has no model. It only pays requests your own agent makes, within your cap.
           </span>
         </div>
         <span className={connected ? styles.activeChip : styles.waitingChip}>

@@ -1,9 +1,9 @@
-import { buildLeashMcpConfiguration, LEASH_UPSTREAM_PLACEHOLDER } from "./connect-config";
+import { buildTabMcpConfiguration, LEASH_UPSTREAM_PLACEHOLDER } from "./connect-config";
 import styles from "./connect-config-panel.module.css";
 
 function snippet(apiBaseUrl: string, upstreamUrl?: string) {
   return `// .mcp.json\n${JSON.stringify(
-    buildLeashMcpConfiguration(apiBaseUrl, upstreamUrl),
+    buildTabMcpConfiguration(apiBaseUrl, upstreamUrl),
     null,
     2,
   )}`;
@@ -20,12 +20,12 @@ export function ConnectConfigPanel({
     <section className={styles.card}>
       <div className={styles.heading}>
         <span>2</span>
-        <h2>Point your agent at Leash</h2>
+        <h2>Point your agent at Tab</h2>
       </div>
       <div className={styles.packageNote}>
-        <b>Package publish pending</b>
+        <b>Install the proxy</b>
         <span>
-          The CLI is real in this workspace, but the public npm package is not released yet.
+          <code>npm install -g @runtab/mcp</code> provides the <code>tab-mcp</code> command.
         </span>
       </div>
       {!apiBaseUrl ? (
@@ -38,7 +38,7 @@ export function ConnectConfigPanel({
           <article>
             <h3>Standalone paid_fetch</h3>
             <p>
-              With no arguments, Leash exposes one <code>paid_fetch</code> tool for direct HTTP
+              With no arguments, Agent exposes one <code>paid_fetch</code> tool for direct HTTP
               requests.
             </p>
             <pre>

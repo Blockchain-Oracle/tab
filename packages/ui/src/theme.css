@@ -1,25 +1,44 @@
+/* Ink & Evidence — Tab theme tokens. Light default; dark is warm true-dark. */
 [data-tab-ui] {
-  --tab-color-paper: #f4f0e7;
-  --tab-color-surface: #fffcf7;
-  --tab-color-ink: #15130f;
-  --tab-color-muted: #6c665c;
-  --tab-color-cobalt: #3157e8;
-  --tab-color-emerald: #1f7a4d;
-  --tab-color-testnet-amber: #9a6400;
-  --tab-color-danger: #b83f4a;
-  --tab-color-line: #ddd6c8;
+  --tab-color-ink: #161310;
+  --tab-color-ink-soft: #2b2721;
+  --tab-color-paper: #faf8f3;
+  --tab-color-surface: #ffffff;
+  --tab-color-muted: #6e6961;
+  --tab-color-line: #e7e3da;
+  --tab-color-night: #141210;
+  --tab-color-night-raised: #1c1915;
+  --tab-color-night-line: #302c26;
+  --tab-color-bone: #f2efe9;
+  --tab-color-bone-soft: #dfdacf;
+  --tab-color-bone-muted: #a9a399;
+  --tab-color-verified: #0e7a45;
+  --tab-color-verified-bright: #3fc98a;
+  --tab-color-testnet-amber: #8f6205;
+  --tab-color-testnet-amber-bright: #e3aa43;
+  --tab-color-danger: #b3382f;
+  --tab-color-danger-bright: #e56a5e;
+  --tab-color-vermilion: #e8501f;
+  --tab-color-vermilion-bright: #ff6b35;
   --tab-font-product: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
   --tab-font-marketing-emphasis: "Instrument Serif", Georgia, serif;
   --tab-font-evidence: "Geist Mono", "SFMono-Regular", Consolas, monospace;
-  --tab-focus-color: var(--tab-color-cobalt);
+  --tab-radius-s: 8px;
+  --tab-radius-m: 12px;
+  --tab-radius-l: 16px;
+  --tab-radius-pill: 999px;
+  --tab-shadow-raise: 0 1px 2px rgba(22, 19, 16, 0.06), 0 4px 16px rgba(22, 19, 16, 0.06);
+  --tab-shadow-sheet: 0 24px 64px rgba(22, 19, 16, 0.22);
   --tab-focus-width: 2px;
   --tab-focus-offset: 3px;
   --tab-motion-duration-fast: 120ms;
   --tab-motion-duration-base: 220ms;
   --tab-motion-duration-slow: 480ms;
   --tab-motion-easing: cubic-bezier(0.2, 0, 0, 1);
+  --tab-motion-easing-settle: cubic-bezier(0.22, 1, 0.36, 1);
   --tab-motion-travel-distance: 24px;
   --tab-flowline-draw-duration: 640ms;
+  --tab-stamp-duration: 360ms;
 
   background: var(--tab-canvas);
   color: var(--tab-text);
@@ -32,31 +51,53 @@
   --tab-text: var(--tab-color-ink);
   --tab-text-muted: var(--tab-color-muted);
   --tab-line: var(--tab-color-line);
-  --tab-action: var(--tab-color-cobalt);
+  --tab-action: var(--tab-color-ink);
+  --tab-action-hover: var(--tab-color-ink-soft);
+  --tab-action-text: var(--tab-color-paper);
+  --tab-accent: var(--tab-color-vermilion);
+  --tab-focus-color: var(--tab-color-ink);
   --tab-mode-live: var(--tab-color-ink);
   --tab-mode-test: var(--tab-color-testnet-amber);
-  --tab-status-success: var(--tab-color-emerald);
+  --tab-status-success: var(--tab-color-verified);
   --tab-status-warning: var(--tab-color-testnet-amber);
   --tab-status-danger: var(--tab-color-danger);
   --tab-status-unavailable: var(--tab-color-muted);
   --tab-status-stale: var(--tab-color-muted);
+  --tab-shell-canvas: #efece4;
+  --tab-shell-card: var(--tab-color-paper);
+  --tab-shell-border: var(--tab-color-line);
+  --tab-shell-edge:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 32px 80px -40px rgba(22, 19, 16, 0.35),
+    0 0 0 1px rgba(22, 19, 16, 0.06);
   color-scheme: light;
 }
 
 [data-tab-ui][data-tab-theme="dark"] {
-  --tab-canvas: var(--tab-color-ink);
-  --tab-surface: var(--tab-color-ink);
-  --tab-text: var(--tab-color-surface);
-  --tab-text-muted: var(--tab-color-line);
-  --tab-line: var(--tab-color-muted);
-  --tab-action: var(--tab-color-cobalt);
-  --tab-mode-live: var(--tab-color-surface);
-  --tab-mode-test: var(--tab-color-testnet-amber);
-  --tab-status-success: var(--tab-color-emerald);
-  --tab-status-warning: var(--tab-color-testnet-amber);
-  --tab-status-danger: var(--tab-color-danger);
-  --tab-status-unavailable: var(--tab-color-line);
-  --tab-status-stale: var(--tab-color-line);
+  --tab-canvas: var(--tab-color-night);
+  --tab-surface: var(--tab-color-night-raised);
+  --tab-text: var(--tab-color-bone);
+  --tab-text-muted: var(--tab-color-bone-muted);
+  --tab-line: var(--tab-color-night-line);
+  --tab-action: var(--tab-color-bone);
+  --tab-action-hover: var(--tab-color-bone-soft);
+  --tab-action-text: var(--tab-color-night);
+  --tab-accent: var(--tab-color-vermilion-bright);
+  --tab-focus-color: var(--tab-color-bone);
+  --tab-mode-live: var(--tab-color-bone);
+  --tab-mode-test: var(--tab-color-testnet-amber-bright);
+  --tab-status-success: var(--tab-color-verified-bright);
+  --tab-status-warning: var(--tab-color-testnet-amber-bright);
+  --tab-status-danger: var(--tab-color-danger-bright);
+  --tab-status-unavailable: var(--tab-color-bone-muted);
+  --tab-status-stale: var(--tab-color-bone-muted);
+  --tab-shell-canvas: #0e0c0a;
+  --tab-shell-card: var(--tab-color-night);
+  --tab-shell-border: rgba(242, 239, 233, 0.1);
+  --tab-shell-edge:
+    inset 0 1px 0 rgba(242, 239, 233, 0.07),
+    0 -12px 48px -32px rgba(255, 107, 53, 0.22),
+    0 40px 110px -48px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(0, 0, 0, 0.55);
   color-scheme: dark;
 }
 
@@ -66,15 +107,34 @@
   --tab-text: var(--tab-color-ink);
   --tab-text-muted: var(--tab-color-muted);
   --tab-line: var(--tab-color-line);
-  --tab-action: var(--tab-color-cobalt);
+  --tab-action: var(--tab-color-ink);
+  --tab-action-hover: var(--tab-color-ink-soft);
+  --tab-action-text: var(--tab-color-paper);
+  --tab-accent: var(--tab-color-vermilion);
+  --tab-focus-color: var(--tab-color-ink);
   --tab-mode-live: var(--tab-color-ink);
   --tab-mode-test: var(--tab-color-testnet-amber);
-  --tab-status-success: var(--tab-color-emerald);
+  --tab-status-success: var(--tab-color-verified);
   --tab-status-warning: var(--tab-color-testnet-amber);
   --tab-status-danger: var(--tab-color-danger);
   --tab-status-unavailable: var(--tab-color-muted);
   --tab-status-stale: var(--tab-color-muted);
+  --tab-shell-canvas: #efece4;
+  --tab-shell-card: var(--tab-color-paper);
+  --tab-shell-border: var(--tab-color-line);
+  --tab-shell-edge:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 32px 80px -40px rgba(22, 19, 16, 0.35),
+    0 0 0 1px rgba(22, 19, 16, 0.06);
   color-scheme: light;
+}
+
+[data-tab-ui] ::selection {
+  background: color-mix(in srgb, var(--tab-accent) 24%, transparent);
+}
+
+[data-tab-ui] * {
+  scrollbar-color: color-mix(in srgb, var(--tab-text) 24%, transparent) transparent;
+  scrollbar-width: thin;
 }
 
 [data-tab-ui] :where(a, button, input, select, textarea, [tabindex]):focus-visible {
@@ -84,19 +144,31 @@
 
 @media (prefers-color-scheme: dark) {
   [data-tab-ui][data-tab-theme="system"] {
-    --tab-canvas: var(--tab-color-ink);
-    --tab-surface: var(--tab-color-ink);
-    --tab-text: var(--tab-color-surface);
-    --tab-text-muted: var(--tab-color-line);
-    --tab-line: var(--tab-color-muted);
-    --tab-action: var(--tab-color-cobalt);
-    --tab-mode-live: var(--tab-color-surface);
-    --tab-mode-test: var(--tab-color-testnet-amber);
-    --tab-status-success: var(--tab-color-emerald);
-    --tab-status-warning: var(--tab-color-testnet-amber);
-    --tab-status-danger: var(--tab-color-danger);
-    --tab-status-unavailable: var(--tab-color-line);
-    --tab-status-stale: var(--tab-color-line);
+    --tab-canvas: var(--tab-color-night);
+    --tab-surface: var(--tab-color-night-raised);
+    --tab-text: var(--tab-color-bone);
+    --tab-text-muted: var(--tab-color-bone-muted);
+    --tab-line: var(--tab-color-night-line);
+    --tab-action: var(--tab-color-bone);
+    --tab-action-hover: var(--tab-color-bone-soft);
+    --tab-action-text: var(--tab-color-night);
+    --tab-accent: var(--tab-color-vermilion-bright);
+    --tab-focus-color: var(--tab-color-bone);
+    --tab-mode-live: var(--tab-color-bone);
+    --tab-mode-test: var(--tab-color-testnet-amber-bright);
+    --tab-status-success: var(--tab-color-verified-bright);
+    --tab-status-warning: var(--tab-color-testnet-amber-bright);
+    --tab-status-danger: var(--tab-color-danger-bright);
+    --tab-status-unavailable: var(--tab-color-bone-muted);
+    --tab-status-stale: var(--tab-color-bone-muted);
+    --tab-shell-canvas: #0e0c0a;
+    --tab-shell-card: var(--tab-color-night);
+    --tab-shell-border: rgba(242, 239, 233, 0.1);
+    --tab-shell-edge:
+      inset 0 1px 0 rgba(242, 239, 233, 0.07),
+      0 -12px 48px -32px rgba(255, 107, 53, 0.22),
+      0 40px 110px -48px rgba(0, 0, 0, 0.85),
+      0 0 0 1px rgba(0, 0, 0, 0.55);
     color-scheme: dark;
   }
 }
@@ -108,5 +180,6 @@
     --tab-motion-duration-slow: 1ms;
     --tab-motion-travel-distance: 0px;
     --tab-flowline-draw-duration: 1ms;
+    --tab-stamp-duration: 1ms;
   }
 }

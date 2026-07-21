@@ -8,7 +8,7 @@ import type {
 import { PaymentEnvelopeStoreError } from "./payment-envelope-store.js";
 import type { PaymentProfile } from "./payment-profile.js";
 import { parsePaymentSettlementObservation } from "./payment-settlement-observation.js";
-import type { LeashRemoteSigner } from "./remote-signer.js";
+import type { TabRemoteSigner } from "./remote-signer.js";
 
 export class PaymentIdempotencyRequiredError extends Error {
   readonly code = "PAYMENT_IDEMPOTENCY_KEY_REQUIRED";
@@ -33,7 +33,7 @@ interface PaymentEnvelopeJournalOptions {
   authorizationState?: typeof readPaymentAuthorizationState;
   nowSeconds?: () => number;
   paymentProfile: PaymentProfile;
-  signer: LeashRemoteSigner;
+  signer: TabRemoteSigner;
   store: PaymentEnvelopeStore;
 }
 
@@ -45,7 +45,7 @@ export class PaymentEnvelopeJournal {
   readonly #authorizationState: typeof readPaymentAuthorizationState;
   readonly #nowSeconds: () => number;
   readonly #paymentProfile: PaymentProfile;
-  readonly #signer: LeashRemoteSigner;
+  readonly #signer: TabRemoteSigner;
   readonly #store: PaymentEnvelopeStore;
 
   constructor(options: PaymentEnvelopeJournalOptions) {

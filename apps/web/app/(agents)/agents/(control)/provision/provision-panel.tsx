@@ -24,7 +24,7 @@ export function ProvisionPanel({ agent }: { agent: ProvisionAgentContext | null 
     setError(null);
     setSuccess(null);
     try {
-      const response = await fetch("/api/leash/provision", {
+      const response = await fetch("/api/agents/provision", {
         body: JSON.stringify({
           ...(currentAgent ? { agentId: currentAgent.id } : {}),
           name: agentName.trim(),
@@ -138,7 +138,7 @@ export function ProvisionPanel({ agent }: { agent: ProvisionAgentContext | null 
           </button>
         </form>
         <Link
-          href={currentAgent ? `/leash?agentId=${encodeURIComponent(currentAgent.id)}` : "/leash"}
+          href={currentAgent ? `/agents?agentId=${encodeURIComponent(currentAgent.id)}` : "/agents"}
         >
           Return to overview
         </Link>

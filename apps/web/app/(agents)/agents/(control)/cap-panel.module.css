@@ -11,7 +11,7 @@
 .eyebrow,
 .metricLabel {
   margin: 0;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-family: var(--font-geist), monospace;
   font-size: 10.5px;
   font-weight: 600;
@@ -26,7 +26,7 @@
 .header p:not(.eyebrow) {
   max-width: 610px;
   margin: 6px 0 0;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12.5px;
   line-height: 1.55;
 }
@@ -34,10 +34,10 @@
 .haltedChip {
   flex: none;
   padding: 5px 11px;
-  border: 1px solid #f0d5d6;
+  border: 1px solid color-mix(in srgb, var(--tab-status-danger) 16%, transparent);
   border-radius: 999px;
-  background: #faecec;
-  color: #8e2f34;
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, transparent);
+  color: var(--tab-status-danger);
   font-size: 11.5px;
   font-weight: 600;
 }
@@ -47,19 +47,19 @@
   gap: 3px;
   margin-top: 18px;
   padding: 13px 16px;
-  border: 1px solid #f2e3c2;
+  border: 1px solid color-mix(in srgb, var(--tab-mode-test) 22%, transparent);
   border-radius: 11px;
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
   font-size: 12.5px;
 }
 
 .spendCard,
 .form {
   margin-top: 18px;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .spendCard {
@@ -89,17 +89,17 @@
 }
 
 .amountLine span {
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 14px;
 }
 
 .amountLine b {
-  color: #206b4e;
+  color: var(--tab-text);
   font-size: 13px;
 }
 
 .frequency {
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12px;
 }
 
@@ -110,29 +110,37 @@
   margin-top: 14px;
   overflow: hidden;
   border-radius: 999px;
-  background: #f1efe9;
+  background: var(--tab-canvas);
 }
 
 .settledFill {
-  background: #206b4e;
+  background: var(--tab-text);
 }
 
 .pendingFill {
-  background: repeating-linear-gradient(135deg, #73a38f 0 4px, #a8c7ba 4px 8px);
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--tab-text) 30%, transparent) 0 4px,
+    color-mix(in srgb, var(--tab-text) 30%, transparent) 4px 8px
+  );
 }
 
 .overageFill {
   position: absolute;
   inset: 0 0 0 auto;
-  background: repeating-linear-gradient(135deg, #b4383d 0 3px, transparent 3px 6px);
-  box-shadow: -1px 0 0 #fff;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--tab-status-danger) 0 3px,
+    transparent 3px 6px
+  );
+  box-shadow: -1px 0 0 var(--tab-surface);
   pointer-events: none;
 }
 
 .legend {
   justify-content: flex-start;
   margin-top: 10px;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 11px;
 }
 
@@ -149,23 +157,23 @@
 }
 
 .settledKey {
-  background: #206b4e;
+  background: var(--tab-text);
 }
 
 .pendingKey {
-  background: #a8c7ba;
+  background: color-mix(in srgb, var(--tab-text) 30%, transparent);
 }
 
 .legend strong {
   margin-left: auto;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-weight: 500;
 }
 
 .resetLine {
   align-items: flex-start;
   margin-top: 15px;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
   line-height: 1.45;
 }
@@ -177,10 +185,10 @@
 .overageNote {
   margin: 14px 0 0;
   padding: 10px 12px;
-  border: 1px solid #f0d5d6;
+  border: 1px solid color-mix(in srgb, var(--tab-status-danger) 16%, transparent);
   border-radius: 8px;
-  background: #faecec;
-  color: #8e2f34;
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, transparent);
+  color: var(--tab-status-danger);
   font-size: 12px;
 }
 
@@ -195,7 +203,7 @@
 .form label {
   display: grid;
   gap: 7px;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
   font-weight: 600;
 }
@@ -205,10 +213,10 @@
   width: 100%;
   height: 38px;
   padding: 0 11px;
-  border: 1px solid #dbd9d0;
+  border: 1px solid var(--tab-line);
   border-radius: 8px;
-  background: #fff;
-  color: #1c1b18;
+  background: var(--tab-surface);
+  color: var(--tab-text);
 }
 
 .actions {
@@ -221,16 +229,16 @@
   padding: 0 14px;
   border: 0;
   border-radius: 8px;
-  background: #206b4e;
-  color: #fff;
+  background: var(--tab-text);
+  color: var(--tab-surface);
   font-size: 12px;
   font-weight: 600;
 }
 
 .actions .secondaryButton {
-  border: 1px solid #dbd9d0;
-  background: #fff;
-  color: #5f5d55;
+  border: 1px solid var(--tab-line);
+  background: var(--tab-surface);
+  color: var(--tab-text-muted);
 }
 
 .actions button:disabled {
@@ -244,17 +252,17 @@
 }
 
 .success {
-  color: #17503a;
+  color: var(--tab-text);
 }
 
 .error {
-  color: #b4383d;
+  color: var(--tab-status-danger);
 }
 
 .form input:focus-visible,
 .form select:focus-visible,
 .actions button:focus-visible {
-  outline: 2px solid #206b4e;
+  outline: 2px solid var(--tab-text);
   outline-offset: 2px;
 }
 

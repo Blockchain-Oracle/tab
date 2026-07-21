@@ -1,10 +1,15 @@
 "use client";
 
+import { useMemo } from "react";
+
 import { AuthChallengePanel } from "./auth-challenge-panel";
 import { type AuthFlow, authCopy } from "./auth-copy";
 import { AuthEmailPanel } from "./auth-email-panel";
+import { createEmailOtpAuthApi } from "./auth-request";
+import { AuthResumePanel } from "./auth-resume-panel";
 import { AuthStatusPanel } from "./auth-status-panel";
 import { useMerchantAuth } from "./use-merchant-auth";
+import { useSilentResume } from "./use-silent-resume";
 
 type MerchantAuthCardProps = {
   configured: boolean;
@@ -16,6 +21,25 @@ type MerchantAuthCardProps = {
 export function MerchantAuthCard(props: MerchantAuthCardProps) {
   const auth = useMerchantAuth(props);
   const { state } = auth;
+  const resumeApi = useMemo(
+    () =>
+      createEmailOtpAuthApi({
+        extraBody: { flow: "login" },
+        precheckPath: "/api/auth/precheck",
+        verifyPath: "/api/auth/verify",
+      }),
+    [],
+  );
+  const resume = useSilentResume({
+    enabled: props.configured,
+    onKnownEmail: auth.changeEmail,
+    publishableKey: props.publishableKey,
+    verify: (didToken, email, options) => resumeApi.verifyDidToken(didToken, email, options),
+  });
+
+  if (resume.status === "resuming") {
+    return <AuthResumePanel email={resume.email} onDismiss={resume.dismiss} />;
+  }
 
   if (state.stage === "device") {
     return (

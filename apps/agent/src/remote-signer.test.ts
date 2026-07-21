@@ -13,12 +13,12 @@ import {
   validSignerRequest,
 } from "./remote-signer.test-support.js";
 
-describe("Leash remote signer authorization gate", () => {
+describe("Agent remote signer authorization gate", () => {
   it("posts only an exact EIP-3009 native-USDC authority and verifies its signature", async () => {
     const signerRequest = validSignerRequest();
     const signature = await signWith(account, signerRequest);
     const fetch = vi.fn(async (_input: Request | string | URL, init?: RequestInit) => {
-      expect(init?.headers).toMatchObject({ authorization: "Bearer leash_sk_secret" });
+      expect(init?.headers).toMatchObject({ authorization: "Bearer agent_sk_secret" });
       expect(JSON.parse(String(init?.body))).toEqual({
         amount: "25000",
         asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
@@ -129,7 +129,7 @@ describe("Leash remote signer authorization gate", () => {
   });
 });
 
-describe("Leash expired authorization reconciliation", () => {
+describe("Agent expired authorization reconciliation", () => {
   it("accepts only an exact verified server acknowledgement", async () => {
     const requests: Array<{ body: unknown; redirect: RequestInit["redirect"] }> = [];
     const signer = signerWithFetch(async (input, init) => {
@@ -158,7 +158,7 @@ describe("Leash expired authorization reconciliation", () => {
   });
 });
 
-describe("Leash payment observation reporting", () => {
+describe("Agent payment observation reporting", () => {
   it("treats forged-but-shaped resource metadata as observed and keeps its receipt", async () => {
     const signerRequest = validSignerRequest();
     const signature = await signWith(account, signerRequest);

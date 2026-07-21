@@ -1,7 +1,8 @@
 import type { Ref } from "react";
 
 import { BUYER_COPY, buyerFormat } from "../copy";
-import { primaryButton } from "../styles";
+import { TabGlyph } from "../marks";
+import { primaryButton, useTokens } from "../styles";
 
 type Props = {
   amount: string | undefined;
@@ -10,8 +11,11 @@ type Props = {
   onClick(): void;
 };
 
+/** The PayButton itself: Tab's tally mark + the amount, as an ink pill. */
 export function IdleState({ amount, buttonRef, disabled, onClick }: Props) {
+  const tokens = useTokens();
   const label = amount ? buyerFormat.pay(`$${amount}`) : BUYER_COPY.loading;
+  const base = primaryButton(tokens);
   return (
     <button
       aria-busy={disabled}
@@ -19,18 +23,15 @@ export function IdleState({ amount, buttonRef, disabled, onClick }: Props) {
       onClick={onClick}
       ref={buttonRef}
       style={{
-        ...primaryButton,
-        background: disabled ? "#33312C" : primaryButton.background,
+        ...base,
+        background: disabled ? tokens.inkSoft : base.background,
         cursor: disabled ? "default" : "pointer",
-        gap: 8,
-        opacity: disabled ? 0.86 : 1,
+        gap: 9,
+        opacity: disabled ? 0.85 : 1,
       }}
       type="button"
     >
-      <svg aria-hidden="true" fill="none" height="14" viewBox="0 0 14 14" width="14">
-        <rect height="7" rx="1.5" stroke="currentColor" width="10" x="2" y="6" />
-        <path d="M4.5 6V4a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" />
-      </svg>
+      <TabGlyph size={14} />
       {label}
     </button>
   );

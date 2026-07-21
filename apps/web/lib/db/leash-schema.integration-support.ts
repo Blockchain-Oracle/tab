@@ -3,7 +3,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import postgres from "postgres";
 
 const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) throw new Error("DATABASE_URL is required for Leash schema tests");
+if (!databaseUrl) throw new Error("DATABASE_URL is required for agent schema tests");
 
 export const sql = postgres(databaseUrl, { max: 1 });
 export const payTo = "0x1111111111111111111111111111111111111111";

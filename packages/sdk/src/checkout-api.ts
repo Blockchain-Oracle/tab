@@ -22,7 +22,7 @@ export { CheckoutApiError } from "./checkout-types";
 
 type RequestOptions = { request?: typeof fetch; signal?: AbortSignal };
 
-async function responseJson(response: Response) {
+export async function responseJson(response: Response) {
   let body: unknown;
   try {
     body = await response.json();
@@ -44,7 +44,7 @@ async function responseJson(response: Response) {
   return body;
 }
 
-function authHeaders(publishableKey: string) {
+export function authHeaders(publishableKey: string) {
   return { authorization: `Bearer ${publishableKey}` };
 }
 

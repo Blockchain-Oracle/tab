@@ -43,7 +43,7 @@ function cookieToken(response: Response) {
   return token;
 }
 
-describe("merchant signup after Leash owner auth", () => {
+describe("merchant signup after Agent owner auth", () => {
   beforeEach(async () => {
     process.env.MAGIC_SECRET_KEY = "configured-magic-boundary";
     process.env.SESSION_SECRET = sessionSecret;

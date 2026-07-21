@@ -1,3 +1,5 @@
+import { truncateHash } from "../../../../lib/format/truncate-hash";
+
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
   hour: "numeric",
@@ -28,6 +30,5 @@ export function formatTokenAmount(value: string) {
 }
 
 export function compact(value: string) {
-  if (value.length <= 22) return value;
-  return `${value.slice(0, 10)}…${value.slice(-6)}`;
+  return truncateHash(value, 10, 6);
 }

@@ -14,7 +14,7 @@ const oldKey: LeashKeyView = {
   id: "22222222-2222-4222-8222-222222222222",
   last4: "a1B2",
   lastUsedAt: null,
-  prefix: "leash_sk_",
+  prefix: "agent_sk_",
   revokedAt: null,
   rotatedFromId: null,
 };
@@ -27,7 +27,7 @@ function button(container: ParentNode, label: string) {
   return found;
 }
 
-describe("Leash key rotation", () => {
+describe("agent key rotation", () => {
   let container: HTMLDivElement;
   let root: Root;
 
@@ -53,7 +53,7 @@ describe("Leash key rotation", () => {
       last4: "z9Y8",
       rotatedFromId: oldKey.id,
     };
-    const oneTimeSecret = `leash_sk_${"z".repeat(43)}`;
+    const oneTimeSecret = `agent_sk_${"z".repeat(43)}`;
     const fetchMock = vi
       .fn()
       .mockResolvedValue(
@@ -72,17 +72,17 @@ describe("Leash key rotation", () => {
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/leash/keys",
+      "/api/agents/keys",
       expect.objectContaining({
         body: JSON.stringify({ agentId, keyId: oldKey.id }),
         method: "PATCH",
       }),
     );
     expect(container.textContent).toContain(oneTimeSecret);
-    expect(container.textContent).not.toContain("leash_sk_••••••••z9Y8");
+    expect(container.textContent).not.toContain("agent_sk_••••••••z9Y8");
 
     await act(async () => button(container, "I’ve saved my key").click());
     expect(container.textContent).not.toContain(oneTimeSecret);
-    expect(container.textContent).toContain("leash_sk_••••••••z9Y8");
+    expect(container.textContent).toContain("agent_sk_••••••••z9Y8");
   });
 });

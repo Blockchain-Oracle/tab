@@ -16,7 +16,9 @@
       "!!**/.turbo",
       "!!**/Reference",
       "!!**/*.tsbuildinfo",
-      "!!**/next-env.d.ts"
+      "!!**/next-env.d.ts",
+      "!!**/public/marks",
+      "!!**/.source"
     ]
   },
   "formatter": {

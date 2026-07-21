@@ -9,7 +9,7 @@ type ReceiptQuery = ReturnType<typeof parseReceiptQuery>;
 
 export class LeashReceiptNotFoundError extends Error {
   constructor() {
-    super("The Leash receipt resource was not found.");
+    super("The Agent receipt resource was not found.");
     this.name = "LeashReceiptNotFoundError";
   }
 }
@@ -18,6 +18,8 @@ const receiptProjection = {
   amountAtomic: receipts.amountAtomic,
   amountUsd: receipts.amountUsd,
   asset: receipts.asset,
+  authorizationNonce: receipts.authorizationNonce,
+  authorizationValidBefore: receipts.authorizationValidBefore,
   capAtomicAtAttempt: receipts.capAtomicAtAttempt,
   committedAtomicBefore: receipts.committedAtomicBefore,
   createdAt: receipts.createdAt,

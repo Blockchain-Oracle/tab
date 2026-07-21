@@ -111,6 +111,15 @@ export function ReceiptFeedView({
         </section>
       ) : state.result.receipts.length === 0 ? (
         <section className={styles.empty}>
+          <p aria-hidden="true" className={styles.emptyDiagram}>
+            <span className={styles.emptyCode}>402</span>
+            <span className={styles.emptyArrow}>→</span>
+            <span className={styles.emptyStep}>policy</span>
+            <span className={styles.emptyArrow}>→</span>
+            <span className={styles.emptyStep}>sign</span>
+            <span className={styles.emptyArrow}>→</span>
+            <span className={styles.emptyCodeOk}>200</span>
+          </p>
           <h2>No payment receipts yet</h2>
           <p>Real x402 attempts appear here after this agent reaches a paid resource.</p>
         </section>

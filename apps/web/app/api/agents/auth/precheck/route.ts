@@ -1,23 +1,13 @@
 import { magicAuthenticationConfigured } from "../../../../../lib/auth/magic-admin";
 import { requestOriginIsAllowed } from "../../../../../lib/auth/request-origin";
 import { sessionSigningConfigured } from "../../../../../lib/auth/session";
+import { jsonError, jsonNoStore } from "../../../../../lib/http/responses";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function json(body: unknown, status = 200) {
-  return Response.json(body, {
-    headers: { "cache-control": "no-store" },
-    status,
-  });
-}
-
-function error(code: string, message: string, status: number) {
-  return json({ error: { code, message } }, status);
-}
-
 export async function POST(request: Request) {
   if (!requestOriginIsAllowed(request)) {
-    return error("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
+    return jsonError("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
   }
 
   let body: unknown;
@@ -33,17 +23,17 @@ export async function POST(request: Request) {
       : "";
 
   if (!emailPattern.test(email)) {
-    return error("INVALID_EMAIL", "Enter a valid email address.", 400);
+    return jsonError("INVALID_EMAIL", "Enter a valid email address.", 400);
   }
   if (!magicAuthenticationConfigured()) {
-    return error("MAGIC_NOT_CONFIGURED", "Magic authentication is not configured.", 503);
+    return jsonError("MAGIC_NOT_CONFIGURED", "Magic authentication is not configured.", 503);
   }
   if (!sessionSigningConfigured()) {
-    return error("SESSION_NOT_CONFIGURED", "Session signing is not configured.", 503);
+    return jsonError("SESSION_NOT_CONFIGURED", "Session signing is not configured.", 503);
   }
   if (!process.env.DATABASE_URL?.trim()) {
-    return error("DATABASE_NOT_CONFIGURED", "Owner storage is not configured.", 503);
+    return jsonError("DATABASE_NOT_CONFIGURED", "Owner storage is not configured.", 503);
   }
 
-  return json({ allowed: true });
+  return jsonNoStore({ allowed: true });
 }

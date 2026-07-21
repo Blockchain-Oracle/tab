@@ -50,7 +50,7 @@ async function withTestGuard<T>(promise: Promise<T>) {
   }
 }
 
-describe("POST /api/leash/provision body bounds", () => {
+describe("POST /api/agents/provision body bounds", () => {
   it("bounds a streamed request without relying on Content-Length", async () => {
     const owner = await harness.provision("provision-stream-limit");
     const wallet = vi.fn(async (_subject: string) => agentAddress);

@@ -33,21 +33,21 @@ export function KeyLifecycle({
     setError(undefined);
     setCopied(false);
     try {
-      const response = await fetch("/api/leash/keys", {
+      const response = await fetch("/api/agents/keys", {
         body: JSON.stringify(method === "PATCH" ? { agentId, keyId: key?.id } : { agentId }),
         headers: { "content-type": "application/json" },
         method,
       });
       const body = (await response.json()) as KeyResponse;
       if (!response.ok || !body.key || !body.secret) {
-        throw new Error(body.error?.message ?? "The Leash key was not created.");
+        throw new Error(body.error?.message ?? "The agent key was not created.");
       }
       setKey(body.key);
       onKeyChange?.(body.key);
       setSecret(body.secret);
       setConfirmingRotation(false);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "The Leash key was not created.");
+      setError(cause instanceof Error ? cause.message : "The agent key was not created.");
     } finally {
       setBusy(false);
     }
@@ -58,6 +58,7 @@ export function KeyLifecycle({
     try {
       await navigator.clipboard.writeText(secret);
       setCopied(true);
+      setTimeout(() => setCopied(false), 2_000);
     } catch {
       setError("Copy was blocked. Select and copy the key manually.");
     }
@@ -68,7 +69,7 @@ export function KeyLifecycle({
       <div className={styles.heading}>
         <div>
           <span>1</span>
-          <h2>Your Leash key</h2>
+          <h2>Your agent key</h2>
         </div>
         {key && !secret ? (
           <button disabled={busy} onClick={() => setConfirmingRotation(true)} type="button">
@@ -84,7 +85,7 @@ export function KeyLifecycle({
             stored.
           </p>
           <button disabled={busy} onClick={() => void lifecycle("POST")} type="button">
-            {busy ? "Generating…" : "Generate Leash key"}
+            {busy ? "Generating…" : "Generate agent key"}
           </button>
         </div>
       ) : null}

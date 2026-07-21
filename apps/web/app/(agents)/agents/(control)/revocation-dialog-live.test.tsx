@@ -19,7 +19,7 @@ import {
   writeInput,
 } from "./revocation-panel.test-support";
 
-describe("Leash revocation live evidence", () => {
+describe("Agent revocation live evidence", () => {
   let harness: RevocationHarness;
 
   beforeEach(() => {
@@ -44,7 +44,7 @@ describe("Leash revocation live evidence", () => {
     expect(dialog.textContent).toContain("Refreshing Base + Arbitrum");
     expect(dialog.textContent).not.toContain("$1.25");
     expect(fetchMock).toHaveBeenCalledWith(
-      `/api/leash/float-balances?agentId=${agent.id}`,
+      `/api/agents/float-balances?agentId=${agent.id}`,
       expect.objectContaining({ cache: "no-store", method: "GET" }),
     );
     const input = dialog.querySelector("input");
@@ -174,6 +174,6 @@ describe("Leash revocation live evidence", () => {
       await read.promise;
       await Promise.resolve();
     });
-    expect(dialog.textContent).toContain("Test funds — not real money");
+    expect(dialog.textContent).toContain("Sandbox funds — no real value");
   });
 });

@@ -39,12 +39,12 @@ async function ownerSession(label: string) {
     .insert(users)
     .values({ email, magicIssuer: `did:ethr:${randomUUID()}` })
     .returning({ userId: users.id });
-  if (!owner) throw new Error("PostgreSQL did not return the Leash owner");
+  if (!owner) throw new Error("PostgreSQL did not return the Agent owner");
   const token = await createSessionToken({ email, userId: owner.userId }, secret);
   return { email, token, userId: owner.userId };
 }
 
-describe("Leash owner session lookup with real PostgreSQL", () => {
+describe("Agent owner session lookup with real PostgreSQL", () => {
   beforeEach(async () => {
     await connection.client`truncate table users cascade`;
   });
@@ -53,7 +53,7 @@ describe("Leash owner session lookup with real PostgreSQL", () => {
     await connection.client.end();
   });
 
-  it("loads only the signed user as the Leash owner", async () => {
+  it("loads only the signed user as the Agent owner", async () => {
     const owner = await ownerSession("valid-owner");
 
     await expect(loadOwnerSession(connection.db, owner.token, secret)).resolves.toStrictEqual({
@@ -98,7 +98,7 @@ describe("Leash owner session lookup with real PostgreSQL", () => {
     );
   });
 
-  it("does not promote a foreign merchant resource claim into owner scope", async () => {
+  it("rejects any merchant-scoped token for owner scope — separate privilege domains", async () => {
     const signedOwner = await ownerSession("resource-owner");
     const foreignInput = signupInput("resource-foreign");
     const foreignMerchant = await provisionMerchant(connection.db, foreignInput);
@@ -114,10 +114,7 @@ describe("Leash owner session lookup with real PostgreSQL", () => {
 
     await expect(
       loadOwnerSession(connection.db, mismatchedResourceToken, secret),
-    ).resolves.toStrictEqual({
-      email: signedOwner.email,
-      userId: signedOwner.userId,
-    });
+    ).rejects.toBeInstanceOf(InvalidOwnerSessionError);
   });
 
   it("authenticates an owner request from the existing tab_session cookie", async () => {
@@ -126,7 +123,7 @@ describe("Leash owner session lookup with real PostgreSQL", () => {
       email: owner.email,
       userId: owner.userId,
     });
-    const request = new NextRequest("https://tab.example.test/api/leash/caps", {
+    const request = new NextRequest("https://tab.example.test/api/agents/caps", {
       headers: { cookie: `tab_session=${requestToken}` },
     });
 
@@ -141,11 +138,11 @@ describe("Leash owner session lookup with real PostgreSQL", () => {
     const inactiveToken = await createSessionToken({ email: owner.email, userId: owner.userId });
     await connection.db.delete(users);
     const requests = [
-      new NextRequest("https://tab.example.test/api/leash/caps"),
-      new NextRequest("https://tab.example.test/api/leash/caps", {
+      new NextRequest("https://tab.example.test/api/agents/caps"),
+      new NextRequest("https://tab.example.test/api/agents/caps", {
         headers: { cookie: "tab_session=not-a-jwt" },
       }),
-      new NextRequest("https://tab.example.test/api/leash/caps", {
+      new NextRequest("https://tab.example.test/api/agents/caps", {
         headers: { cookie: `tab_session=${inactiveToken}` },
       }),
     ];

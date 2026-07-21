@@ -60,12 +60,12 @@ async function provision(
 }
 
 function request(query: string, token?: string) {
-  return new NextRequest(new URL(`/api/leash/float-balances${query}`, appOrigin), {
+  return new NextRequest(new URL(`/api/agents/float-balances${query}`, appOrigin), {
     headers: token ? { cookie: `${SESSION_COOKIE_NAME}=${token}` } : {},
   });
 }
 
-describe("GET /api/leash/float-balances with real PostgreSQL ownership", () => {
+describe("GET /api/agents/float-balances with real PostgreSQL ownership", () => {
   it("requires owner auth and one exact UUID agent query", async () => {
     const owner = await provision("strict");
     expect((await GET(request(`?agentId=${owner.agentId}`))).status).toBe(401);
@@ -148,7 +148,7 @@ describe("GET /api/leash/float-balances with real PostgreSQL ownership", () => {
       health: "healthy",
       paymentProfile: "base_sepolia_integration",
       testFunds: true,
-      testFundsLabel: "Test funds — not real money",
+      testFundsLabel: "Sandbox funds — no real value",
     });
   });
 
@@ -164,7 +164,7 @@ describe("GET /api/leash/float-balances with real PostgreSQL ownership", () => {
     const bodies = await Promise.all(responses.map((response) => response.json()));
     expect(bodies[0]).toEqual(bodies[1]);
     expect(bodies[0]).toEqual({
-      error: { code: "LEASH_AGENT_NOT_FOUND", message: "The Leash agent was not found." },
+      error: { code: "AGENT_NOT_FOUND", message: "The agent was not found." },
     });
     expect(readFloats).not.toHaveBeenCalled();
   });

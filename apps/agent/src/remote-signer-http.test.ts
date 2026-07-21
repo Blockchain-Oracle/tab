@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { LeashRemoteSigner } from "./remote-signer.js";
+import { TabRemoteSigner } from "./remote-signer.js";
 import {
   account,
   nowSeconds,
@@ -10,10 +10,10 @@ import {
 } from "./remote-signer.test-support.js";
 
 function signerWithBoundary(fetch: typeof globalThis.fetch, signTimeoutMs = 50) {
-  return new LeashRemoteSigner({
+  return new TabRemoteSigner({
     address: account.address,
     apiBaseUrl: "https://tab.example.test/",
-    apiKey: "leash_sk_secret",
+    apiKey: "agent_sk_secret",
     fetch,
     nowSeconds: () => nowSeconds,
     paymentProfile: "mainnet",
@@ -21,19 +21,19 @@ function signerWithBoundary(fetch: typeof globalThis.fetch, signTimeoutMs = 50) 
   });
 }
 
-describe("Leash remote signer HTTP boundary", () => {
+describe("Agent remote signer HTTP boundary", () => {
   it("rejects a remote cleartext control-plane origin before sending the API key", () => {
     const fetch = vi.fn(async () => Response.json({}));
     expect(
       () =>
-        new LeashRemoteSigner({
+        new TabRemoteSigner({
           address: account.address,
           apiBaseUrl: "http://tab.example.test",
-          apiKey: "leash_sk_secret",
+          apiKey: "agent_sk_secret",
           fetch,
           paymentProfile: "mainnet",
         }),
-    ).toThrow("The Leash control-plane origin is invalid.");
+    ).toThrow("The agent control-plane origin is invalid.");
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -65,7 +65,7 @@ describe("Leash remote signer HTTP boundary", () => {
       signerWithBoundary(fetch, 10).signTypedData(validSignerRequest()),
     ).rejects.toMatchObject({
       code: "SIGNER_REQUEST_TIMEOUT",
-      message: "The Leash control plane timed out.",
+      message: "The agent control plane timed out.",
       status: 504,
     });
     expect(aborted).toBe(true);
@@ -73,12 +73,12 @@ describe("Leash remote signer HTTP boundary", () => {
 
   it("turns a transport failure into a secret-safe unavailable error", async () => {
     const signer = signerWithBoundary(async () => {
-      throw new Error("leash_sk_secret leaked by https://internal.example.test");
+      throw new Error("agent_sk_secret leaked by https://internal.example.test");
     });
 
     await expect(signer.signTypedData(validSignerRequest())).rejects.toMatchObject({
       code: "SIGNER_REQUEST_UNAVAILABLE",
-      message: "The Leash control plane could not be reached.",
+      message: "The agent control plane could not be reached.",
       status: 503,
     });
   });
@@ -163,7 +163,7 @@ describe("Leash remote signer HTTP boundary", () => {
       async () =>
         new Response(
           JSON.stringify({
-            error: { code, message: "leash_sk_secret and provider internals must not escape" },
+            error: { code, message: "agent_sk_secret and provider internals must not escape" },
           }),
           { headers: { "content-type": "application/problem+json" }, status },
         ),
@@ -174,7 +174,7 @@ describe("Leash remote signer HTTP boundary", () => {
       throw new Error("Expected the sign request to fail");
     } catch (error) {
       expect(error).toMatchObject({ code, status });
-      expect((error as Error).message).not.toContain("leash_sk_secret");
+      expect((error as Error).message).not.toContain("agent_sk_secret");
       expect((error as Error).message).not.toContain("provider internals");
     }
   });

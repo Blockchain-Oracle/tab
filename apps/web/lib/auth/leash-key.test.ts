@@ -7,16 +7,16 @@ import {
   readBearerLeashKey,
 } from "./leash-key";
 
-describe("Leash key material", () => {
+describe("agent key material", () => {
   it("generates 256-bit show-once material and hash-at-rest metadata", () => {
     const first = generateLeashKey();
     const second = generateLeashKey();
 
-    expect(first.secret).toMatch(/^leash_sk_[A-Za-z0-9_-]{43}$/);
+    expect(first.secret).toMatch(/^agent_sk_[A-Za-z0-9_-]{43}$/);
     expect(first).toMatchObject({
       hash: expect.stringMatching(/^[0-9a-f]{64}$/),
       last4: first.secret.slice(-4),
-      prefix: "leash_sk_",
+      prefix: "agent_sk_",
     });
     expect(first.hash).toBe(hashLeashKey(first.secret));
     expect(second.secret).not.toBe(first.secret);

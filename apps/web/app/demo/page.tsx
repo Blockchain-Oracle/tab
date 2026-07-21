@@ -1,3 +1,6 @@
+export const metadata = { title: "Test storefront" };
+
+import { TabMark } from "@tab/ui";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -17,8 +20,9 @@ export default async function DemoPage() {
     <main className={styles.page}>
       <header className={styles.topbar}>
         <Link className={styles.brand} href="/dashboard/quickstart">
-          <span aria-hidden="true">T</span>
-          Tab demo
+          <TabMark size={18} />
+          <span className={styles.brandWord}>tab</span>
+          <span className={styles.brandNote}>test storefront</span>
         </Link>
         <Link href="/dashboard/transactions">Back to dashboard</Link>
       </header>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { LiveRegion } from "./status.tsx";
 
@@ -30,14 +30,25 @@ export function CopyControl({
 }: CopyControlProps) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<CopyResult>("idle");
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(
+    () => () => {
+      if (resetTimer.current) clearTimeout(resetTimer.current);
+    },
+    [],
+  );
 
   async function copy() {
     if (busy) return;
     setBusy(true);
     setResult("idle");
+    if (resetTimer.current) clearTimeout(resetTimer.current);
     try {
       await copyText(value);
       setResult("success");
+      // "Copied" must never become a permanent dead state.
+      resetTimer.current = setTimeout(() => setResult("idle"), 2_000);
     } catch {
       setResult("failure");
     } finally {

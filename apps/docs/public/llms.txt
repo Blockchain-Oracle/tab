@@ -1,0 +1,18 @@
+# Tab
+
+> Invisible payments — for you, and for your AI. Humans check out with an email; AI agents pay x402 under a hard cap enforced outside the model. One rail, shared receipts.
+
+## Docs
+
+- [Agents & x402](http://localhost:3002/docs/agents): Let an AI agent pay 402 Payment Required responses by itself — capped, keyless, and fully evidenced.
+- [API reference](http://localhost:3002/docs/api-reference): The v1 HTTP API — authentication, endpoints, error schema, and the test/live boundary.
+- [Architecture](http://localhost:3002/docs/architecture): How the pieces fit — one rail, two payers, and where each secret lives.
+- [Checkout states](http://localhost:3002/docs/checkout-states): Every state the embedded checkout can show, and the real event that drives each transition.
+- [What is Tab](http://localhost:3002/docs): One payment rail, two kinds of payers — humans pay with an email, AI agents pay x402 under a hard cap.
+- [Networks & receipts](http://localhost:3002/docs/networks): The canonical network profiles, USDC contracts, and what a Tab receipt proves.
+- [PayButton reference](http://localhost:3002/docs/paybutton): Props, theming, and behavior of the embedded checkout component.
+- [Quickstart](http://localhost:3002/docs/quickstart): From install to your first settled test payment — the same steps the in-app Quickstart tracks from real integration events.
+- [Security model](http://localhost:3002/docs/security): Key custody, session separation, and the guarantees the product refuses to break.
+- [Component showcase](http://localhost:3002/docs/showcase): Every checkout state, rendered live from the real SDK components — click any card to flip it and see the code.
+- [Test funds](http://localhost:3002/docs/test-funds): Free Base Sepolia USDC and gas, granted in-app — real on-chain transfers, honest reports, never mainnet.
+- [Webhooks](http://localhost:3002/docs/webhooks): Signed fulfillment signals — signature verification, delivery semantics, and retry behavior.

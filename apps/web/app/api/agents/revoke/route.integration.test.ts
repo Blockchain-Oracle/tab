@@ -25,7 +25,7 @@ async function expectError(response: Response, status: number, code: string) {
   await expect(response.json()).resolves.toMatchObject({ error: { code } });
 }
 
-describe("POST /api/leash/revoke with real PostgreSQL", () => {
+describe("POST /api/agents/revoke with real PostgreSQL", () => {
   it("requires an owner session and same-origin strict JSON", async () => {
     const owner = await harness.provision("guard");
     await expectError(
@@ -78,7 +78,7 @@ describe("POST /api/leash/revoke with real PostgreSQL", () => {
     const bodies = await Promise.all(responses.map((response) => response.json()));
     expect(bodies[0]).toEqual(bodies[1]);
     expect(bodies[0]).toEqual({
-      error: { code: "LEASH_AGENT_NOT_FOUND", message: "The Leash agent was not found." },
+      error: { code: "AGENT_NOT_FOUND", message: "The agent was not found." },
     });
     expect(await harness.status(foreign.agentId)).toBe("provisioned");
   });

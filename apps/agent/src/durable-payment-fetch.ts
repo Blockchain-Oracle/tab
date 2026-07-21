@@ -11,7 +11,7 @@ import {
 import type { PaymentEnvelopeRecord, PaymentEnvelopeStore } from "./payment-envelope-store.js";
 import type { PaymentProfile } from "./payment-profile.js";
 import { fingerprintPaymentRequest } from "./payment-request-fingerprint.js";
-import type { LeashRemoteSigner } from "./remote-signer.js";
+import type { TabRemoteSigner } from "./remote-signer.js";
 
 const MAX_PAYMENT_REQUIRED_BODY_BYTES = 65_536;
 
@@ -64,7 +64,7 @@ interface DurablePaymentFetchOptions {
   idempotencyKey: () => string | undefined;
   nowSeconds?: () => number;
   paymentProfile: PaymentProfile;
-  signer: LeashRemoteSigner;
+  signer: TabRemoteSigner;
   store: PaymentEnvelopeStore;
 }
 

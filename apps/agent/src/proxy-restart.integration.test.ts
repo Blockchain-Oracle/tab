@@ -18,7 +18,7 @@ import {
 import { createLeashPaymentClient } from "./payment-client.js";
 import { PaymentEnvelopeStore } from "./payment-envelope-store.js";
 import { createLeashProxyServer } from "./proxy.js";
-import { LeashRemoteSigner } from "./remote-signer.js";
+import { TabRemoteSigner } from "./remote-signer.js";
 
 const payerAccount = privateKeyToAccount(`0x${"22".repeat(32)}`);
 const payer = payerAccount.address;
@@ -111,10 +111,10 @@ describe("durable MCP proxy restart recovery", () => {
     });
 
     const startProxy = async () => {
-      const signer = new LeashRemoteSigner({
+      const signer = new TabRemoteSigner({
         address: payer,
         apiBaseUrl: "https://tab.example.test",
-        apiKey: "leash_sk_restart",
+        apiKey: "agent_sk_restart",
         fetch: remoteFetch,
         paymentProfile: "mainnet",
       });

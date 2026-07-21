@@ -4,7 +4,7 @@ import { getAddress, isAddressEqual, recoverTypedDataAddress } from "viem";
 
 import type { NewPaymentEnvelope } from "./payment-envelope-model.js";
 import type { PaymentProfile } from "./payment-profile.js";
-import type { LeashRemoteSigner } from "./remote-signer.js";
+import type { TabRemoteSigner } from "./remote-signer.js";
 import {
   ARBITRUM_NETWORK,
   ARBITRUM_USDC,
@@ -59,7 +59,7 @@ function address(value: unknown) {
 export function newPaymentEnvelope(
   payload: PaymentPayload,
   paymentSignature: string,
-  signer: LeashRemoteSigner,
+  signer: TabRemoteSigner,
 ): NewPaymentEnvelope {
   const authorization = record(payload.payload.authorization)
     ? payload.payload.authorization

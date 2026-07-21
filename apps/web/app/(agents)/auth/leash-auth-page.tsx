@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
 import { getCurrentOwner } from "../../../lib/auth/current-owner";
-import styles from "../../(auth)/auth-page.module.css";
+import { AuthSplitLayout } from "../../(auth)/auth-split-layout";
 import { LeashAuthCard } from "./leash-auth-card";
 
 function authConfiguration() {
@@ -28,24 +27,14 @@ function authConfiguration() {
 export async function LeashAuthPage() {
   await connection();
   const owner = await getCurrentOwner();
-  if (owner) redirect("/leash");
+  if (owner) redirect("/agents");
 
   return (
-    <main className={styles.page}>
-      <header className={styles.brandBar}>
-        <Link aria-label="Tab home" className={styles.brand} href="/">
-          <span className={styles.brandTile} aria-hidden="true">
-            T
-          </span>
-          <span>Tab · Leash</span>
-        </Link>
-      </header>
-      <div className={styles.authStack}>
-        <section className={styles.card}>
-          <LeashAuthCard {...authConfiguration()} />
-        </section>
-        <p className={styles.footer}>One owner session · No wallet extension required</p>
-      </div>
-    </main>
+    <AuthSplitLayout
+      brandVariant="agents"
+      footer="One owner session · No wallet extension required"
+    >
+      <LeashAuthCard {...authConfiguration()} />
+    </AuthSplitLayout>
   );
 }

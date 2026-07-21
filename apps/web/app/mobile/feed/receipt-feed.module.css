@@ -1,0 +1,220 @@
+.page {
+  display: grid;
+  gap: 16px;
+  padding: 24px 18px 32px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header p,
+.header h1,
+.header span,
+.empty h2,
+.empty p {
+  margin: 0;
+}
+
+.header p {
+  color: var(--tab-text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.header h1 {
+  margin-top: 4px;
+  font-size: 25px;
+  letter-spacing: -0.035em;
+}
+
+.header div > span {
+  display: block;
+  margin-top: 5px;
+  color: var(--tab-text-muted);
+  font-size: 12px;
+}
+
+.health {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border: 1px solid var(--tab-line);
+  border-radius: 999px;
+  background: var(--tab-surface);
+  font-size: 10px;
+}
+
+.health i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tab-status-unavailable);
+}
+
+.health.live i {
+  background: var(--tab-status-success);
+}
+
+.health.retrying i {
+  background: var(--tab-status-warning);
+}
+
+.error {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--tab-mode-test) 24%, transparent);
+  border-radius: 13px;
+  color: var(--tab-status-warning);
+  background: color-mix(in srgb, var(--tab-mode-test) 8%, transparent);
+  font-size: 12px;
+}
+
+.error button {
+  width: fit-content;
+  margin-top: 5px;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--tab-mode-test) 45%, transparent);
+  border-radius: 8px;
+  color: inherit;
+  background: var(--tab-surface);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.empty {
+  display: grid;
+  min-height: 220px;
+  place-content: center;
+  gap: 8px;
+  padding: 28px;
+  border: 1px dashed var(--tab-line);
+  border-radius: 18px;
+  text-align: center;
+}
+
+.empty h2 {
+  font-size: 17px;
+}
+
+.empty p {
+  max-width: 260px;
+  color: var(--tab-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.item {
+  overflow: hidden;
+  border: 1px solid var(--tab-line);
+  border-radius: 15px;
+  background: var(--tab-surface);
+}
+
+.receiptLink {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  color: var(--tab-text);
+  text-decoration: none;
+}
+
+.receiptLink:focus-visible,
+.explorer:focus-visible,
+.error button:focus-visible {
+  outline: var(--tab-focus-width) solid var(--tab-focus-color);
+  outline-offset: -3px;
+}
+
+.rowTop,
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.amount {
+  font-size: 18px;
+  letter-spacing: -0.025em;
+}
+
+.status {
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.settled {
+  color: var(--tab-status-success);
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+}
+
+.pending {
+  color: var(--tab-status-warning);
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+}
+
+.failed,
+.blocked {
+  color: var(--tab-status-danger);
+  background: color-mix(in srgb, var(--tab-status-danger) 9%, transparent);
+}
+
+.resource {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  color: var(--tab-text-muted);
+  font-size: 10px;
+}
+
+.testFunds,
+.policyNote {
+  width: fit-content;
+  padding: 4px 7px;
+  border-radius: 7px;
+  color: var(--tab-status-warning);
+  background: color-mix(in srgb, var(--tab-mode-test) 14%, transparent);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.policyNote {
+  color: var(--tab-status-danger);
+  background: color-mix(in srgb, var(--tab-status-danger) 9%, transparent);
+}
+
+.explorer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 14px;
+  border-top: 1px solid var(--tab-canvas);
+  color: var(--tab-text-muted);
+  background: var(--tab-canvas);
+  font-size: 9px;
+  text-decoration: none;
+}

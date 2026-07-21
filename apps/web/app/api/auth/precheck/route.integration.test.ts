@@ -60,7 +60,7 @@ describe("POST /api/auth/precheck with real PostgreSQL", () => {
     });
   });
 
-  it("allows signup for an exact Leash-first user who has no merchant yet", async () => {
+  it("allows signup for an exact agent-first user who has no merchant yet", async () => {
     const email = "leash-first@example.test";
     await connection.client`
       insert into users (email, magic_issuer)

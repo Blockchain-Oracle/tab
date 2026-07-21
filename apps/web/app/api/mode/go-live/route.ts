@@ -8,17 +8,12 @@ import {
   readGoLiveReadiness,
 } from "../../../../lib/dashboard/go-live";
 import { getServerDatabase } from "../../../../lib/db/server";
-
-function error(code: string, message: string, status: number) {
-  return NextResponse.json(
-    { error: { code, message } },
-    { headers: { "cache-control": "no-store" }, status },
-  );
-}
+import { jsonError } from "../../../../lib/http/responses";
 
 export async function GET(request: NextRequest) {
   const principal = await authenticateMerchantRequest(request);
-  if (!principal) return error("SESSION_REQUIRED", "A valid merchant session is required.", 401);
+  if (!principal)
+    return jsonError("SESSION_REQUIRED", "A valid merchant session is required.", 401);
   const readiness = await readGoLiveReadiness(getServerDatabase().db, principal.merchantId);
   return NextResponse.json(
     { activated: Boolean(principal.liveActivatedAt), readiness },
@@ -28,10 +23,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   if (!requestOriginIsAllowed(request)) {
-    return error("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
+    return jsonError("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
   }
   const principal = await authenticateMerchantRequest(request);
-  if (!principal) return error("SESSION_REQUIRED", "A valid merchant session is required.", 401);
+  if (!principal)
+    return jsonError("SESSION_REQUIRED", "A valid merchant session is required.", 401);
 
   let body: unknown;
   try {
@@ -59,7 +55,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (routeError) {
     if (routeError instanceof GoLiveAcknowledgementRequiredError) {
-      return error(routeError.code, routeError.message, 409);
+      return jsonError(routeError.code, routeError.message, 409);
     }
     throw routeError;
   }

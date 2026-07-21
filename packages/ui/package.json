@@ -12,13 +12,14 @@
     },
     "./flowline.css": "./dist/flowline.css",
     "./primitives.css": "./dist/primitives.css",
+    "./shell.css": "./dist/shell.css",
     "./theme.css": "./dist/theme.css"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc --project tsconfig.build.json && cp src/theme.css src/primitives/primitives.css src/flowline/flowline.css dist/",
+    "build": "rm -rf dist && tsc --project tsconfig.build.json && cp src/theme.css src/primitives/primitives.css src/flowline/flowline.css src/shell/shell.css dist/",
     "typecheck": "tsc --noEmit --project tsconfig.json",
     "test": "pnpm run test:tokens && pnpm run test:primitives && pnpm run test:flowline",
     "test:flowline": "node --experimental-strip-types scripts/require-flowline.mjs && vitest run --config vitest.config.ts src/flowline/stage-flowline.test.tsx",

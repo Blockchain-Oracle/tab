@@ -1,0 +1,118 @@
+---
+title: API reference
+description: The v1 HTTP API — authentication, endpoints, error schema, and the test/live boundary.
+---
+
+Base URL: your Tab deployment origin. All responses are JSON with
+`cache-control: no-store`.
+
+## Authentication
+
+Every request authenticates with one of three keys. Which one you use is
+determined by *where the code runs*:
+
+### Secret key — your server
+
+```
+Authorization: Bearer sk_test_…
+```
+
+Created in **Dashboard → API keys**, shown once, stays on your server.
+This is the key you use to call the API yourself: minting payment intents
+and listing payments. Full-access keys can create; read-only keys can only
+list. Rotating a key revokes the old one immediately — no grace window.
+
+### Publishable key — the buyer's browser
+
+```
+Authorization: Bearer pk_test_…
+```
+
+Passed to `<PayButton publishableKey=…>` and safe to expose. You never
+send it yourself — **the SDK does**, for the checkout-scoped endpoints
+(context, opening a payment, reporting settlement, test funds). It can
+only act inside a checkout for your merchant account, and settlement
+reporting additionally requires the buyer's own identity token.
+
+### Agent key — the MCP proxy
+
+```
+TAB_AGENT_KEY=agent_sk_…
+```
+
+Issued once when you provision an agent, and lives only in the
+`tab-mcp` proxy's environment — never in the agent's context. It
+authorizes the x402 payment flow for that one agent, inside its cap.
+
+### Modes
+
+Every key is bound to **test** or **live**. A test key cannot read or move
+live data, a live key cannot touch test data, and `livemode` on every
+payment object always matches the key that created it.
+
+## Errors
+
+Every error has the same shape:
+
+```json
+{
+  "error": {
+    "code": "INVALID_PAYMENT_INTENT_REQUEST",
+    "message": "The payment intent request is invalid."
+  }
+}
+```
+
+`code` is stable and machine-readable; `message` is human-readable. Rate
+limits answer `429` with a `retry-after` header in seconds.
+
+## Endpoints
+
+### Create a payment intent
+
+```http
+POST /api/v1/payment-intents
+Authorization: Bearer sk_test_…
+```
+
+```json
+{ "amount": "1.00", "intentUrl": "https://your-store.example/api/payment-intent" }
+```
+
+Returns `201` with `{ intent, intentToken }`. The `intentToken` is a signed,
+short-lived commitment to the amount — the checkout presents it back to Tab,
+so the browser can never change the price. Requires the `manage` permission
+(read-only keys get `403`).
+
+### List payments
+
+```http
+GET /api/v1/payments?limit=20
+Authorization: Bearer sk_test_…
+```
+
+Returns payments for your merchant account in the key's mode only.
+
+### Checkout endpoints (called by the SDK)
+
+You don't call these directly — the `<PayButton>` does — but they define the
+trust boundary:
+
+- `GET /api/v1/checkout-context` — merchant display info + client config for
+  the publishable key's mode.
+- `POST /api/v1/payments` — opens a pending payment from an `intentToken`.
+- `PATCH /api/v1/payments/{id}` — reports settlement. Requires the buyer's
+  identity token in addition to the publishable key; the server verifies the
+  reported settlement matches the opened intent (amount, mode, token, chain)
+  before committing.
+- `GET /api/v1/checkout/test-balance` · `POST /api/v1/checkout/test-funds` —
+  test-mode only; see [Test funds](/docs/test-funds).
+
+## The test/live boundary
+
+- Test keys operate on Base Sepolia and simulated settlement against your
+  test tenant. Live keys operate on mainnet rails.
+- `livemode` is explicit on payment objects and always consistent with the
+  key that created them.
+- Test funds endpoints refuse live keys outright (`403`,
+  `LIVE_MODE_NO_TEST_FUNDS`).

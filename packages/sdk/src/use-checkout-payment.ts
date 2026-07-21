@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type {
   CheckoutDispatch,
   CheckoutModel,
@@ -7,6 +7,17 @@ import type {
 } from "./checkout-controller-model";
 import type { CheckoutServices } from "./checkout-services";
 import { PaymentExecutionBlockedError } from "./execute";
+
+/** After this long in `confirming`, the UI switches to the honest
+ * "still working — money may be in flight" state. The payment itself keeps
+ * running; this is presentation, never a timeout on the transaction. */
+const CONFIRMING_DELAY_NOTICE_MS = 20_000;
+
+const REPORT_RETRY_DELAYS_MS = [1_000, 4_000, 10_000] as const;
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 type Options = {
   apiBaseUrl: string;
@@ -30,6 +41,15 @@ type Options = {
 
 export function useCheckoutPayment(options: Options) {
   const { dispatch, model, patch, runtime } = options;
+  const delayTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const clearDelayNotice = useCallback(() => {
+    if (delayTimer.current) {
+      clearTimeout(delayTimer.current);
+      delayTimer.current = undefined;
+    }
+  }, []);
+  useEffect(() => clearDelayNotice, [clearDelayNotice]);
+
   const cancel = useCallback(() => {
     runtime.run.current += 1;
     runtime.busy.current = false;
@@ -63,6 +83,10 @@ export function useCheckoutPayment(options: Options) {
     runtime.busy.current = true;
     const activeRun = runtime.run.current;
     dispatch({ type: "confirmation-started" });
+    clearDelayNotice();
+    delayTimer.current = setTimeout(() => {
+      if (activeRun === runtime.run.current) dispatch({ type: "confirmation-delayed" });
+    }, CONFIRMING_DELAY_NOTICE_MS);
     try {
       if (context.mode === "test") {
         const result = options.services.createTestPayment({
@@ -109,26 +133,37 @@ export function useCheckoutPayment(options: Options) {
       } catch {
         // Merchant callbacks do not change a completed payment's state.
       }
-      try {
-        await options.services.reportPayment({
-          apiBaseUrl: options.apiBaseUrl,
-          buyerDidToken: buyer.didToken,
-          intent: intentResponse.intent,
-          paymentId: opened.paymentId,
-          publishableKey: options.publishableKey,
-          tokenChanges: result.tokenChanges,
-          transactionId: result.transactionId,
-        });
-      } catch {
-        // Live execution is B-04 blocked. Before unlock, Phase 10 must add durable report retry:
-        // an opened row without committed transaction evidence cannot be recovered by the sweep.
+      // Executed money must never go unreported: retry with backoff so a
+      // transient network blip cannot orphan real transaction evidence.
+      for (let attempt = 0; attempt <= REPORT_RETRY_DELAYS_MS.length; attempt += 1) {
+        try {
+          await options.services.reportPayment({
+            apiBaseUrl: options.apiBaseUrl,
+            buyerDidToken: buyer.didToken,
+            intent: intentResponse.intent,
+            paymentId: opened.paymentId,
+            publishableKey: options.publishableKey,
+            tokenChanges: result.tokenChanges,
+            transactionId: result.transactionId,
+          });
+          break;
+        } catch {
+          const delay = REPORT_RETRY_DELAYS_MS[attempt];
+          if (delay === undefined) {
+            // Live execution stays B-04 blocked; before unlock, Phase 10 adds
+            // a durable server-side sweep for the exhausted-retries case.
+            break;
+          }
+          await wait(delay);
+        }
       }
     } catch (error) {
       if (activeRun === runtime.run.current) options.showFailure(error, true);
     } finally {
+      clearDelayNotice();
       runtime.busy.current = false;
     }
-  }, [dispatch, model, options, runtime]);
+  }, [clearDelayNotice, dispatch, model, options, runtime]);
 
   const retry = useCallback(() => {
     if (!model.context || !model.intentResponse) {

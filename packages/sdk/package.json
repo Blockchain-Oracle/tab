@@ -1,5 +1,5 @@
 {
-  "name": "@tab/sdk",
+  "name": "@runtab/sdk",
   "version": "0.0.1",
   "private": false,
   "type": "module",
@@ -16,6 +16,11 @@
       "types": "./dist/ua.d.ts",
       "import": "./dist/ua.js",
       "require": "./dist/ua.cjs"
+    },
+    "./showcase": {
+      "types": "./dist/showcase.d.ts",
+      "import": "./dist/showcase.js",
+      "require": "./dist/showcase.cjs"
     }
   },
   "files": [
@@ -31,15 +36,17 @@
     "lint": "biome check ."
   },
   "peerDependencies": {
+    "magic-sdk": ">=33.9.0 <34",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
-  },
-  "dependencies": {
-    "@particle-network/universal-account-sdk": "2.0.3",
-    "magic-sdk": "33.9.0",
+    "react-dom": "^19.0.0",
     "viem": "^2.48.0"
   },
+  "dependencies": {
+    "@particle-network/universal-account-sdk": "2.0.3"
+  },
   "devDependencies": {
+    "magic-sdk": "33.9.0",
+    "viem": "^2.48.0",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.2",
     "@testing-library/user-event": "14.6.1",
@@ -51,5 +58,20 @@
     "typescript": "^5.8",
     "vitest": "^4.1.10"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "description": "Drop-in Tab checkout: <PayButton> pays in USDC from an email login \u2014 no wallet, no cards, no chains visible.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Blockchain-Oracle/tab.git",
+    "directory": "packages/sdk"
+  },
+  "keywords": [
+    "payments",
+    "checkout",
+    "usdc",
+    "x402",
+    "react",
+    "pay-button"
+  ]
 }

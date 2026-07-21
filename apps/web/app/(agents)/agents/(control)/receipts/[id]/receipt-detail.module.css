@@ -5,7 +5,7 @@
 }
 .back {
   width: fit-content;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
   font-weight: 600;
   text-decoration: none;
@@ -19,7 +19,7 @@
 .header p,
 .evidenceCard > p {
   margin: 0;
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -30,7 +30,7 @@
   letter-spacing: -0.03em;
 }
 .header h1 span {
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-size: 12px;
 }
 .header b {
@@ -39,46 +39,46 @@
   font-size: 10.5px;
 }
 .settled {
-  background: #e7f3ef;
-  color: #17503a;
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  color: var(--tab-status-success);
 }
 .pending {
-  background: #fff2dc;
-  color: #8a5711;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 .failed {
-  background: #faecec;
-  color: #b4383d;
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, transparent);
+  color: var(--tab-status-danger);
 }
 .blocked {
-  background: #e8eff5;
-  color: #345a73;
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  color: var(--tab-text-muted);
 }
 .summary,
 .capContext,
 .evidenceCard,
 .unavailable,
 .loading {
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 11px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 .summary {
   padding: 8px 18px;
 }
 .capContext {
   padding: 14px 18px;
-  border-color: #d8e1e7;
-  background: #f5f8fa;
+  border-color: color-mix(in srgb, var(--tab-text) 8%, transparent);
+  background: color-mix(in srgb, var(--tab-text) 3%, transparent);
 }
 .capContext b {
-  color: #345a73;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   letter-spacing: 0.08em;
 }
 .capContext p {
   margin: 5px 0 0;
-  color: #31434f;
+  color: var(--tab-text-muted);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -91,14 +91,14 @@
   grid-template-columns: 110px minmax(0, 1fr);
   gap: 14px;
   padding: 11px 0;
-  border-bottom: 1px solid #efede7;
+  border-bottom: 1px solid var(--tab-canvas);
 }
 .summary dl > div:last-child {
   border-bottom: 0;
 }
 .summary dt,
 .evidenceCard dt {
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   font-weight: 600;
 }
@@ -106,12 +106,12 @@
 .evidenceCard dd {
   min-width: 0;
   margin: 0;
-  color: #1c1b18;
+  color: var(--tab-text);
   font-size: 12px;
   overflow-wrap: anywhere;
 }
 .summary a {
-  color: #206b4e;
+  color: var(--tab-status-success);
 }
 .mono,
 .evidenceCard code {
@@ -139,14 +139,14 @@
 .evidenceUnavailable {
   display: block;
   margin-top: 12px;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
   line-height: 1.5;
 }
 .evidenceCard code {
   display: block;
   overflow-wrap: anywhere;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   line-height: 1.5;
 }
@@ -168,8 +168,8 @@
   margin-top: 12px;
   padding: 7px 9px;
   border-radius: 7px;
-  background: #206b4e;
-  color: #fff;
+  background: var(--tab-status-success);
+  color: var(--tab-surface);
   font-size: 11px;
   font-weight: 600;
   text-decoration: none;
@@ -177,10 +177,10 @@
 .error {
   margin: 0;
   padding: 9px 12px;
-  border: 1px solid #ecd49f;
+  border: 1px solid color-mix(in srgb, var(--tab-mode-test) 30%, transparent);
   border-radius: 9px;
-  background: #fff9ec;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 8%, transparent);
+  color: var(--tab-status-warning);
   font-size: 11.5px;
 }
 .loading,
@@ -194,13 +194,13 @@
 }
 .unavailable p {
   margin: 7px 0 0;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12px;
 }
 .back:focus-visible,
 .summary a:focus-visible,
 .evidenceCard > a:focus-visible {
-  outline: 2px solid #206b4e;
+  outline: 2px solid var(--tab-status-success);
   outline-offset: 2px;
 }
 @media (max-width: 760px) {

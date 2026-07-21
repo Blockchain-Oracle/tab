@@ -31,7 +31,7 @@ const originalEnv = {
 const connection = createDatabase(databaseUrl, 1);
 
 function request(body: unknown, origin = "http://localhost") {
-  return new Request("http://localhost/api/leash/auth/verify", {
+  return new Request("http://localhost/api/agents/auth/verify", {
     body: JSON.stringify(body),
     headers: { "content-type": "application/json", origin },
     method: "POST",
@@ -54,7 +54,7 @@ function restore(name: keyof typeof originalEnv, environmentName: string) {
   else process.env[environmentName] = value;
 }
 
-describe("POST /api/leash/auth/verify with real PostgreSQL", () => {
+describe("POST /api/agents/auth/verify with real PostgreSQL", () => {
   beforeEach(async () => {
     process.env.MAGIC_SECRET_KEY = "configured-magic-boundary";
     process.env.NEXT_PUBLIC_APP_URL = "http://localhost";
@@ -93,7 +93,7 @@ describe("POST /api/leash/auth/verify with real PostgreSQL", () => {
         (select count(*)::int from merchants) as "merchantsCount"`;
 
     expect(response.status).toBe(200);
-    await expect(response.clone().json()).resolves.toEqual({ redirectTo: "/leash" });
+    await expect(response.clone().json()).resolves.toEqual({ redirectTo: "/agents" });
     expect(session).toMatchObject({ email: "owner@example.test" });
     expect(session).not.toHaveProperty("merchantId");
     expect(session).not.toHaveProperty("mode");

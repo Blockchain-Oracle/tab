@@ -15,9 +15,15 @@
     "verify:magic-preflight": "node scripts/verify-magic-preflight.mjs"
   },
   "dependencies": {
-    "@magic-sdk/admin": "latest",
+    "@magic-sdk/admin": "2.8.2",
+    "@radix-ui/react-dropdown-menu": "^2.1.20",
+    "@radix-ui/react-popover": "^1.1.19",
+    "@radix-ui/react-select": "^2.3.3",
+    "@radix-ui/react-tooltip": "^1.2.12",
+    "@tab/faucet": "workspace:*",
     "@tab/networks": "workspace:*",
-    "@tab/sdk": "workspace:*",
+    "@runtab/sdk": "workspace:*",
+    "@tab/ui": "workspace:*",
     "@vercel/blob": "2.6.1",
     "@x402/core": "~2.17.0",
     "@x402/evm": "~2.17.0",
@@ -26,6 +32,7 @@
     "@x402/paywall": "~2.17.0",
     "drizzle-orm": "^0.45.2",
     "jose": "^6.0.0",
+    "lucide-react": "^1.25.0",
     "magic-sdk": "33.9.0",
     "next": "16.2.10",
     "postgres": "^3.4.9",
@@ -35,7 +42,7 @@
     "web-push": "^3.6.7"
   },
   "devDependencies": {
-    "@tab/agent": "workspace:*",
+    "@runtab/mcp": "workspace:*",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

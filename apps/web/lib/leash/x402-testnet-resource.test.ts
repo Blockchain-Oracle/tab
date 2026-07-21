@@ -70,7 +70,7 @@ class UnpaidAdapter implements HTTPAdapter {
 
 function environment(overrides: Record<string, string | undefined> = {}) {
   return {
-    LEASH_PROVISIONING_PROFILE: "base_sepolia_integration",
+    TAB_AGENT_PROVISIONING_PROFILE: "base_sepolia_integration",
     NEXT_PUBLIC_APP_URL: "https://tab.example",
     X402_TESTNET_PAYEE_ADDRESS: PAYEE,
     ...overrides,
@@ -80,10 +80,10 @@ function environment(overrides: Record<string, string | undefined> = {}) {
 describe("Base Sepolia x402 resource", () => {
   it("fails closed unless the explicit integration profile is enabled", () => {
     expect(() =>
-      readX402TestnetResourceConfig(environment({ LEASH_PROVISIONING_PROFILE: undefined })),
+      readX402TestnetResourceConfig(environment({ TAB_AGENT_PROVISIONING_PROFILE: undefined })),
     ).toThrowError("not enabled");
     expect(() =>
-      readX402TestnetResourceConfig(environment({ LEASH_PROVISIONING_PROFILE: "mainnet" })),
+      readX402TestnetResourceConfig(environment({ TAB_AGENT_PROVISIONING_PROFILE: "mainnet" })),
     ).toThrowError("not enabled");
   });
 

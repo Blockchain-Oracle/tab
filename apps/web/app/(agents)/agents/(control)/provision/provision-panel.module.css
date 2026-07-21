@@ -10,9 +10,9 @@
   width: min(100%, 590px);
   overflow: hidden;
   padding: 42px;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 14px;
-  background: #fff;
+  background: var(--tab-surface);
   box-shadow: 0 1px 3px rgb(28 27 24 / 6%);
   text-align: center;
 }
@@ -22,9 +22,9 @@
   width: 52px;
   height: 52px;
   margin: 0 auto 18px;
-  border: 1px solid #d7e6df;
+  border: 1px solid color-mix(in srgb, var(--tab-text) 5%, transparent);
   border-radius: 50%;
-  background: #eff6f3;
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
 }
 
 .keyMark span:first-child {
@@ -33,7 +33,7 @@
   left: 14px;
   width: 17px;
   height: 17px;
-  border: 3px solid #206b4e;
+  border: 3px solid var(--tab-text);
   border-radius: 50%;
 }
 
@@ -43,8 +43,8 @@
   left: 30px;
   width: 14px;
   height: 3px;
-  background: #206b4e;
-  box-shadow: 5px 4px 0 #206b4e;
+  background: var(--tab-text);
+  box-shadow: 5px 4px 0 var(--tab-text);
   transform: rotate(45deg);
 }
 
@@ -52,8 +52,8 @@
   display: inline-flex;
   padding: 5px 8px;
   border-radius: 6px;
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -61,7 +61,7 @@
 
 .card h1 {
   margin: 18px 0 0;
-  color: #1c1b18;
+  color: var(--tab-text);
   font-size: 24px;
   letter-spacing: -0.025em;
 }
@@ -69,7 +69,7 @@
 .card > p {
   max-width: 470px;
   margin: 8px auto 0;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -80,10 +80,10 @@
   gap: 3px;
   margin-top: 22px;
   padding: 13px 15px;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 9px;
-  background: #faf9f6;
-  color: #5f5d55;
+  background: var(--tab-canvas);
+  color: var(--tab-text-muted);
   font-size: 11.5px;
   line-height: 1.45;
   text-align: left;
@@ -92,11 +92,11 @@
 .agentContext {
   gap: 5px;
   margin-top: 22px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .agentContext > span {
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -105,13 +105,13 @@
 
 .agentContext > strong {
   overflow-wrap: anywhere;
-  color: #1c1b18;
+  color: var(--tab-text);
   font-family: var(--font-geist-mono), monospace;
   font-size: 12px;
 }
 
 .agentContext > small {
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   line-height: 1.45;
 }
 
@@ -122,22 +122,22 @@
   gap: 12px;
   margin-top: 5px;
   padding-top: 8px;
-  border-top: 1px solid #e8e6df;
+  border-top: 1px solid var(--tab-line);
 }
 
 .blockedBalance strong {
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-variant-numeric: tabular-nums;
 }
 
 .blockedBalance span {
-  color: #8a5711;
+  color: var(--tab-status-warning);
   font-size: 10.5px;
   text-align: right;
 }
 
 .truthNote strong {
-  color: #1c1b18;
+  color: var(--tab-text);
   font-size: 12px;
 }
 
@@ -151,7 +151,7 @@
 .card label {
   display: grid;
   gap: 6px;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
   font-weight: 650;
 }
@@ -159,10 +159,10 @@
 .card input {
   height: 38px;
   padding: 0 11px;
-  border: 1px solid #d6d3c8;
+  border: 1px solid var(--tab-line);
   border-radius: 9px;
-  background: #fff;
-  color: #1c1b18;
+  background: var(--tab-surface);
+  color: var(--tab-text);
   font: inherit;
 }
 
@@ -171,26 +171,26 @@
   width: 100%;
   height: 38px;
   margin-top: 2px;
-  border: 1px solid #206b4e;
+  border: 1px solid var(--tab-text);
   border-radius: 9px;
-  background: #206b4e;
-  color: #fff;
+  background: var(--tab-text);
+  color: var(--tab-surface);
   cursor: pointer;
   font-size: 12px;
   font-weight: 650;
 }
 
 .card button:disabled {
-  border-color: #dbd9d0;
-  background: #f4f3ee;
-  color: #68665f;
+  border-color: var(--tab-line);
+  background: var(--tab-canvas);
+  color: var(--tab-text-muted);
   cursor: wait;
 }
 
 .card > a {
   display: inline-block;
   margin-top: 16px;
-  color: #206b4e;
+  color: var(--tab-text);
   font-size: 11.5px;
   font-weight: 650;
   text-decoration: none;
@@ -199,7 +199,7 @@
 .card button:focus-visible,
 .card input:focus-visible,
 .card > a:focus-visible {
-  outline: 2px solid #206b4e;
+  outline: 2px solid var(--tab-text);
   outline-offset: 3px;
 }
 

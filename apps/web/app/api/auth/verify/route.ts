@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 import {
   InvalidMagicIdentityError,
   InvalidMagicTokenError,
@@ -21,23 +19,13 @@ import {
   provisionMerchant,
 } from "../../../../lib/db/provision-merchant";
 import { getServerDatabase } from "../../../../lib/db/server";
-
-function json(body: unknown, status: number) {
-  return NextResponse.json(body, {
-    headers: { "cache-control": "no-store" },
-    status,
-  });
-}
-
-function error(code: string, message: string, status: number) {
-  return json({ error: { code, message } }, status);
-}
+import { jsonError, jsonNoStore } from "../../../../lib/http/responses";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: Request) {
   if (!requestOriginIsAllowed(request)) {
-    return error("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
+    return jsonError("ORIGIN_NOT_ALLOWED", "Request origin is not allowed.", 403);
   }
 
   let body: unknown;
@@ -62,7 +50,7 @@ export async function POST(request: Request) {
   const flow = typeof body === "object" && body !== null && "flow" in body ? body.flow : undefined;
 
   if (!didToken || !emailPattern.test(email) || (flow !== "signup" && flow !== "login")) {
-    return error(
+    return jsonError(
       "INVALID_AUTH_REQUEST",
       "A DID token, email, and valid auth flow are required.",
       400,
@@ -70,11 +58,11 @@ export async function POST(request: Request) {
   }
 
   if (!magicAuthenticationConfigured()) {
-    return error("MAGIC_NOT_CONFIGURED", "Magic authentication is not configured.", 503);
+    return jsonError("MAGIC_NOT_CONFIGURED", "Magic authentication is not configured.", 503);
   }
 
   if (!sessionSigningConfigured()) {
-    return error("SESSION_NOT_CONFIGURED", "Session signing is not configured.", 503);
+    return jsonError("SESSION_NOT_CONFIGURED", "Session signing is not configured.", 503);
   }
 
   let magicIdentity: Awaited<ReturnType<typeof verifyMerchantDidToken>>;
@@ -86,16 +74,20 @@ export async function POST(request: Request) {
       authError instanceof InvalidMagicTokenError ||
       authError instanceof InvalidMagicIdentityError
     ) {
-      return error("INVALID_DID_TOKEN", "Magic authentication could not be verified.", 401);
+      return jsonError("INVALID_DID_TOKEN", "Magic authentication could not be verified.", 401);
     }
     if (authError instanceof MagicServiceUnavailableError) {
-      return error("MAGIC_UNAVAILABLE", "Magic authentication is temporarily unavailable.", 502);
+      return jsonError(
+        "MAGIC_UNAVAILABLE",
+        "Magic authentication is temporarily unavailable.",
+        502,
+      );
     }
     throw authError;
   }
 
   if (!magicEmailMatchesRequest(magicIdentity.email, email)) {
-    return error(
+    return jsonError(
       "MAGIC_EMAIL_MISMATCH",
       "This browser's saved Magic session belongs to a different email.",
       409,
@@ -116,7 +108,11 @@ export async function POST(request: Request) {
       };
     } catch (provisionError) {
       if (provisionError instanceof MerchantAlreadyExistsError) {
-        return error("EMAIL_ALREADY_REGISTERED", "An account with this email already exists.", 409);
+        return jsonError(
+          "EMAIL_ALREADY_REGISTERED",
+          "An account with this email already exists.",
+          409,
+        );
       }
       throw provisionError;
     }
@@ -125,7 +121,7 @@ export async function POST(request: Request) {
     const identity = await findMerchantIdentity(db, magicIdentity.email, magicIdentity.magicIssuer);
 
     if (!identity) {
-      return error("EMAIL_NOT_REGISTERED", "No account exists for this email.", 404);
+      return jsonError("EMAIL_NOT_REGISTERED", "No account exists for this email.", 404);
     }
 
     principal = identity;
@@ -133,7 +129,7 @@ export async function POST(request: Request) {
   }
 
   const token = await createSessionToken({ ...principal, mode: "test" });
-  const response = json({ redirectTo }, 200);
+  const response = jsonNoStore({ redirectTo }, 200);
   response.cookies.set(SESSION_COOKIE_NAME, token, sessionCookieOptions());
 
   return response;

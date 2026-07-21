@@ -84,7 +84,7 @@ export async function reserveSignRequest(
       .from(agents)
       .where(eq(agents.id, options.agentId))
       .for("update");
-    if (!agent) throw new SignGateError("INVALID_LEASH_KEY", 401);
+    if (!agent) throw new SignGateError("INVALID_AGENT_KEY", 401);
 
     const blockedStatus = preParseStatusGateError(agent.status);
     if (blockedStatus) throw blockedStatus;
@@ -100,7 +100,7 @@ export async function reserveSignRequest(
           isNull(leashKeys.revokedAt),
         ),
       );
-    if (!key) throw new SignGateError("INVALID_LEASH_KEY", 401);
+    if (!key) throw new SignGateError("INVALID_AGENT_KEY", 401);
 
     const parsed = parseSignRequest(decodeBody(options.body), {
       agentAddress: agent.address,
@@ -112,13 +112,13 @@ export async function reserveSignRequest(
       .from(caps)
       .where(eq(caps.agentId, agent.id))
       .for("update");
-    if (!cap?.amountUsdCents) throw new SignGateError("LEASH_CAP_NOT_SET", 403);
+    if (!cap?.amountUsdCents) throw new SignGateError("CAP_NOT_SET", 403);
     const cycle = await ensureCurrentCapCycle(transaction, {
       agentId: agent.id,
       frequency: cap.frequency,
       now,
     });
-    if (!cycle) throw new SignGateError("LEASH_CAP_NOT_SET", 403);
+    if (!cycle) throw new SignGateError("CAP_NOT_SET", 403);
     const activeHalt = await findActiveCapHalt(transaction, agent.id);
 
     const [existing] = await transaction
@@ -140,7 +140,7 @@ export async function reserveSignRequest(
             .update(receipts)
             .set({
               intendedNetwork: existing.network,
-              reason: "LEASH_CAP_EXCEEDED",
+              reason: "CAP_EXCEEDED",
               signedAt: null,
               settlementResponse: null,
               settledAt: null,
@@ -160,7 +160,7 @@ export async function reserveSignRequest(
             type: "block",
           });
           return {
-            code: "LEASH_CAP_EXCEEDED" as const,
+            code: "CAP_EXCEEDED" as const,
             kind: "blocked" as const,
             receiptId: existing.id,
           };
@@ -170,7 +170,7 @@ export async function reserveSignRequest(
       return {
         code:
           existing.status === "blocked"
-            ? "LEASH_CAP_EXCEEDED"
+            ? "CAP_EXCEEDED"
             : (existing.reason ?? "SIGN_REQUEST_CONFLICT"),
         kind: existing.status,
         receiptId: existing.id,
@@ -223,7 +223,7 @@ export async function reserveSignRequest(
       payTo: parsed.payTo,
       resourceHost: parsed.resourceHost,
       resourceUrl: parsed.resourceUrl,
-      reason: blockedByCap ? "LEASH_CAP_EXCEEDED" : null,
+      reason: blockedByCap ? "CAP_EXCEEDED" : null,
       requestFingerprint: parsed.requestFingerprint,
       status,
     };
@@ -260,7 +260,7 @@ export async function reserveSignRequest(
         receiptId: created.id,
       });
       return {
-        code: "LEASH_CAP_EXCEEDED" as const,
+        code: "CAP_EXCEEDED" as const,
         kind: "blocked" as const,
         receiptId: created.id,
       };

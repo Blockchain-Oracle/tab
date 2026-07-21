@@ -33,16 +33,32 @@ export const BUYER_COPY = {
   },
   checkout: "Checkout",
   checkingBalance: "Checking your balance…",
+  deviceApproval: {
+    body: "We sent an approval link to",
+    hint: "Approve from your inbox — this screen continues automatically.",
+    title: "Approve this new device",
+  },
   footer: "Secured by Tab",
   insufficient: {
     body: "Nothing has been charged.",
     title: "Not enough to complete this payment",
+  },
+  testFunds: {
+    claiming: "Sending your test funds…",
+    cta: "Get free test funds",
+    failed: "Test funds were not granted.",
+    label: "Sandbox funds — no real value",
   },
   loading: "Loading payment…",
   merchant: "Merchant",
   paymentComplete: "Payment complete",
   processing: "Processing your payment…",
   reference: "Reference",
+  stuck: {
+    body: "It may still complete — do not submit it again. You can close this window; the result will appear in your receipt.",
+    close: "Close — check receipts later",
+    title: "Taking longer than expected",
+  },
   testMode: "Test mode — no real money moves",
 } as const;
 

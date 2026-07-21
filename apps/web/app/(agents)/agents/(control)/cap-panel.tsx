@@ -50,7 +50,9 @@ export function CapPanel({ agentId, initialPolicy }: CapPanelProps) {
 
   async function mutate(method: "PATCH" | "POST", body: Record<string, string>) {
     const response = await fetch(
-      method === "POST" && body.action === "reset" ? "/api/leash/cycles/reset" : "/api/leash/caps",
+      method === "POST" && body.action === "reset"
+        ? "/api/agents/cycles/reset"
+        : "/api/agents/caps",
       {
         body: JSON.stringify(
           body.action === "reset" ? { agentId } : { agentId, amount, frequency },
@@ -104,7 +106,7 @@ export function CapPanel({ agentId, initialPolicy }: CapPanelProps) {
     <section className={styles.panel} id="cap-controls">
       <header className={styles.header}>
         <div>
-          <p className={styles.eyebrow}>THE LEASH ITSELF</p>
+          <p className={styles.eyebrow}>SPEND CONTROLS</p>
           <h1>Cap &amp; limits</h1>
           <p>Changes take effect at the hosted signer immediately. No agent restart is required.</p>
         </div>

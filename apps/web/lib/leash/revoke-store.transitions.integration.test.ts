@@ -25,7 +25,7 @@ function revoke(
   });
 }
 
-describe("reversible Leash revocation transitions with real PostgreSQL", () => {
+describe("reversible Agent revocation transitions with real PostgreSQL", () => {
   it("pauses and resumes without touching the subject or either key", async () => {
     const identity = await harness.provision("pause");
     const keysBefore = await harness.keys(identity.id);

@@ -9,7 +9,12 @@
 .wideCard,
 .cards div {
   border-radius: 12px;
-  background: linear-gradient(90deg, #efede8 25%, #f8f7f3 50%, #efede8 75%);
+  background: linear-gradient(
+    90deg,
+    var(--tab-canvas) 25%,
+    var(--tab-canvas) 50%,
+    var(--tab-canvas) 75%
+  );
   background-size: 200% 100%;
   animation: pulse 1.4s ease-in-out infinite;
 }

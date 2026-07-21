@@ -57,7 +57,7 @@ async function insertAt(agentId: string, cycleId: string, id: string, createdAtL
 }
 
 function request(agentId: string, token: string, cursor?: string) {
-  const url = new URL(`/api/leash/notifications?agentId=${agentId}&limit=2`, appOrigin);
+  const url = new URL(`/api/agents/notifications?agentId=${agentId}&limit=2`, appOrigin);
   if (cursor) url.searchParams.set("cursor", cursor);
   return new NextRequest(url, {
     headers: { cookie: `${SESSION_COOKIE_NAME}=${token}` },

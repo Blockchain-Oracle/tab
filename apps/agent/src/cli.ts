@@ -8,7 +8,7 @@ function startupMessage(error: unknown) {
   if (error instanceof CliConfigurationError || error instanceof LeashConnectError) {
     return error.message;
   }
-  return "Leash MCP could not start.";
+  return "Tab MCP could not start.";
 }
 
 async function main() {
@@ -30,6 +30,6 @@ async function main() {
 try {
   await main();
 } catch (error) {
-  process.stderr.write(`leash-mcp: ${startupMessage(error)}\n`);
+  process.stderr.write(`tab-mcp: ${startupMessage(error)}\n`);
   process.exitCode = 1;
 }

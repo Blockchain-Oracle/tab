@@ -22,7 +22,7 @@ const paymentRequired = {
   x402Version: 2,
 };
 
-describe("Leash MCP proxy without a configured signer", () => {
+describe("Tab MCP proxy without a configured signer", () => {
   const upstreamServer = new Server(
     { name: "free-upstream", version: "1.0.0" },
     { capabilities: { tools: {} } },

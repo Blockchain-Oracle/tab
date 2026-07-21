@@ -69,7 +69,7 @@ describe("dashboard transaction reality labels", () => {
     const html = renderToStaticMarkup(<TransactionsTable rows={[transaction()]} search={{}} />);
 
     expect(html).toContain("TEST");
-    expect(html).toContain("Simulated test");
+    expect(html).toContain("Sandbox simulation");
     expect(html).toContain("No delivery");
     expect(html).not.toContain("private-payer@example.test");
   });
@@ -93,7 +93,7 @@ describe("dashboard transaction reality labels", () => {
 
     expect(html).toContain("Pending");
     expect(html).toContain("Unverified");
-    expect(html).not.toContain("Simulated test");
+    expect(html).not.toContain("Sandbox simulation");
     expect(html).not.toContain("TEST");
   });
 
@@ -112,19 +112,19 @@ describe("dashboard transaction reality labels", () => {
     expect(html).toContain("Webhook: Delivered");
   });
 
-  it("renders real detail evidence but no email or Arbiscan link for simulated test data", () => {
+  it("renders real detail evidence but no email or explorer link for simulated test data", () => {
     const html = renderToStaticMarkup(<TransactionDetail row={transaction()} search={{}} />);
 
-    expect(html).toContain("Simulated test — no funds moved");
+    expect(html).toContain("Sandbox settlement — simulated, no funds moved");
     expect(html).toContain("0x2222222222222222222222222222222222222222");
     expect(html).toContain("https://merchant.example.test/api/tab/intent");
     expect(html).toContain("amountAtomic");
     expect(html).toContain("View raw JSON");
     expect(html).not.toContain("private-payer@example.test");
-    expect(html).not.toContain("View on Arbiscan");
+    expect(html).not.toContain("explorer ↗");
   });
 
-  it("links to Arbiscan only for a stored canonical transaction hash", () => {
+  it("links to the chain-derived explorer only for a stored canonical transaction hash", () => {
     const txHash = `0x${"a".repeat(64)}`;
     const settlement = transaction().settlement;
     if (!settlement) throw new Error("Expected settlement evidence");
@@ -143,6 +143,6 @@ describe("dashboard transaction reality labels", () => {
     );
 
     expect(html).toContain(`href="https://arbiscan.io/tx/${txHash}"`);
-    expect(html).toContain("View on Arbiscan");
+    expect(html).toContain("View on Arbitrum One explorer");
   });
 });

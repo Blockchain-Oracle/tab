@@ -80,7 +80,7 @@ describe("atomic hosted-signer reservation gate", () => {
       body: signBody("1"),
       nowSeconds,
     });
-    expect(blocked).toMatchObject({ code: "LEASH_CAP_EXCEEDED", kind: "blocked" });
+    expect(blocked).toMatchObject({ code: "CAP_EXCEEDED", kind: "blocked" });
 
     const stored = await connection.client<
       {
@@ -131,7 +131,7 @@ describe("atomic hosted-signer reservation gate", () => {
       body: signBody("1"),
       nowSeconds,
     });
-    expect(blocked).toMatchObject({ code: "LEASH_CAP_EXCEEDED", kind: "blocked" });
+    expect(blocked).toMatchObject({ code: "CAP_EXCEEDED", kind: "blocked" });
 
     const [stored] = await connection.client<
       { committed_atomic_before: string | null; status: string }[]

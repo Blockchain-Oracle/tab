@@ -65,8 +65,14 @@ describe("payment reporting with real PostgreSQL", () => {
     const principal = { env: "test" as const, merchantId: identity.merchantId };
 
     const results = await Promise.all([
-      reportPayment(connection.db, principal, paymentId, report, { payerAddress }),
-      reportPayment(connection.db, principal, paymentId, report, { payerAddress }),
+      reportPayment(connection.db, principal, paymentId, report, {
+        payerAddress,
+        payerEmail: "buyer@example.test",
+      }),
+      reportPayment(connection.db, principal, paymentId, report, {
+        payerAddress,
+        payerEmail: "buyer@example.test",
+      }),
     ]);
     expect(results).toEqual([
       expect.objectContaining({ status: "settled", verificationMethod: "simulated_test" }),
@@ -83,7 +89,7 @@ describe("payment reporting with real PostgreSQL", () => {
       .where(eq(settlements.paymentId, paymentId));
     expect(storedPayment).toMatchObject({
       payerAddress,
-      payerEmail: null,
+      payerEmail: "buyer@example.test",
       reportedTokenChanges: report.tokenChanges,
       reportedTransactionId: report.transactionId,
       status: "settled",
@@ -119,7 +125,7 @@ describe("payment reporting with real PostgreSQL", () => {
         { env: "live", merchantId: identity.merchantId },
         paymentId,
         report,
-        { payerAddress },
+        { payerAddress, payerEmail: "buyer@example.test" },
       ),
     ).resolves.toMatchObject({ status: "pending", verificationMethod: null });
 
@@ -147,16 +153,22 @@ describe("payment reporting with real PostgreSQL", () => {
         { env: "test", merchantId: second.merchantId },
         paymentId,
         candidates[0],
-        { payerAddress },
+        { payerAddress, payerEmail: "buyer@example.test" },
       ),
     ).rejects.toMatchObject({ code: "PAYMENT_NOT_FOUND" });
     await expect(
-      reportPayment(connection.db, principal, livePaymentId, candidates[0], { payerAddress }),
+      reportPayment(connection.db, principal, livePaymentId, candidates[0], {
+        payerAddress,
+        payerEmail: "buyer@example.test",
+      }),
     ).rejects.toMatchObject({ code: "PAYMENT_NOT_FOUND" });
 
     const results = await Promise.allSettled(
       candidates.map((candidate) =>
-        reportPayment(connection.db, principal, paymentId, candidate, { payerAddress }),
+        reportPayment(connection.db, principal, paymentId, candidate, {
+          payerAddress,
+          payerEmail: "buyer@example.test",
+        }),
       ),
     );
     const fulfilled = results.filter((result) => result.status === "fulfilled");

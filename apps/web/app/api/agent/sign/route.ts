@@ -45,10 +45,10 @@ interface SignRouteDependencies {
 }
 
 function statusForCode(code: string) {
-  if (code === "INVALID_LEASH_KEY") return 401;
+  if (code === "INVALID_AGENT_KEY") return 401;
   if (code.startsWith("AGENT_")) return 423;
   if (code === "FLOAT_EMPTY") return 402;
-  if (code === "LEASH_CAP_EXCEEDED" || code === "LEASH_CAP_NOT_SET") return 403;
+  if (code === "CAP_EXCEEDED" || code === "CAP_NOT_SET") return 403;
   if (code === "SIGN_RATE_LIMITED" || code === "SIGNER_PROVIDER_RATE_LIMITED") return 429;
   if (code === "SIGN_REQUEST_IN_PROGRESS" || code === "SIGN_REQUEST_RECONCILING") return 409;
   if (

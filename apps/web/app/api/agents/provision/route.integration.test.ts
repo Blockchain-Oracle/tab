@@ -27,7 +27,7 @@ function handle(
   });
 }
 
-describe("POST /api/leash/provision", () => {
+describe("POST /api/agents/provision", () => {
   it("requires same-origin owner authentication before contacting Magic", async () => {
     const owner = await harness.provision("provision-auth");
     const wallet = vi.fn(async (_subject: string) => agentAddress);
@@ -87,7 +87,7 @@ describe("POST /api/leash/provision", () => {
         name: "Sepolia payer",
         paymentProfile: "base_sepolia_integration",
       },
-      label: "Test funds — not real money",
+      label: "Sandbox funds — no real value",
       testFunds: true,
     });
   });

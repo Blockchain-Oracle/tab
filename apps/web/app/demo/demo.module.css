@@ -1,7 +1,7 @@
 .page {
   min-height: 100dvh;
-  background: #faf9f6;
-  color: #1c1b18;
+  background: var(--tab-canvas);
+  color: var(--tab-text);
 }
 
 .topbar {
@@ -10,33 +10,41 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
-  border-bottom: 1px solid #e8e6df;
-  background: rgba(250, 249, 246, 0.92);
+  border-bottom: 1px solid var(--tab-line);
 }
 
 .topbar a {
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12.5px;
   font-weight: 600;
   text-decoration: none;
 }
 
+.topbar a:hover {
+  color: var(--tab-text);
+}
+
 .topbar .brand {
   display: flex;
   align-items: center;
-  gap: 9px;
-  color: #1c1b18;
-  font-size: 14px;
+  gap: 8px;
+  color: var(--tab-text);
 }
 
-.brand span {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border-radius: 8px;
-  background: #3b5bd9;
-  color: #fff;
+.brandWord {
+  font-size: 17px;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+}
+
+.brandNote {
+  padding-left: 9px;
+  border-left: 1px solid var(--tab-line);
+  color: var(--tab-text-muted);
+  font-family: var(--tab-font-evidence);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .storefront {
@@ -57,15 +65,16 @@
   width: 40px;
   height: 40px;
   place-items: center;
-  border: 1px solid #e4e2da;
+  border: 1px solid var(--tab-line);
   border-radius: 11px;
-  background: #fff;
+  background: var(--tab-surface);
   object-fit: cover;
   font-weight: 700;
 }
 
 .merchant small {
-  color: #8c8a80;
+  color: var(--tab-text-muted);
+  font-family: var(--tab-font-evidence);
   font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.09em;
@@ -80,28 +89,40 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   overflow: hidden;
-  border: 1px solid #e8e6df;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 24px 70px rgba(28, 27, 24, 0.08);
+  border: 1px solid var(--tab-line);
+  border-radius: var(--tab-radius-l);
+  background: var(--tab-surface);
+  box-shadow: var(--tab-shadow-raise);
 }
 
 .productVisual {
+  position: relative;
   display: grid;
   min-height: 500px;
   place-items: center;
-  background:
-    linear-gradient(145deg, rgba(59, 91, 217, 0.1), transparent 45%),
-    repeating-linear-gradient(135deg, #f3f1eb 0, #f3f1eb 16px, #eae7df 16px, #eae7df 17px);
+  background: var(--tab-color-paper);
+  overflow: hidden;
+}
+
+.productVisual::before {
+  content: "";
+  position: absolute;
+  top: 46%;
+  left: -8%;
+  width: 116%;
+  height: clamp(8px, 1.2vw, 14px);
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--tab-accent), transparent 92%);
+  transform: rotate(-9deg);
 }
 
 .productVisual span {
   padding: 14px 18px;
-  border: 1px solid rgba(59, 91, 217, 0.25);
+  border: 1px solid var(--tab-line);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.75);
-  color: #3b5bd9;
-  font-family: var(--font-geist-mono), monospace;
+  background: var(--tab-surface);
+  color: var(--tab-text);
+  font-family: var(--tab-font-evidence);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -118,8 +139,9 @@
   align-self: flex-start;
   padding: 4px 7px;
   border-radius: 6px;
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
+  font-family: var(--tab-font-evidence);
   font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -133,22 +155,23 @@
 
 .productDetails > p {
   margin: 9px 0 0;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 13px;
   line-height: 1.6;
 }
 
 .price {
   margin: 22px 0;
-  font-size: 22px;
+  font-family: var(--tab-font-evidence);
+  font-size: 24px;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
 
 .productDetails code {
   margin-top: 14px;
-  color: #8c8a80;
-  font-family: var(--font-geist-mono), monospace;
+  color: var(--tab-text-muted);
+  font-family: var(--tab-font-evidence);
   font-size: 10px;
 }
 
@@ -159,7 +182,7 @@
 }
 
 .orderError {
-  color: #b4383d;
+  color: var(--tab-status-danger);
 }
 
 .orderSuccess {
@@ -167,8 +190,8 @@
   gap: 3px;
   padding: 11px 12px;
   border-radius: 9px;
-  background: #e8f3ec;
-  color: #1d6237;
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  color: var(--tab-status-success);
 }
 
 @media (max-width: 760px) {

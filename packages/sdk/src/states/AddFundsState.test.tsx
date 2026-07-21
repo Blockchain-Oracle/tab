@@ -14,6 +14,7 @@ describe("AddFundsState", () => {
 
     render(
       <AddFundsState
+        mode="live"
         address="0x1111111111111111111111111111111111111111"
         onCancel={vi.fn()}
         onRecheck={vi.fn()}

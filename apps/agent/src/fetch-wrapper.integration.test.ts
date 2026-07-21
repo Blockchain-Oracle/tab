@@ -12,7 +12,7 @@ import type { PaymentRequired } from "@x402/core/types";
 import { privateKeyToAccount } from "viem/accounts";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { createLeashFetch } from "./fetch-wrapper.js";
+import { createTabFetch } from "./fetch-wrapper.js";
 
 const payerAccount = privateKeyToAccount(`0x${"11".repeat(32)}`);
 const payer = payerAccount.address;
@@ -59,7 +59,7 @@ async function textRequest(request: import("node:http").IncomingMessage) {
   return Buffer.concat(chunks).toString("utf8");
 }
 
-describe("Leash fetch wrapper with real x402 and HTTP wires", () => {
+describe("Agent fetch wrapper with real x402 and HTTP wires", () => {
   const signRequests: unknown[] = [];
   const signatures: `0x${string}`[] = [];
   const resultRequests: unknown[] = [];
@@ -69,7 +69,7 @@ describe("Leash fetch wrapper with real x402 and HTTP wires", () => {
   const server = createServer(async (request, response) => {
     const pathname = new URL(request.url ?? "/", "http://loopback").pathname;
     if (pathname === "/api/agent/sign") {
-      expect(request.headers.authorization).toBe("Bearer leash_sk_integration");
+      expect(request.headers.authorization).toBe("Bearer agent_sk_integration");
       const body = await jsonRequest(request);
       signRequests.push(body);
       const signature = await payerAccount.signTypedData(body.signerRequest);
@@ -145,11 +145,11 @@ describe("Leash fetch wrapper with real x402 and HTTP wires", () => {
   });
 
   it("pays, retries, reports settlement, and redacts receipt-origin secrets", async () => {
-    const leashFetch = createLeashFetch({
+    const leashFetch = createTabFetch({
       address: payer,
       allowDevelopmentLoopback: true,
       apiBaseUrl: origin,
-      apiKey: "leash_sk_integration",
+      apiKey: "agent_sk_integration",
       fetch: globalThis.fetch,
       idempotencyKey: () => "mainnet-get-1",
       paymentProfile: "mainnet",
@@ -202,11 +202,11 @@ describe("Leash fetch wrapper with real x402 and HTTP wires", () => {
       }
       return globalThis.fetch(input, init);
     };
-    const leashFetch = createLeashFetch({
+    const leashFetch = createTabFetch({
       address: payer,
       allowDevelopmentLoopback: true,
       apiBaseUrl: origin,
-      apiKey: "leash_sk_integration",
+      apiKey: "agent_sk_integration",
       fetch: observingFetch,
       idempotencyKey: () => "mainnet-post-1",
       paymentProfile: "mainnet",
@@ -227,11 +227,11 @@ describe("Leash fetch wrapper with real x402 and HTTP wires", () => {
   });
 
   it("uses only Base Sepolia Circle USDC in the explicit integration profile", async () => {
-    const leashFetch = createLeashFetch({
+    const leashFetch = createTabFetch({
       address: payer,
       allowDevelopmentLoopback: true,
       apiBaseUrl: origin,
-      apiKey: "leash_sk_integration",
+      apiKey: "agent_sk_integration",
       fetch: globalThis.fetch,
       idempotencyKey: () => "sepolia-get-1",
       paymentProfile: "base_sepolia_integration",

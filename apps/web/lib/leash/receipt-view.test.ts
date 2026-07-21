@@ -10,6 +10,8 @@ function receipt(
   overrides: Partial<Parameters<typeof receiptView>[0]> = {},
 ): Parameters<typeof receiptView>[0] {
   return {
+    authorizationNonce: "0x" + "ab".repeat(32),
+    authorizationValidBefore: new Date("2026-07-16T11:00:00Z"),
     amountAtomic: "420000",
     amountUsd: "0.420000",
     asset: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
@@ -63,7 +65,7 @@ describe("receipt API view", () => {
         receipt({
           intendedNetwork: "eip155:42161",
           network: "eip155:42161",
-          reason: "LEASH_CAP_EXCEEDED",
+          reason: "CAP_EXCEEDED",
           settledAt: null,
           status: "blocked",
           txHash: null,
@@ -72,7 +74,7 @@ describe("receipt API view", () => {
     ).toMatchObject({
       explorer: null,
       network: { id: "eip155:42161", label: "Arbitrum", target: true },
-      reason: "LEASH_CAP_EXCEEDED",
+      reason: "CAP_EXCEEDED",
       settledAt: null,
       status: "blocked",
       txHash: null,
@@ -97,7 +99,7 @@ describe("receipt API view", () => {
         label: "Base Sepolia",
         target: false,
         testFunds: true,
-        testFundsLabel: "Test funds — not real money",
+        testFundsLabel: "Sandbox funds — no real value",
       },
     });
   });

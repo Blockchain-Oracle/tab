@@ -1,3 +1,5 @@
+export const metadata = { title: "Connect agent" };
+
 import { notFound } from "next/navigation";
 
 import { requireCurrentOwner } from "../../../../../lib/auth/current-owner";
@@ -9,7 +11,7 @@ import {
   readOwnerAgentSelection,
 } from "../../../../../lib/leash/owner-agents";
 import { ConnectAgent } from "../connect-agent";
-import { resolveLeashApiOrigin } from "../connect-config";
+import { resolveTabApiOrigin } from "../connect-config";
 import { AgentPicker, NoAgentState } from "../control-page";
 
 type ConnectPageProps = { searchParams: Promise<{ agentId?: string | string[] }> };
@@ -35,7 +37,7 @@ export default async function ConnectPage({ searchParams }: ConnectPageProps) {
     agentId: selection.selected.id,
     ownerId: owner.userId,
   });
-  const configuration = resolveLeashApiOrigin(process.env.NEXT_PUBLIC_APP_URL);
+  const configuration = resolveTabApiOrigin(process.env.NEXT_PUBLIC_APP_URL);
 
   return (
     <>

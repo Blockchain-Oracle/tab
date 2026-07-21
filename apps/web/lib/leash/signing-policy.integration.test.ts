@@ -48,7 +48,7 @@ describe("atomic final signing policy", () => {
         now: new Date((nowSeconds + 2) * 1_000),
         receiptId: reserved.receiptId,
       }),
-    ).resolves.toMatchObject({ code: "LEASH_CAP_EXCEEDED", kind: "denied" });
+    ).resolves.toMatchObject({ code: "CAP_EXCEEDED", kind: "denied" });
 
     const [stored] = await connection.db
       .select({

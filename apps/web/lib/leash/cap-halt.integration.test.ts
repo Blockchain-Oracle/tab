@@ -38,7 +38,7 @@ async function provision(capCents = "100") {
   if (!agent) throw new Error("Expected agent");
   const [key] = await connection.client<{ id: string }[]>`
     insert into leash_keys (agent_id, hashed_key, prefix, last4)
-    values (${agent.id}, ${randomBytes(32).toString("hex")}, 'leash_sk_', 'a1B2') returning id
+    values (${agent.id}, ${randomBytes(32).toString("hex")}, 'agent_sk_', 'a1B2') returning id
   `;
   const [cycle] = await connection.client<{ id: string }[]>`
     insert into cap_cycles (agent_id, started_at)
@@ -183,7 +183,7 @@ describe("durable cap halt with real PostgreSQL", () => {
         receiptId: first.receiptId,
         signerAvailable: true,
       }),
-    ).resolves.toMatchObject({ code: "LEASH_CAP_EXCEEDED", kind: "blocked" });
+    ).resolves.toMatchObject({ code: "CAP_EXCEEDED", kind: "blocked" });
     const [stored] = await connection.db
       .select({
         intendedNetwork: receipts.intendedNetwork,
@@ -197,7 +197,7 @@ describe("durable cap halt with real PostgreSQL", () => {
       .where(eq(receipts.id, first.receiptId));
     expect(stored).toEqual({
       intendedNetwork: "eip155:8453",
-      reason: "LEASH_CAP_EXCEEDED",
+      reason: "CAP_EXCEEDED",
       settlementResponse: null,
       settledAt: null,
       status: "blocked",

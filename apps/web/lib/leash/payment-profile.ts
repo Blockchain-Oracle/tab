@@ -38,7 +38,7 @@ const BASE_SEPOLIA = paymentNetwork(getNetworkProfile("eip155:84532"), "Base Sep
 
 export class InvalidPaymentProfileError extends Error {
   constructor() {
-    super("The Leash payment profile is invalid.");
+    super("The Agent payment profile is invalid.");
     this.name = "InvalidPaymentProfileError";
   }
 }
@@ -53,7 +53,7 @@ export function parsePaymentProfile(value: unknown): PaymentProfile {
 export function provisioningPaymentProfile(
   environment: Readonly<Record<string, string | undefined>> = process.env,
 ) {
-  const configured = environment.LEASH_PROVISIONING_PROFILE;
+  const configured = environment.TAB_AGENT_PROVISIONING_PROFILE;
   return configured === undefined ? MAINNET_PAYMENT_PROFILE : parsePaymentProfile(configured);
 }
 

@@ -1,8 +1,8 @@
 .card {
   overflow: hidden;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .heading,
@@ -14,7 +14,7 @@
 .heading {
   justify-content: space-between;
   padding: 13px 17px;
-  border-bottom: 1px solid #f0eee8;
+  border-bottom: 1px solid var(--tab-canvas);
 }
 
 .heading div {
@@ -26,13 +26,13 @@
 .heading b {
   padding: 3px 7px;
   border-radius: 999px;
-  background: #e7f3ef;
-  color: #17503a;
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  color: var(--tab-status-success);
   font-size: 10px;
 }
 
 .heading a {
-  color: #206b4e;
+  color: var(--tab-status-success);
   font-size: 11.5px;
   font-weight: 600;
   text-decoration: none;
@@ -50,7 +50,7 @@
   align-items: center;
   gap: 12px;
   padding: 11px 17px;
-  border-bottom: 1px solid #f5f4f0;
+  border-bottom: 1px solid var(--tab-canvas);
 }
 
 .card li > span {
@@ -63,13 +63,13 @@
 }
 
 .tier2 {
-  background: #fbf1dc;
-  color: #96650f;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 
 .tier3 {
-  background: #faecec;
-  color: #b4383d;
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, transparent);
+  color: var(--tab-status-danger);
 }
 
 .card li strong {
@@ -79,7 +79,7 @@
 .card li p,
 .card time,
 .empty {
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
 }
 
@@ -98,7 +98,7 @@
 }
 
 .heading a:focus-visible {
-  outline: 2px solid #206b4e;
+  outline: 2px solid var(--tab-status-success);
   outline-offset: 2px;
 }
 

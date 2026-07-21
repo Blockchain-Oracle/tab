@@ -1,0 +1,41 @@
+---
+title: Networks & receipts
+description: The canonical network profiles, USDC contracts, and what a Tab receipt proves.
+---
+
+## Network profiles
+
+Every network reference in Tab derives from one canonical profile table —
+UI surfaces never hand-assemble chain names or explorer links.
+
+| Network | CAIP-2 | USDC | Explorer | Role |
+| --- | --- | --- | --- | --- |
+| Base | `eip155:8453` | `0x8335…2913` | basescan.org | Live float |
+| Arbitrum One | `eip155:42161` | `0xaf88…5831` | arbiscan.io | Live float |
+| Base Sepolia | `eip155:84532` | `0x036C…CF7e` | sepolia.basescan.org | Test rail |
+
+There is no Polygon: floats are Base + Arbitrum One. Base Sepolia carries
+the `testFunds` flag — anything that moves money on it is labeled
+"Sandbox funds — no real value".
+
+## Receipts
+
+Every agent payment attempt writes a receipt — including the ones that
+didn't pay:
+
+| Status | Meaning |
+| --- | --- |
+| `settled` | Money verifiably moved; the receipt holds the transaction hash |
+| `pending` | Submitted, awaiting settlement — submitted is **not** settled |
+| `failed` | Attempted and did not complete; the reason is recorded |
+| `blocked` | Refused before any money moved (cap exceeded, agent paused) — the reason is recorded |
+
+Receipts capture the cap context **at the moment of the attempt** (cap,
+committed spend before, amount) so evidence stays truthful even after the
+cap changes later.
+
+## Reading the UI
+
+Green in Tab means exactly one thing: **verified money truth** — a settled
+receipt, an on-chain confirmation, a delivered grant. Progress, success
+toasts, and completed setup steps are ink, never green.

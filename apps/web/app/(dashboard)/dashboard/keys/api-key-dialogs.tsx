@@ -1,5 +1,6 @@
 "use client";
 
+import { Dialog } from "@tab/ui";
 import { type FormEvent, type ReactNode, useState } from "react";
 
 import type { ApiKeyPermissions } from "../../../../lib/auth/api-key";
@@ -10,19 +11,11 @@ interface DialogFrameProps {
   title: string;
 }
 
-function DialogFrame({ children, title }: DialogFrameProps) {
+function DialogFrame({ children, onDismiss, title }: DialogFrameProps & { onDismiss: () => void }) {
   return (
-    <div className={styles.overlay}>
-      <section
-        aria-labelledby="key-dialog-title"
-        aria-modal="true"
-        className={styles.dialog}
-        role="dialog"
-      >
-        <h2 id="key-dialog-title">{title}</h2>
-        {children}
-      </section>
-    </div>
+    <Dialog onDismiss={onDismiss} open title={title}>
+      <div className={styles.dialogBody}>{children}</div>
+    </Dialog>
   );
 }
 
@@ -40,11 +33,13 @@ interface CreateKeyDialogProps {
 export function CreateKeyDialog(props: CreateKeyDialogProps) {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // A fast double-Enter must never mint two live keys.
+    if (props.isSubmitting) return;
     props.onSubmit();
   }
 
   return (
-    <DialogFrame title="Create API key">
+    <DialogFrame onDismiss={props.isSubmitting ? () => {} : props.onClose} title="Create API key">
       <form onSubmit={submit}>
         {props.error ? <p className={styles.dialogError}>{props.error}</p> : null}
         <label className={styles.fieldLabel} htmlFor="key-name">
@@ -108,25 +103,36 @@ interface SecretRevealDialogProps {
 }
 
 export function SecretRevealDialog(props: SecretRevealDialogProps) {
-  const [copied, setCopied] = useState(false);
+  const [copyState, setCopyState] = useState<"copied" | "failed" | "idle">("idle");
 
   async function copySecret() {
-    await navigator.clipboard.writeText(props.secret);
-    setCopied(true);
+    // A rejected clipboard write must never look like success: the key is
+    // shown exactly once, so a silent failure here loses it forever.
+    try {
+      await navigator.clipboard.writeText(props.secret);
+      setCopyState("copied");
+    } catch {
+      setCopyState("failed");
+    }
   }
 
   return (
-    <DialogFrame title="Your new secret key">
+    <DialogFrame onDismiss={() => {}} title="Your new secret key">
       <p className={styles.warning}>
         For security reasons, you can only view this key once. Save it to a secure location before
         closing this dialog.
       </p>
       <div className={styles.secretBox}>
-        <code>{props.secret}</code>
+        <code style={{ userSelect: "all" }}>{props.secret}</code>
         <button onClick={copySecret} type="button">
-          {copied ? "Copied!" : "Copy"}
+          {copyState === "copied" ? "Copied!" : copyState === "failed" ? "Copy again" : "Copy"}
         </button>
       </div>
+      {copyState === "failed" ? (
+        <p className={styles.warning} role="alert">
+          Copy didn’t work. Select the key above and copy it manually before closing.
+        </p>
+      ) : null}
       <p className={styles.revealMeta}>
         {props.keyName} · {props.permissions === "full" ? "Full access" : "Read-only"}
       </p>
@@ -148,7 +154,10 @@ interface ConfirmDialogProps {
 
 export function RotationConfirmDialog(props: ConfirmDialogProps) {
   return (
-    <DialogFrame title={`Rotate ${props.keyName}?`}>
+    <DialogFrame
+      onDismiss={props.isSubmitting ? () => {} : props.onClose}
+      title={`Rotate ${props.keyName}?`}
+    >
       <p className={styles.confirmCopy}>
         The current key will stop working immediately. The replacement secret will be shown once.
       </p>
@@ -159,7 +168,9 @@ export function RotationConfirmDialog(props: ConfirmDialogProps) {
         <button
           className={styles.dangerButton}
           disabled={props.isSubmitting}
-          onClick={props.onConfirm}
+          onClick={() => {
+            if (!props.isSubmitting) props.onConfirm();
+          }}
           type="button"
         >
           {props.isSubmitting ? "Rotating…" : "Rotate key"}
@@ -171,7 +182,10 @@ export function RotationConfirmDialog(props: ConfirmDialogProps) {
 
 export function DeleteConfirmDialog(props: ConfirmDialogProps) {
   return (
-    <DialogFrame title={`Delete ${props.keyName}?`}>
+    <DialogFrame
+      onDismiss={props.isSubmitting ? () => {} : props.onClose}
+      title={`Delete ${props.keyName}?`}
+    >
       <p className={styles.confirmCopy}>
         This key will stop working immediately. Existing payment records are kept.
       </p>
@@ -182,7 +196,9 @@ export function DeleteConfirmDialog(props: ConfirmDialogProps) {
         <button
           className={styles.dangerButton}
           disabled={props.isSubmitting}
-          onClick={props.onConfirm}
+          onClick={() => {
+            if (!props.isSubmitting) props.onConfirm();
+          }}
           type="button"
         >
           {props.isSubmitting ? "Deleting…" : "Delete key"}

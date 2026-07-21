@@ -1,0 +1,57 @@
+---
+title: Webhooks
+description: Signed fulfillment signals — signature verification, delivery semantics, and retry behavior.
+---
+
+Webhooks are the **trusted** signal that money moved. The `onSuccess`
+callback in the browser is for UX; ship goods only after verifying a webhook.
+
+## Verify every delivery
+
+Each delivery carries an `x-tab-signature` header:
+
+```
+x-tab-signature: t=1752934800,v1=5257a869e7…
+```
+
+- `t` — unix timestamp (seconds) when the delivery was signed
+- `v1` — hex HMAC-SHA256 of `"{t}.{raw body}"` using your `whsec_…` endpoint
+  secret
+
+Verification rules:
+
+1. Recompute the HMAC over the **raw request body** (before any JSON
+   parsing) and compare in constant time.
+2. Reject if `t` is older than **5 minutes** or more than 30 seconds in the
+   future — this bounds replay.
+
+```ts
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+export function verifyTabWebhook(rawBody: string, header: string, secret: string) {
+  const match = /^t=(\d+),v1=([0-9a-f]{64})$/.exec(header);
+  if (!match) return false;
+  const [, t, v1] = match;
+  const age = Math.floor(Date.now() / 1000) - Number(t);
+  if (age > 300 || age < -30) return false;
+  const digest = createHmac("sha256", secret).update(`${t}.`).update(rawBody).digest();
+  return timingSafeEqual(digest, Buffer.from(v1, "hex"));
+}
+```
+
+## Delivery semantics
+
+- Deliveries are per-mode: test endpoints receive test events only.
+- Failed deliveries retry with backoff; the dashboard shows every attempt
+  with its response code and timing, and surfaces failed deliveries as an
+  alert badge.
+- A `2xx` response marks the delivery successful. Anything else (including
+  timeouts) schedules a retry.
+- Endpoint secrets can be regenerated at any time; the old secret stops
+  verifying immediately, so update your server first.
+
+## Test your endpoint
+
+The dashboard's webhook page sends a **real signed test delivery** to your
+endpoint and shows the response — the Quickstart's "Verify webhook delivery"
+step completes only when that delivery succeeds.

@@ -9,7 +9,7 @@ import {
   formatUsdCents,
 } from "./leash-format";
 
-describe("Leash exact display formatting", () => {
+describe("Agent exact display formatting", () => {
   it.each([
     ["0", "$0.00"],
     ["1230000", "$1.23"],

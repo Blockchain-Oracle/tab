@@ -81,17 +81,34 @@ export function ReceiptFeed({
       } finally {
         if (timeoutTimer !== null) window.clearTimeout(timeoutTimer);
         cancelCurrentRequest = null;
-        if (active) nextPollTimer = window.setTimeout(() => void poll(), RECEIPT_POLL_INTERVAL_MS);
+        if (active)
+          nextPollTimer = window.setTimeout(visibilityGatedPoll, RECEIPT_POLL_INTERVAL_MS);
       }
     }
 
-    void poll();
-    const healthTimer = window.setInterval(
-      () => dispatch({ checkedAt: Date.now(), type: "health_checked" }),
-      RECEIPT_POLL_INTERVAL_MS,
-    );
+    function visibilityGatedPoll() {
+      if (document.hidden) {
+        nextPollTimer = window.setTimeout(visibilityGatedPoll, RECEIPT_POLL_INTERVAL_MS);
+        return;
+      }
+      void poll();
+    }
+
+    function onVisible() {
+      if (!document.hidden && active && cancelCurrentRequest === null) {
+        if (nextPollTimer !== null) window.clearTimeout(nextPollTimer);
+        visibilityGatedPoll();
+      }
+    }
+
+    document.addEventListener("visibilitychange", onVisible);
+    visibilityGatedPoll();
+    const healthTimer = window.setInterval(() => {
+      if (!document.hidden) dispatch({ checkedAt: Date.now(), type: "health_checked" });
+    }, RECEIPT_POLL_INTERVAL_MS);
     return () => {
       active = false;
+      document.removeEventListener("visibilitychange", onVisible);
       cancelCurrentRequest?.();
       if (nextPollTimer !== null) window.clearTimeout(nextPollTimer);
       window.clearInterval(healthTimer);

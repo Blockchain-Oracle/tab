@@ -126,7 +126,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       principal,
       id,
       { tokenChanges: body.tokenChanges, transactionId: body.transactionId },
-      { payerAddress: buyer.payerAddress },
+      { payerAddress: buyer.payerAddress, payerEmail: buyer.email },
     );
     await processPaymentReportAfterCommit(database, id, result);
 

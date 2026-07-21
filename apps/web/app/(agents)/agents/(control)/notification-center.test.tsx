@@ -15,7 +15,7 @@ const result: NotificationResultView = {
       agentId,
       createdAt: "2026-07-17T10:00:00.000Z",
       cta: {
-        href: `/leash/cap?agentId=${agentId}#cap-controls`,
+        href: `/agents/cap?agentId=${agentId}#cap-controls`,
         kind: "cap_remediation",
         label: "Review cap",
       },
@@ -54,7 +54,7 @@ const result: NotificationResultView = {
       metadata: {
         network: "eip155:84532",
         testFunds: true,
-        testFundsLabel: "Test funds — not real money",
+        testFundsLabel: "Sandbox funds — no real value",
       },
       readAt: null,
       receiptId: "88888888-8888-4888-8888-888888888888",
@@ -68,7 +68,7 @@ const result: NotificationResultView = {
   unreadCount: 1,
 };
 
-describe("Leash notification center", () => {
+describe("Agent notification center", () => {
   it("renders real tiers, state, host, and remediation CTA", () => {
     const html = renderToStaticMarkup(
       <NotificationCenter agentId={agentId} initialResult={result} />,
@@ -83,7 +83,7 @@ describe("Leash notification center", () => {
     expect(html).toContain("Mark all read");
     expect(html).toContain("Load older");
     expect(html).toContain("Active &amp; resolved");
-    expect(html).toContain("Test funds — not real money");
+    expect(html).toContain("Sandbox funds — no real value");
   });
 
   it("uses an instructive empty state without seeded alerts", () => {

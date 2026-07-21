@@ -26,7 +26,7 @@ if (!executable || !consumerDirectory || !stateDirectory) {
 }
 
 const testAccount = privateKeyToAccount(`0x${"41".repeat(32)}`);
-const testApiKey = `leash_sk_${"u".repeat(43)}`;
+const testApiKey = `agent_sk_${"u".repeat(43)}`;
 const testTransaction = `0x${"bc".repeat(32)}`;
 const challenge = {
   accepts: [
@@ -207,10 +207,10 @@ async function startCli() {
     cwd: consumerDirectory,
     env: definedEnvironment({
       ...process.env,
-      LEASH_ALLOW_DEVELOPMENT_LOOPBACK: "1",
-      LEASH_API_BASE_URL: origin,
-      LEASH_API_KEY: testApiKey,
-      LEASH_STATE_DIRECTORY: stateDirectory,
+      TAB_ALLOW_DEVELOPMENT_LOOPBACK: "1",
+      TAB_API_BASE_URL: origin,
+      TAB_AGENT_KEY: testApiKey,
+      TAB_STATE_DIRECTORY: stateDirectory,
     }),
     stderr: "pipe",
   });

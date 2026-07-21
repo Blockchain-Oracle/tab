@@ -15,7 +15,7 @@ afterAll(async () => {
   await harness.close();
 });
 
-describe("concurrent Leash revocation with real PostgreSQL", () => {
+describe("concurrent Agent revocation with real PostgreSQL", () => {
   it("serializes identical retries into one status change and one audit event", async () => {
     const identity = await harness.provision("same-action");
     const input = {

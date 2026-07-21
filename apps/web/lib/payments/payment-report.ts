@@ -17,6 +17,7 @@ export interface PaymentReportEvidence {
 
 export interface ValidatedBuyerIdentity {
   payerAddress: string;
+  payerEmail: string;
 }
 
 export class PaymentNotFoundError extends Error {
@@ -102,6 +103,7 @@ export async function reportPayment(
 
       const reportValues = {
         payerAddress: buyer.payerAddress,
+        payerEmail: buyer.payerEmail,
         reportedAt: sql`clock_timestamp()`,
         reportedTokenChanges: evidence.tokenChanges,
         reportedTransactionId: evidence.transactionId,

@@ -1,0 +1,65 @@
+.boundary-page {
+  align-items: center;
+  background: var(--site-outer, #ebe6dc);
+  color: var(--tab-text, #15130f);
+  display: flex;
+  font-family: var(--tab-font-product, "Helvetica Neue", Arial, sans-serif);
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.boundary-panel {
+  background: var(--site-raised-surface, #fffdfa);
+  border: 1px solid var(--tab-line, #ddd6c8);
+  border-radius: 16px;
+  max-width: 460px;
+  padding: 36px;
+  text-align: center;
+  width: 100%;
+}
+
+.boundary-eyebrow {
+  color: var(--tab-text-muted, #6c665c);
+  font-family: var(--tab-font-evidence, monospace);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+}
+
+.boundary-title {
+  font-size: 22px;
+  font-weight: 650;
+  margin: 0 0 10px;
+}
+
+.boundary-detail {
+  color: var(--tab-text-muted, #6c665c);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 20px;
+}
+
+.boundary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.boundary-retry {
+  background: var(--tab-text, #15130f);
+  border: none;
+  border-radius: 999px;
+  color: var(--site-hero-surface, #fffcf7);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  height: 46px;
+}
+
+.boundary-link {
+  color: var(--tab-text-muted, #6c665c);
+  font-size: 14px;
+  text-decoration: underline;
+}

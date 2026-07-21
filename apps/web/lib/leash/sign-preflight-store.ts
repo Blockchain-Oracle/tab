@@ -20,7 +20,7 @@ async function failLockedReceipt(
   receipt: typeof receipts.$inferSelect,
   failure: PreflightFailure,
 ) {
-  const blockedByCap = failure === "LEASH_CAP_EXCEEDED";
+  const blockedByCap = failure === "CAP_EXCEEDED";
   const [terminalized] = await transaction
     .update(receipts)
     .set({
@@ -74,14 +74,14 @@ export async function completePreSigningChecks(
       .from(agents)
       .where(eq(agents.id, options.agentId))
       .for("update");
-    if (!agent) throw new SignGateError("INVALID_LEASH_KEY", 401);
+    if (!agent) throw new SignGateError("INVALID_AGENT_KEY", 401);
 
     const [receipt] = await transaction
       .select()
       .from(receipts)
       .where(and(eq(receipts.id, options.receiptId), eq(receipts.agentId, options.agentId)))
       .for("update");
-    if (!receipt) throw new SignGateError("INVALID_LEASH_KEY", 401);
+    if (!receipt) throw new SignGateError("INVALID_AGENT_KEY", 401);
     if (receipt.status !== "pending") return terminalReceipt(receipt);
 
     const [key] = await transaction
@@ -94,7 +94,7 @@ export async function completePreSigningChecks(
           isNull(leashKeys.revokedAt),
         ),
       );
-    if (!key) return failLockedReceipt(transaction, receipt, "INVALID_LEASH_KEY");
+    if (!key) return failLockedReceipt(transaction, receipt, "INVALID_AGENT_KEY");
 
     const [cap] = await transaction
       .select({ amountUsdCents: caps.amountUsdCents, frequency: caps.frequency })
@@ -114,10 +114,10 @@ export async function completePreSigningChecks(
       failure = "AUTHORIZATION_EXPIRED";
     }
 
-    if (!failure && (!cap?.amountUsdCents || !cycle)) failure = "LEASH_CAP_NOT_SET";
+    if (!failure && (!cap?.amountUsdCents || !cycle)) failure = "CAP_NOT_SET";
     if (!failure && cycle?.id !== receipt.cycleId) failure = "CAP_CYCLE_CHANGED";
     if (!failure && (await findActiveCapHalt(transaction, agent.id))) {
-      failure = "LEASH_CAP_EXCEEDED";
+      failure = "CAP_EXCEEDED";
     }
 
     if (!failure && cap?.amountUsdCents && cycle) {
@@ -128,7 +128,7 @@ export async function completePreSigningChecks(
           and(eq(receipts.agentId, agent.id), eq(receipts.cycleId, cycle.id), receiptCommitted()),
         );
       if (BigInt(usage?.amountAtomic ?? "0") > BigInt(cap.amountUsdCents) * ATOMIC_UNITS_PER_CENT) {
-        failure = "LEASH_CAP_EXCEEDED";
+        failure = "CAP_EXCEEDED";
       }
     }
 
@@ -192,7 +192,7 @@ export async function failSignRequestBeforeSigning(
       .from(receipts)
       .where(and(eq(receipts.id, options.receiptId), eq(receipts.agentId, options.agentId)))
       .for("update");
-    if (!receipt) throw new SignGateError("INVALID_LEASH_KEY", 401);
+    if (!receipt) throw new SignGateError("INVALID_AGENT_KEY", 401);
     if (receipt.status !== "pending") return terminalReceipt(receipt);
     return failLockedReceipt(transaction, receipt, options.reason);
   });

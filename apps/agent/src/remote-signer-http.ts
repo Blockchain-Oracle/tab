@@ -8,12 +8,12 @@ const SAFE_SERVER_MESSAGES: Readonly<Record<string, string>> = {
   CAP_CYCLE_CHANGED: "The signing request cannot proceed.",
   FLOAT_CHECK_UNAVAILABLE: "The agent balance could not be verified.",
   FLOAT_EMPTY: "The agent does not have enough available funds.",
-  INVALID_LEASH_KEY: "The Leash key was rejected.",
+  INVALID_AGENT_KEY: "The agent key was rejected.",
   INVALID_SIGN_REQUEST: "The signing request is invalid.",
-  LEASH_CAP_EXCEEDED: "The signing request exceeds the active cap.",
-  LEASH_CAP_NOT_SET: "The agent does not have an active cap.",
+  CAP_EXCEEDED: "The signing request exceeds the active cap.",
+  CAP_NOT_SET: "The agent does not have an active cap.",
   SIGNER_IDENTITY_MISMATCH: "The signing provider returned the wrong identity.",
-  SIGNER_NOT_CONFIGURED: "Leash signing is not configured for this agent.",
+  SIGNER_NOT_CONFIGURED: "Agent signing is not configured for this agent.",
   SIGNER_PROVIDER_INVALID_RESPONSE: "The signing provider returned an invalid response.",
   SIGNER_PROVIDER_RATE_LIMITED: "The signing provider is rate limited.",
   SIGNER_PROVIDER_REJECTED: "The signing provider rejected the request.",
@@ -158,7 +158,7 @@ export async function postRemoteSignerJson(options: SignerPostOptions) {
       timedOut = true;
       controller.abort();
       reject(
-        new RemoteSignerError("SIGNER_REQUEST_TIMEOUT", "The Leash control plane timed out.", 504),
+        new RemoteSignerError("SIGNER_REQUEST_TIMEOUT", "The agent control plane timed out.", 504),
       );
     }, options.timeoutMs);
   });
@@ -188,20 +188,20 @@ export async function postRemoteSignerJson(options: SignerPostOptions) {
     if (options.signal?.aborted) {
       throw new RemoteSignerError(
         "SIGNER_REQUEST_CANCELLED",
-        "The Leash signing request was cancelled.",
+        "The Agent signing request was cancelled.",
         499,
       );
     }
     if (timedOut) {
       throw new RemoteSignerError(
         "SIGNER_REQUEST_TIMEOUT",
-        "The Leash control plane timed out.",
+        "The agent control plane timed out.",
         504,
       );
     }
     throw new RemoteSignerError(
       "SIGNER_REQUEST_UNAVAILABLE",
-      "The Leash control plane could not be reached.",
+      "The agent control plane could not be reached.",
       503,
     );
   } finally {

@@ -25,7 +25,7 @@
 .eyebrow,
 .cardHeading > span {
   margin: 0;
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.07em;
@@ -51,45 +51,45 @@
 }
 
 .activeStatus {
-  border-color: #bee0d6;
-  background: #e7f3ef;
-  color: #17503a;
+  border-color: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  color: var(--tab-status-success);
 }
 
 .pausedStatus {
-  border-color: #d2cec5;
-  background: #efede8;
-  color: #625d54;
+  border-color: var(--tab-line);
+  background: var(--tab-canvas);
+  color: var(--tab-text-muted);
 }
 
 .frozenStatus {
-  border-color: #b8cbd9;
-  background: #e8eff5;
-  color: #345a73;
+  border-color: color-mix(in srgb, var(--tab-text) 14%, transparent);
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  color: var(--tab-text-muted);
 }
 
 .cancelledStatus {
-  border-color: #eccf9a;
-  background: #fff2dc;
-  color: #8a5711;
+  border-color: color-mix(in srgb, var(--tab-mode-test) 30%, transparent);
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 
 .nukedStatus,
 .haltedStatus {
-  border-color: #e5b5ae;
-  background: #fbe9e6;
-  color: #9a3025;
+  border-color: color-mix(in srgb, var(--tab-status-danger) 28%, transparent);
+  background: color-mix(in srgb, var(--tab-status-danger) 9%, transparent);
+  color: var(--tab-status-danger);
 }
 
 .spendCard {
   padding: 19px 21px;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .cardHeading a {
-  color: #206b4e;
+  color: var(--tab-status-success);
   font-size: 11.5px;
   font-weight: 600;
   text-decoration: none;
@@ -109,12 +109,12 @@
 }
 
 .spendAmount span {
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 14px;
 }
 
 .spendAmount b {
-  color: #206b4e;
+  color: var(--tab-status-success);
   font-size: 13px;
 }
 
@@ -125,30 +125,42 @@
   margin-top: 13px;
   overflow: hidden;
   border-radius: 999px;
-  background: #f1efe9;
+  background: var(--tab-canvas);
 }
 
 .settledFill {
-  background: #206b4e;
+  background: var(--tab-status-success);
 }
 
 .pendingFill {
-  background: repeating-linear-gradient(135deg, #73a38f 0 4px, #a8c7ba 4px 8px);
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--tab-status-success) 40%, transparent) 0 4px,
+    color-mix(in srgb, var(--tab-status-success) 40%, transparent) 4px 8px
+  );
 }
 
 .haltedTrack .settledFill {
-  background: #b4383d;
+  background: var(--tab-status-danger);
 }
 
 .haltedTrack .pendingFill {
-  background: repeating-linear-gradient(135deg, #b4383d 0 4px, #e0a2a5 4px 8px);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--tab-status-danger) 0 4px,
+    color-mix(in srgb, var(--tab-status-danger) 32%, transparent) 4px 8px
+  );
 }
 
 .overageFill {
   position: absolute;
   inset: 0 0 0 auto;
-  background: repeating-linear-gradient(135deg, #b4383d 0 3px, transparent 3px 6px);
-  box-shadow: -1px 0 0 #fff;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--tab-status-danger) 0 3px,
+    transparent 3px 6px
+  );
+  box-shadow: -1px 0 0 var(--tab-surface);
   pointer-events: none;
 }
 
@@ -156,12 +168,12 @@
   flex-wrap: wrap;
   gap: 5px 16px;
   margin-top: 9px;
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
 }
 
 .cardHeading a:focus-visible {
-  outline: 2px solid #206b4e;
+  outline: 2px solid var(--tab-status-success);
   outline-offset: 2px;
 }
 

@@ -23,6 +23,8 @@ function receipt(createdAt: string, id = receiptId): ReceiptItem {
     amountDisplay: "$0.42",
     amountUsd: "0.420000",
     asset: "USDC",
+    authorizationNonce: "0xab",
+    authorizationValidBefore: "2026-07-16T11:00:00.000Z",
     capContext: null,
     createdAt,
     explorer: null,
@@ -61,7 +63,7 @@ describe("receipt client", () => {
 
     expect(result.receipts).toHaveLength(1);
     expect(request).toHaveBeenCalledWith(
-      `/api/leash/receipts?agentId=${agentId}&limit=100`,
+      `/api/agents/receipts?agentId=${agentId}&limit=100`,
       expect.objectContaining({ cache: "no-store" }),
     );
   });
@@ -72,7 +74,7 @@ describe("receipt client", () => {
 
     await expect(loadReceiptDetail({ receiptId, request })).resolves.toEqual(item);
     expect(request).toHaveBeenCalledWith(
-      `/api/leash/receipts/${receiptId}`,
+      `/api/agents/receipts/${receiptId}`,
       expect.objectContaining({ cache: "no-store" }),
     );
   });
@@ -81,7 +83,7 @@ describe("receipt client", () => {
     const request = vi.fn().mockResolvedValue(response({ policy: null }));
     await expect(loadCapPolicy({ agentId, request })).resolves.toBeNull();
     expect(request).toHaveBeenCalledWith(
-      `/api/leash/caps?agentId=${agentId}`,
+      `/api/agents/caps?agentId=${agentId}`,
       expect.objectContaining({ cache: "no-store" }),
     );
   });

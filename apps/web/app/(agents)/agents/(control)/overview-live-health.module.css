@@ -2,23 +2,23 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #68665f;
+  color: var(--tab-text-muted);
   font-size: 9.5px;
 }
 
 .liveHealth b {
   padding: 4px 8px;
   border-radius: 999px;
-  background: #efede8;
+  background: var(--tab-canvas);
 }
 
 .liveHealth .live {
-  background: #e7f3ef;
-  color: #17503a;
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+  color: var(--tab-status-success);
 }
 
 .liveHealth .retrying,
 .liveHealth .partial {
-  background: #fff2dc;
-  color: #8a5711;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }

@@ -1,0 +1,57 @@
+---
+title: Test funds
+description: Free Base Sepolia USDC and gas, granted in-app — real on-chain transfers, honest reports, never mainnet.
+---
+
+Tab's faucet sends **real Base Sepolia transfers** — 2 test USDC plus a gas
+allowance — so you can run the whole product without leaving it. It is
+testnet-only by construction: the grant engine is chain-bound to Base
+Sepolia (chain id 84532) and throws if pointed anywhere else, and mainnet
+agents or live keys are refused at the API boundary.
+
+<Callout type="info">
+  Sandbox funds — no real value. Base Sepolia only. Every grant waits for
+  on-chain receipts and reports transaction hashes you can verify on
+  [sepolia.basescan.org](https://sepolia.basescan.org).
+</Callout>
+
+## Where grants happen
+
+- **Agent funds page / start wizard** — a provisioned Base Sepolia agent can
+  claim a starter grant; the wizard fires it automatically when funding is
+  the next step. Each leg (USDC, gas) reports `funded` with a tx hash and
+  explorer link, `already-funded`, or a verbatim blocker.
+- **Inside the checkout** — a test-mode buyer with an insufficient balance
+  gets a "Get free test funds" action right in the flow, then the balance is
+  recheck-read on-chain.
+
+## Honest failure states
+
+The faucet never pretends. If the treasury is dry, unconfigured, or the RPC
+is down, the report says so — per leg, verbatim. A grant that sent USDC but
+failed on gas reports exactly that split.
+
+## Rate limits
+
+| Scope | Limit |
+| --- | --- |
+| Recipient address | 3 grants / 24h |
+| Agent owner | 5 grants / 24h |
+| Merchant (checkout grants) | 25 grants / 24h |
+| Client IP | 20 grants / hour |
+
+Rate-limited requests answer `429` with `retry-after` seconds.
+
+## For operators
+
+Set two environment variables to enable the faucet:
+
+```bash
+FAUCET_FUNDER_PRIVATE_KEY=0x…   # self-custodied Base Sepolia treasury EOA
+BASE_SEPOLIA_RPC_URL=https://…  # HTTPS-only
+```
+
+Fund the treasury from the [Circle faucet](https://faucet.circle.com)
+(USDC) and any Base Sepolia ETH faucet. The engine preflights the treasury
+before every grant and reports `unavailable` honestly if it cannot cover a
+full grant.

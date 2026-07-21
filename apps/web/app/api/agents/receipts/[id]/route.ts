@@ -34,7 +34,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     return NextResponse.json({ receipt }, { headers: LEASH_RESPONSE_HEADERS, status: 200 });
   } catch (error) {
     if (error instanceof LeashReceiptNotFoundError) {
-      return leashError("LEASH_RESOURCE_NOT_FOUND", error.message, 404);
+      return leashError("RESOURCE_NOT_FOUND", error.message, 404);
     }
     throw error;
   }

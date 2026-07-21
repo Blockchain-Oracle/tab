@@ -20,14 +20,20 @@ import {
   restoreMagicSession,
   startMagicEmailOtp,
 } from "./magic";
-import { createUniversalAccountClient, readAccountSnapshot } from "./ua";
+import {
+  claimTestFunds,
+  loadTestBalance,
+  type TestFundsGrant,
+  testUsdBalance,
+} from "./test-rail-api";
 
 export type BuyerRuntime = BuyerWalletSession & { signer: PaymentSigner };
 
 export type AccountRuntime = {
   balanceUsd: number;
   depositAddress: string;
-  universalAccount: UniversalAccountPort;
+  /** Null on the test rail — test mode never loads the Particle SDK. */
+  universalAccount: UniversalAccountPort | null;
 };
 
 export type BuyerAuthAttempt = {
@@ -43,12 +49,21 @@ export type CheckoutServices = {
     tokenChanges: object;
     transactionId: string;
   };
+  claimTestFunds(input: {
+    apiBaseUrl: string;
+    buyerDidToken: string;
+    publishableKey: string;
+  }): Promise<TestFundsGrant>;
   executePayment(input: {
     account: AccountRuntime;
     buyer: BuyerRuntime;
     intent: PaymentIntent;
   }): Promise<{ tokenChanges: object; transactionId: string }>;
-  loadAccount(context: CheckoutContext, buyer: BuyerRuntime): Promise<AccountRuntime>;
+  loadAccount(
+    context: CheckoutContext,
+    buyer: BuyerRuntime,
+    api: { apiBaseUrl: string; publishableKey: string },
+  ): Promise<AccountRuntime>;
   loadCheckoutContext(
     input: { apiBaseUrl: string; publishableKey: string },
     options?: SignalOptions,
@@ -97,7 +112,13 @@ export const defaultCheckoutServices: CheckoutServices = {
       transactionId: `test_${id}`,
     };
   },
+  claimTestFunds,
   async executePayment(input) {
+    if (!input.account.universalAccount) {
+      // Test-rail accounts never execute: test settlements are simulated
+      // upstream, so reaching here is an invariant violation, not a payment.
+      throw new Error("Live execution requires a Universal Account.");
+    }
     return executePayment({
       amount: input.intent.amount,
       ownerAddress: input.buyer.ownerAddress,
@@ -107,7 +128,21 @@ export const defaultCheckoutServices: CheckoutServices = {
       universalAccount: input.account.universalAccount,
     });
   },
-  async loadAccount(context, buyer) {
+  async loadAccount(context, buyer, api) {
+    if (context.mode === "test") {
+      // Test rail: the balance is the buyer's REAL Base Sepolia USDC, read
+      // on-chain by the Tab API. No mainnet figure under a testnet label,
+      // and the Particle SDK never loads for a test checkout.
+      const { usdcAtomic } = await loadTestBalance({ address: buyer.ownerAddress, ...api });
+      return {
+        balanceUsd: testUsdBalance(usdcAtomic),
+        depositAddress: buyer.ownerAddress,
+        universalAccount: null,
+      };
+    }
+    // Lazy: the Particle Universal Account SDK loads only once a buyer has
+    // authenticated. Merchants embedding <PayButton> never ship it up front.
+    const { createUniversalAccountClient, readAccountSnapshot } = await import("./ua");
     const universalAccount = createUniversalAccountClient(
       context.clientConfig.particle,
       buyer.ownerAddress,

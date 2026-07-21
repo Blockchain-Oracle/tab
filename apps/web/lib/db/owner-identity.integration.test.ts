@@ -23,7 +23,7 @@ function identity(label: string) {
   };
 }
 
-describe("Leash owner identity provisioning with real PostgreSQL", () => {
+describe("Agent owner identity provisioning with real PostgreSQL", () => {
   beforeEach(async () => {
     await connection.client`truncate table users cascade`;
   });
@@ -33,7 +33,7 @@ describe("Leash owner identity provisioning with real PostgreSQL", () => {
     await connection.client.end();
   });
 
-  it("creates only a user principal for a new Leash owner", async () => {
+  it("creates only a user principal for a new Agent owner", async () => {
     const source = identity("new-owner");
 
     const owner = await findOrCreateOwnerIdentity(connection.db, source);
@@ -83,7 +83,7 @@ describe("Leash owner identity provisioning with real PostgreSQL", () => {
     expect(count?.count).toBe(1);
   });
 
-  it("converges on one user when Leash login and merchant signup race", async () => {
+  it("converges on one user when Agent login and merchant signup race", async () => {
     const source = identity("cross-product-race");
 
     const [owner, merchant] = await Promise.all([

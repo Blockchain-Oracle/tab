@@ -14,13 +14,13 @@
 .milestone p,
 .stepBody p {
   margin: 4px 0 0;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12.5px;
   line-height: 1.5;
 }
 
 .header > span {
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -32,10 +32,10 @@
   gap: 12px;
   margin-top: 16px;
   padding: 14px 16px;
-  border: 1px solid #cbe5d4;
+  border: 1px solid color-mix(in srgb, var(--tab-text) 5%, transparent);
   border-radius: 11px;
-  background: #e8f3ec;
-  color: #1d6237;
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  color: var(--tab-text);
 }
 
 .milestoneCheck {
@@ -45,7 +45,7 @@
   flex: none;
   place-items: center;
   border-radius: 50%;
-  background: #fff;
+  background: var(--tab-surface);
   font-weight: 700;
 }
 
@@ -60,8 +60,8 @@
   padding: 8px 12px;
   border: 0;
   border-radius: 8px;
-  background: #3b5bd9;
-  color: #fff;
+  background: var(--tab-text);
+  color: var(--tab-surface);
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
@@ -69,12 +69,12 @@
 }
 
 .milestone a {
-  background: #257a46;
+  background: var(--tab-text);
 }
 
 .error {
   margin: 16px 0 0;
-  color: #b4383d;
+  color: var(--tab-status-danger);
   font-size: 12.5px;
 }
 
@@ -91,13 +91,13 @@
   display: flex;
   gap: 14px;
   padding: 16px 18px;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .activeStep {
-  border-color: #c9d5f4;
+  border-color: color-mix(in srgb, var(--tab-text) 10%, transparent);
   box-shadow: 0 4px 18px rgba(59, 91, 217, 0.06);
 }
 
@@ -108,23 +108,23 @@
   height: 24px;
   flex: none;
   place-items: center;
-  border: 1.5px solid #dbd9d0;
+  border: 1.5px solid var(--tab-line);
   border-radius: 50%;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 12px;
   font-weight: 600;
 }
 
 .activeStep .stepMark {
-  border-color: #3b5bd9;
-  background: #3b5bd9;
-  color: #fff;
+  border-color: var(--tab-text);
+  background: var(--tab-text);
+  color: var(--tab-surface);
 }
 
 .doneMark {
   border-color: transparent;
-  background: #e8f3ec;
-  color: #257a46;
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  color: var(--tab-text);
 }
 
 .stepBody {
@@ -148,7 +148,7 @@
 }
 
 .doneLabel {
-  color: #257a46;
+  color: var(--tab-text);
   font-size: 11px;
   font-weight: 700;
 }
@@ -158,8 +158,8 @@
   margin: 10px 0 0;
   padding: 12px 14px;
   border-radius: 9px;
-  background: #26251f;
-  color: #e4e2d8;
+  background: var(--tab-action-hover);
+  color: var(--tab-line);
   font-family: var(--font-geist-mono), monospace;
   font-size: 11.5px;
   line-height: 1.65;
@@ -171,8 +171,8 @@
   margin-top: 9px;
   padding: 7px 10px;
   border-radius: 7px;
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
   font-size: 11.5px;
 }
 

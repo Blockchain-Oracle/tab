@@ -11,7 +11,7 @@ import { currentPaymentIdempotencyKey } from "./payment-idempotency.js";
 import type { PaymentProfile } from "./payment-profile.js";
 import { createPinnedPaymentFetch, type PaymentTargetLookup } from "./payment-target-network.js";
 import { safePaymentRequestInit, validatePaymentTarget } from "./payment-target-policy.js";
-import { LeashRemoteSigner } from "./remote-signer.js";
+import { TabRemoteSigner } from "./remote-signer.js";
 
 interface LeashFetchOptions {
   address: `0x${string}`;
@@ -26,7 +26,7 @@ interface LeashFetchOptions {
   paymentProfile: PaymentProfile;
   paymentStateDirectory?: string;
   lookup?: PaymentTargetLookup;
-  signer?: LeashRemoteSigner;
+  signer?: TabRemoteSigner;
 }
 
 type FetchInput = Request | string | URL;
@@ -52,7 +52,7 @@ function requestName(input: FetchInput, init?: RequestInit) {
   return `${method.toUpperCase()} ${safeUrl}`;
 }
 
-export function createLeashFetch(options: LeashFetchOptions) {
+export function createTabFetch(options: LeashFetchOptions) {
   const baseFetch = options.fetch ?? globalThis.fetch;
   const allowDevelopmentLoopback = options.allowDevelopmentLoopback === true;
   const targetPolicy = createPinnedPaymentFetch({
@@ -62,7 +62,7 @@ export function createLeashFetch(options: LeashFetchOptions) {
   });
   const signer =
     options.signer ??
-    new LeashRemoteSigner({
+    new TabRemoteSigner({
       address: options.address,
       apiBaseUrl: options.apiBaseUrl,
       apiKey: options.apiKey,

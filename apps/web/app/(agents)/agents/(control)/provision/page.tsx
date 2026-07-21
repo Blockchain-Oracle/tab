@@ -1,3 +1,5 @@
+export const metadata = { title: "Provision agent" };
+
 import { notFound } from "next/navigation";
 
 import { requireCurrentOwner } from "../../../../../lib/auth/current-owner";

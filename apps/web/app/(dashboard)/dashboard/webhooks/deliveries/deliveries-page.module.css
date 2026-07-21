@@ -7,7 +7,7 @@
   display: flex;
   gap: 8px;
   align-items: center;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 12px;
 }
 
@@ -17,13 +17,13 @@
 }
 
 .breadcrumb span:last-child {
-  color: #1c1b18;
+  color: var(--tab-text);
   font-weight: 500;
 }
 
 .page h1 {
   margin: 4px 0 0;
-  color: #1c1b18;
+  color: var(--tab-text);
   font-size: 19px;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -32,9 +32,9 @@
 .log,
 .empty {
   margin-top: 18px;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .empty {
@@ -52,8 +52,8 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #f5f4f0;
-  color: #b4b2a8;
+  background: var(--tab-canvas);
+  color: var(--tab-status-unavailable);
   font-size: 20px;
   place-items: center;
 }
@@ -66,7 +66,7 @@
 
 .empty p {
   margin: 4px 0 0;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12.5px;
 }
 
@@ -84,8 +84,8 @@
 
 .heading {
   padding: 10px 18px;
-  border-bottom: 1px solid #f0eee8;
-  color: #8c8a80;
+  border-bottom: 1px solid var(--tab-canvas);
+  color: var(--tab-text-muted);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -97,7 +97,7 @@
 }
 
 .delivery {
-  border-bottom: 1px solid #f5f4f0;
+  border-bottom: 1px solid var(--tab-canvas);
 }
 
 .row {
@@ -105,8 +105,8 @@
   min-height: 46px;
   padding: 10px 18px;
   border: 0;
-  background: #fff;
-  color: #8c8a80;
+  background: var(--tab-surface);
+  color: var(--tab-text-muted);
   font: inherit;
   font-size: 11.5px;
   text-align: left;
@@ -115,7 +115,7 @@
 
 .row:hover,
 .row[aria-expanded="true"] {
-  background: #fbfaf7;
+  background: var(--tab-canvas);
 }
 
 .row code,
@@ -125,13 +125,13 @@
 }
 
 .row > code:first-child {
-  color: #1c1b18;
+  color: var(--tab-text);
   font-weight: 600;
 }
 
 .row > code:nth-child(3) {
   overflow: hidden;
-  color: #3b5bd9;
+  color: var(--tab-text);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -141,22 +141,22 @@
 }
 
 .success {
-  color: #257a46;
+  color: var(--tab-text);
   font-weight: 500;
 }
 
 .warning {
-  color: #96650f;
+  color: var(--tab-status-warning);
   font-weight: 500;
 }
 
 .danger {
-  color: #b4383d;
+  color: var(--tab-status-danger);
   font-weight: 500;
 }
 
 .neutral {
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-weight: 500;
 }
 
@@ -165,13 +165,13 @@
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   padding: 16px 18px;
-  border-top: 1px solid #f0eee8;
-  background: #fbfaf7;
+  border-top: 1px solid var(--tab-canvas);
+  background: var(--tab-canvas);
 }
 
 .evidence h3 {
   margin: 0;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -188,8 +188,8 @@
   margin: 7px 0 0;
   padding: 12px 14px;
   border-radius: 9px;
-  background: #26251f;
-  color: #e4e2d8;
+  background: var(--tab-action-hover);
+  color: var(--tab-line);
   font-size: 11px;
   line-height: 1.65;
   white-space: pre-wrap;
@@ -204,9 +204,9 @@
 
 .responseEvidence > div:first-child pre,
 .responseEvidence > div:nth-child(2) pre {
-  border: 1px solid #efede7;
-  background: #fff;
-  color: #5f5d55;
+  border: 1px solid var(--tab-canvas);
+  background: var(--tab-surface);
+  color: var(--tab-text-muted);
 }
 
 .responseEvidence footer {
@@ -214,21 +214,21 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
 }
 
 .responseEvidence footer code {
-  color: #1c1b18;
+  color: var(--tab-text);
 }
 
 .responseEvidence button {
   height: 28px;
   padding: 0 12px;
-  border: 1px solid #dbd9d0;
+  border: 1px solid var(--tab-line);
   border-radius: 7px;
-  background: #fff;
-  color: #5f5d55;
+  background: var(--tab-surface);
+  color: var(--tab-text-muted);
   font: inherit;
   font-size: 11.5px;
   font-weight: 500;
@@ -241,23 +241,23 @@
 }
 
 .evidence .responseEvidence > small {
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 10.5px;
   overflow-wrap: anywhere;
 }
 
 .footer {
   padding: 11px 18px;
-  color: #8c8a80;
+  color: var(--tab-text-muted);
   font-size: 11.5px;
 }
 
 .error {
   margin: 0;
   padding: 10px 18px;
-  border-bottom: 1px solid #f0d5d6;
-  background: #faecec;
-  color: #8e2f34;
+  border-bottom: 1px solid color-mix(in srgb, var(--tab-status-danger) 16%, transparent);
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, transparent);
+  color: var(--tab-status-danger);
   font-size: 12px;
 }
 

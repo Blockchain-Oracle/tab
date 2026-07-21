@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 
 import { CheckoutShell } from "./CheckoutShell";
 import type { CheckoutServices } from "./checkout-services";
@@ -7,15 +7,20 @@ import { BUYER_COPY } from "./copy";
 import { AddFundsState } from "./states/AddFundsState";
 import { AuthState } from "./states/AuthState";
 import { BalanceState } from "./states/BalanceState";
+import { DeviceApprovalState } from "./states/DeviceApprovalState";
 import { ErrorState } from "./states/ErrorState";
 import { IdleState } from "./states/IdleState";
 import { InsufficientState } from "./states/InsufficientState";
 import { LoadingState } from "./states/LoadingState";
+import { StuckState } from "./states/StuckState";
 import { SuccessState } from "./states/SuccessState";
+import { type CheckoutAppearance, createTokens, TokensContext } from "./styles";
 import { formatAmount, useCheckoutController } from "./use-checkout-controller";
 
 export type PayButtonProps = {
   apiBaseUrl: string;
+  /** Optional brand overrides for the embedded checkout. */
+  appearance?: CheckoutAppearance;
   intentUrl: string;
   onSuccess: (transactionId: string, tokenChanges: object) => void;
   publishableKey: string;
@@ -25,6 +30,7 @@ type PayButtonCoreProps = PayButtonProps & { services: CheckoutServices };
 
 export function PayButtonCore(props: PayButtonCoreProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const tokens = useMemo(() => createTokens(props.appearance), [props.appearance]);
   const controller = useCheckoutController({
     apiBaseUrl: props.apiBaseUrl,
     intentUrl: props.intentUrl,
@@ -46,12 +52,12 @@ export function PayButtonCore(props: PayButtonCoreProps) {
   );
 
   if (stage === "intent-loading" || stage === "idle") {
-    return trigger;
+    return <TokensContext.Provider value={tokens}>{trigger}</TokensContext.Provider>;
   }
 
   if (!intent || !context) {
     return (
-      <>
+      <TokensContext.Provider value={tokens}>
         {trigger}
         {error ? (
           <div role="alert" style={{ marginTop: 12 }}>
@@ -62,7 +68,7 @@ export function PayButtonCore(props: PayButtonCoreProps) {
             />
           </div>
         ) : null}
-      </>
+      </TokensContext.Provider>
     );
   }
 
@@ -89,6 +95,10 @@ export function PayButtonCore(props: PayButtonCoreProps) {
         stage={stage}
       />
     );
+  } else if (stage === "device-approval") {
+    body = (
+      <DeviceApprovalState email={controller.model.email} onStartOver={controller.restartAuth} />
+    );
   } else if (stage === "balance-loading") {
     body = <LoadingState label={BUYER_COPY.checkingBalance} />;
   } else if (stage === "balance-ready" && account && amount) {
@@ -97,6 +107,7 @@ export function PayButtonCore(props: PayButtonCoreProps) {
         amount={amount}
         balance={balance}
         merchantName={merchantName}
+        mode={context.mode}
         onConfirm={() => void controller.confirm()}
       />
     );
@@ -105,8 +116,11 @@ export function PayButtonCore(props: PayButtonCoreProps) {
     body = (
       <InsufficientState
         balance={balance}
+        mode={context.mode}
         onAddFunds={() => controller.dispatch({ type: "add-funds-opened" })}
         onCancel={controller.cancel}
+        onGetTestFunds={context.mode === "test" ? controller.getTestFunds : undefined}
+        onRecheck={() => void controller.recheck()}
         shortfall={shortfall}
       />
     );
@@ -114,14 +128,24 @@ export function PayButtonCore(props: PayButtonCoreProps) {
     body = (
       <AddFundsState
         address={account.depositAddress}
+        mode={context.mode}
         onCancel={controller.cancel}
         onRecheck={() => void controller.recheck()}
       />
     );
   } else if (stage === "confirming") {
     body = <LoadingState label={BUYER_COPY.processing} />;
+  } else if (stage === "stuck") {
+    body = <StuckState onClose={controller.cancel} />;
   } else if (stage === "success" && opened && amount) {
-    body = <SuccessState amount={amount} onDone={controller.cancel} refCode={opened.refCode} />;
+    body = (
+      <SuccessState
+        amount={amount}
+        mode={context.mode}
+        onDone={controller.cancel}
+        refCode={opened.refCode}
+      />
+    );
   } else if (stage === "error" && error) {
     body = (
       <ErrorState
@@ -134,7 +158,7 @@ export function PayButtonCore(props: PayButtonCoreProps) {
   }
 
   return (
-    <>
+    <TokensContext.Provider value={tokens}>
       {trigger}
       <CheckoutShell
         amount={formatAmount(intent.amount)}
@@ -145,7 +169,7 @@ export function PayButtonCore(props: PayButtonCoreProps) {
       >
         {body}
       </CheckoutShell>
-    </>
+    </TokensContext.Provider>
   );
 }
 

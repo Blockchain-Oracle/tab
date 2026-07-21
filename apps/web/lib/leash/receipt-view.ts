@@ -8,6 +8,8 @@ export interface ReceiptViewSource {
   amountAtomic: string;
   amountUsd: string;
   asset: string;
+  authorizationNonce: string;
+  authorizationValidBefore: Date;
   capAtomicAtAttempt: string | null;
   committedAtomicBefore: string | null;
   createdAt: Date;
@@ -68,6 +70,8 @@ export function receiptView(receipt: ReceiptViewSource) {
     amountDisplay: formatUsdAtomic(receipt.amountAtomic),
     amountUsd: receipt.amountUsd,
     asset: "USDC" as const,
+    authorizationNonce: receipt.authorizationNonce,
+    authorizationValidBefore: receipt.authorizationValidBefore.toISOString(),
     capContext,
     createdAt: receipt.createdAt.toISOString(),
     explorer,
@@ -77,7 +81,7 @@ export function receiptView(receipt: ReceiptViewSource) {
       label: network.label,
       target,
       testFunds: network.testFunds,
-      ...(network.testFunds ? { testFundsLabel: "Test funds — not real money" } : {}),
+      ...(network.testFunds ? { testFundsLabel: "Sandbox funds — no real value" } : {}),
     },
     origin: originView(receipt.origin),
     payTo: receipt.payTo,

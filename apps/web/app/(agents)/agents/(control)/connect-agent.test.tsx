@@ -15,12 +15,12 @@ const key: LeashKeyView = {
   id: "22222222-2222-4222-8222-222222222222",
   last4: "a1B2",
   lastUsedAt: "2026-07-17T11:00:00.000Z",
-  prefix: "leash_sk_",
+  prefix: "agent_sk_",
   revokedAt: null,
   rotatedFromId: null,
 };
 
-describe("Leash agent connection setup", () => {
+describe("agent connection setup", () => {
   let container: HTMLDivElement;
   let root: Root;
 
@@ -54,13 +54,14 @@ describe("Leash agent connection setup", () => {
       />,
     );
 
-    expect(html).toContain("Generate Leash key");
-    expect(html).toContain("Package publish pending");
-    expect(html).toContain("LEASH_API_BASE_URL");
+    expect(html).toContain("Generate agent key");
+    expect(html).toContain("Install the proxy");
+    expect(html).toContain("npm install -g @runtab/mcp");
+    expect(html).toContain("TAB_API_BASE_URL");
     expect(html).toContain("Standalone paid_fetch");
     expect(html).toContain("Proxy an existing MCP server");
     expect(html).toContain("No key exists yet");
-    expect(html).not.toContain("leash_sk_••••••••");
+    expect(html).not.toContain("agent_sk_••••••••");
   });
 
   it("derives the mask and connection state from stored rows", () => {
@@ -78,7 +79,7 @@ describe("Leash agent connection setup", () => {
       />,
     );
 
-    expect(html).toContain("leash_sk_••••••••a1B2");
+    expect(html).toContain("agent_sk_••••••••a1B2");
     expect(html).toContain("Claude Code");
     expect(html).toContain("2 recorded connections");
     expect(html).toContain("Rotate key");
@@ -103,7 +104,9 @@ describe("Leash agent connection setup", () => {
 
     expect(html).toContain("Configuration blocked");
     expect(html).toContain("NEXT_PUBLIC_APP_URL is not configured.");
-    expect(html).not.toContain("leash-mcp");
+    // Blocked state must never render a copyable MCP config.
+    expect(html).not.toContain("mcpServers");
+    expect(html).not.toContain("TAB_API_BASE_URL");
   });
 
   it("advances key progress immediately after the real create response and stays current after save", async () => {
@@ -111,7 +114,7 @@ describe("Leash agent connection setup", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ key: createdKey, secret: `leash_sk_${"z".repeat(43)}` }), {
+        new Response(JSON.stringify({ key: createdKey, secret: `agent_sk_${"z".repeat(43)}` }), {
           status: 201,
         }),
       ),
@@ -134,7 +137,7 @@ describe("Leash agent connection setup", () => {
 
     expect(container.textContent).toContain("Not connected");
     const generate = [...container.querySelectorAll("button")].find(
-      (button) => button.textContent === "Generate Leash key",
+      (button) => button.textContent === "Generate agent key",
     );
     if (!generate) throw new Error("Generate button not found");
     await act(async () => {
@@ -151,6 +154,6 @@ describe("Leash agent connection setup", () => {
     await act(async () => saved.click());
 
     expect(container.textContent).toContain("Awaiting initialize");
-    expect(container.textContent).toContain("leash_sk_••••••••z9Y8");
+    expect(container.textContent).toContain("agent_sk_••••••••z9Y8");
   });
 });

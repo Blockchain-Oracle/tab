@@ -2,11 +2,11 @@ export type RevocationAction = "pause" | "resume" | "freeze" | "unfreeze" | "can
 
 export const CANCEL_COPY_BY_SPIKE_OUTCOME = {
   credential_chain_reset:
-    "Invalidates every Leash key and resets the credential chain. Re-provisioning is B-03.",
+    "Invalidates every agent key and resets the credential chain. Re-provisioning is B-03.",
   server_key_rotation:
-    "Invalidates every Leash key and rotates your server key. Re-provisioning is B-03.",
+    "Invalidates every agent key and rotates your server key. Re-provisioning is B-03.",
   unresolved:
-    "Invalidates every Leash key. B-03 has not established whether re-provisioning rotates the server key or resets the credential chain.",
+    "Invalidates every agent key. B-03 has not established whether re-provisioning rotates the server key or resets the credential chain.",
 } as const;
 
 const reversibleCopy = {

@@ -79,7 +79,7 @@ export function createReceiptRouteHarness(databaseUrl: string) {
       payTo: "0x1111111111111111111111111111111111111111",
       reason:
         input.status === "blocked"
-          ? "LEASH_CAP_EXCEEDED"
+          ? "CAP_EXCEEDED"
           : input.status === "failed"
             ? "FACILITATOR_REJECTED"
             : null,

@@ -20,7 +20,7 @@ afterAll(async () => {
   await harness.connection.client.end();
 });
 
-describe("GET /api/leash/receipts/:id with real PostgreSQL", () => {
+describe("GET /api/agents/receipts/:id with real PostgreSQL", () => {
   it("requires an owner session and rejects a malformed path identifier", async () => {
     const owner = await harness.provision("detail-auth");
     const id = await harness.seedReceipt(owner, {
@@ -28,12 +28,12 @@ describe("GET /api/leash/receipts/:id with real PostgreSQL", () => {
       status: "pending",
     });
 
-    const unauthorized = await GET(harness.request(`/api/leash/receipts/${id}`), context(id));
+    const unauthorized = await GET(harness.request(`/api/agents/receipts/${id}`), context(id));
     expect(unauthorized.status).toBe(401);
     expect(unauthorized.headers.get("cache-control")).toBe("no-store");
 
     const malformed = await GET(
-      harness.request("/api/leash/receipts/not-a-uuid", owner.token),
+      harness.request("/api/agents/receipts/not-a-uuid", owner.token),
       context("not-a-uuid"),
     );
     expect(malformed.status).toBe(400);
@@ -51,7 +51,7 @@ describe("GET /api/leash/receipts/:id with real PostgreSQL", () => {
       status: "settled",
     });
     const response = await GET(
-      harness.request(`/api/leash/receipts/${id}`, owner.token),
+      harness.request(`/api/agents/receipts/${id}`, owner.token),
       context(id),
     );
 
@@ -64,6 +64,8 @@ describe("GET /api/leash/receipts/:id with real PostgreSQL", () => {
         amountDisplay: "$0.42",
         amountUsd: "0.420000",
         asset: "USDC",
+        authorizationNonce: expect.stringMatching(/^0x[0-9a-f]{64}$/),
+        authorizationValidBefore: "2026-07-17T11:00:00.000Z",
         capContext: {
           capAtomic: "1000000",
           committedBeforeAtomic: "500000",
@@ -91,7 +93,11 @@ describe("GET /api/leash/receipts/:id with real PostgreSQL", () => {
         txHash: receiptTransactionHash(id),
       },
     });
-    expect(JSON.stringify(body)).not.toContain("authorizationNonce");
+    // The authorization nonce/expiry are public evidence (on-chain calldata
+    // for settled payments); actual signing machinery must stay excluded.
+    expect(JSON.stringify(body)).not.toContain("signingClaimToken");
+    expect(JSON.stringify(body)).not.toContain("signingSignature");
+    expect(JSON.stringify(body)).not.toContain("requestFingerprint");
     expect(JSON.stringify(body)).not.toContain("requestFingerprint");
     expect(JSON.stringify(body)).not.toContain("settlementResponse");
   });
@@ -106,7 +112,7 @@ describe("GET /api/leash/receipts/:id with real PostgreSQL", () => {
     const missingId = randomUUID();
     const responses = await Promise.all(
       [foreignId, missingId].map((id) =>
-        GET(harness.request(`/api/leash/receipts/${id}`, owner.token), context(id)),
+        GET(harness.request(`/api/agents/receipts/${id}`, owner.token), context(id)),
       ),
     );
     expect(responses.map((response) => response.status)).toEqual([404, 404]);
@@ -118,8 +124,8 @@ describe("GET /api/leash/receipts/:id with real PostgreSQL", () => {
     expect(bodies[0]).toEqual(bodies[1]);
     expect(bodies[0]).toEqual({
       error: {
-        code: "LEASH_RESOURCE_NOT_FOUND",
-        message: "The Leash receipt resource was not found.",
+        code: "RESOURCE_NOT_FOUND",
+        message: "The Agent receipt resource was not found.",
       },
     });
   });

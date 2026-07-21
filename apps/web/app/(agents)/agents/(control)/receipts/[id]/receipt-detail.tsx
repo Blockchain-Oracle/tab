@@ -44,7 +44,7 @@ export function ReceiptDetailView({
   if (!receipt) {
     return (
       <main className={styles.page}>
-        <Link className={styles.back} href={`/leash/payments${backQuery}`}>
+        <Link className={styles.back} href={`/agents/payments${backQuery}`}>
           ← Payment receipts
         </Link>
         <section className={styles.unavailable} role="alert">
@@ -61,7 +61,7 @@ export function ReceiptDetailView({
     receipt.status === "settled" || receipt.status === "failed" ? receipt.explorer : null;
   return (
     <main className={styles.page}>
-      <Link className={styles.back} href={`/leash/payments${backQuery}`}>
+      <Link className={styles.back} href={`/agents/payments${backQuery}`}>
         ← Payment receipts
       </Link>
       <header className={styles.header}>
@@ -137,6 +137,22 @@ export function ReceiptDetailView({
               </span>
             </EvidenceValue>
           </div>
+          <div>
+            <dt>Authorization nonce</dt>
+            <EvidenceValue mono>
+              <span className={styles.evidenceLine}>
+                <span>{receipt.authorizationNonce}</span>
+                <ReceiptCopyButton
+                  label="Copy authorization nonce"
+                  value={receipt.authorizationNonce}
+                />
+              </span>
+            </EvidenceValue>
+          </div>
+          <div>
+            <dt>Authorization expiry</dt>
+            <EvidenceValue>{formatTime(receipt.authorizationValidBefore)} UTC</EvidenceValue>
+          </div>
           {receipt.reason ? (
             <div>
               <dt>Reason</dt>
@@ -193,8 +209,20 @@ export function ReceiptDetailView({
               {transactionExplorer.label} ↗
             </a>
           ) : null}
+          {receipt.status === "settled" && receipt.txHash ? (
+            <div className={styles.evidenceLine}>
+              <code>{`/r/${receipt.id}`}</code>
+              <ReceiptCopyButton label="Copy public share link" value={shareUrl(receipt.id)} />
+            </div>
+          ) : null}
         </section>
       </div>
     </main>
   );
+}
+
+/** The anonymous share-card URL — settled evidence only, no owner context. */
+function shareUrl(id: string) {
+  if (typeof window === "undefined") return `/r/${id}`;
+  return new URL(`/r/${id}`, window.location.origin).toString();
 }

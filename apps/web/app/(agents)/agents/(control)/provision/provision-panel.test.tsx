@@ -60,7 +60,7 @@ describe("Magic Express provisioning", () => {
             name: "Operations agent",
             paymentProfile: "base_sepolia_integration",
           },
-          label: "Test funds — not real money",
+          label: "Sandbox funds — no real value",
           testFunds: true,
         }),
         { headers: { "content-type": "application/json" }, status: 200 },
@@ -84,13 +84,13 @@ describe("Magic Express provisioning", () => {
       await Promise.resolve();
     });
 
-    expect(fetchMock).toHaveBeenCalledWith("/api/leash/provision", {
+    expect(fetchMock).toHaveBeenCalledWith("/api/agents/provision", {
       body: JSON.stringify({ agentId: "agent-id", name: "Operations agent" }),
       headers: { "content-type": "application/json" },
       method: "POST",
     });
     expect(container.textContent).toContain(address);
-    expect(container.textContent).toContain("Test funds — not real money");
+    expect(container.textContent).toContain("Sandbox funds — no real value");
     expect(container.textContent).toContain("Wallet provisioned");
     await act(async () => root.unmount());
     container.remove();

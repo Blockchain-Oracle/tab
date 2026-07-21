@@ -39,7 +39,7 @@ async function provision(capCents: string) {
   if (!agent) throw new Error("Expected an agent");
   const [key] = await connection.client<{ id: string }[]>`
     insert into leash_keys (agent_id, hashed_key, prefix, last4)
-    values (${agent.id}, ${randomBytes(32).toString("hex")}, 'leash_sk_', 'a1B2')
+    values (${agent.id}, ${randomBytes(32).toString("hex")}, 'agent_sk_', 'a1B2')
     returning id
   `;
   await connection.client`

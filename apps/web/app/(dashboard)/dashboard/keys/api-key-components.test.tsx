@@ -1,3 +1,7 @@
+/** @vitest-environment jsdom */
+
+import { act, type ReactNode } from "react";
+import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
@@ -10,6 +14,25 @@ import {
 } from "./api-key-components";
 
 const createdAt = new Date("2026-07-16T10:00:00.000Z");
+
+/**
+ * Dialogs portal into the closest [data-tab-ui] after mount, so their copy
+ * is invisible to static markup. Mount for real, mirroring the app root.
+ */
+async function renderMounted(node: ReactNode): Promise<string> {
+  (
+    globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }
+  ).IS_REACT_ACT_ENVIRONMENT = true;
+  const container = document.createElement("div");
+  container.setAttribute("data-tab-ui", "");
+  document.body.append(container);
+  const root = createRoot(container);
+  await act(async () => root.render(node));
+  const html = container.innerHTML;
+  await act(async () => root.unmount());
+  container.remove();
+  return html;
+}
 
 function key(overrides: Partial<DashboardApiKey> = {}): DashboardApiKey {
   return {
@@ -63,8 +86,8 @@ describe("API key dashboard reality copy", () => {
     expect(html).not.toContain("Reveal");
   });
 
-  it("uses the exact enforced permission choices in the create dialog", () => {
-    const html = renderToStaticMarkup(
+  it("uses the exact enforced permission choices in the create dialog", async () => {
+    const html = await renderMounted(
       <CreateKeyDialog
         error={null}
         isSubmitting={false}
@@ -83,9 +106,9 @@ describe("API key dashboard reality copy", () => {
     expect(html).not.toContain("Sending access");
   });
 
-  it("shows raw material in the one-time reveal dialog and states it cannot be recovered", () => {
+  it("shows raw material in the one-time reveal dialog and states it cannot be recovered", async () => {
     const secret = "sk_test_unique_one_time_material";
-    const html = renderToStaticMarkup(
+    const html = await renderMounted(
       <SecretRevealDialog
         keyName="Server deploy"
         onClose={vi.fn()}
@@ -99,8 +122,8 @@ describe("API key dashboard reality copy", () => {
     expect(html).toContain("I’ve saved my key");
   });
 
-  it("requires an explicit destructive confirmation before rotation", () => {
-    const html = renderToStaticMarkup(
+  it("requires an explicit destructive confirmation before rotation", async () => {
+    const html = await renderMounted(
       <RotationConfirmDialog
         isSubmitting={false}
         keyName="Server deploy"

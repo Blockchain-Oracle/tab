@@ -35,7 +35,7 @@ async function prepare(
   });
 }
 
-describe("destructive Leash revocation transitions with real PostgreSQL", () => {
+describe("destructive Agent revocation transitions with real PostgreSQL", () => {
   it("cancels from a resumable state, revokes every key, and removes the OIDC subject", async () => {
     const identity = await harness.provision("cancel");
     await revokeOwnerAgent(harness.connection.db, {

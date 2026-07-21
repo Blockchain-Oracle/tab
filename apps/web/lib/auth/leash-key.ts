@@ -5,42 +5,42 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import type { Database } from "../db/client";
 import { agentEvents, agents, leashKeys } from "../db/schema";
 
-const LEASH_KEY_PREFIX = "leash_sk_";
+const LEASH_KEY_PREFIX = "agent_sk_";
 const LEASH_KEY_MATERIAL_LENGTH = 43;
 
 export class InvalidLeashKeyError extends Error {
-  readonly code = "INVALID_LEASH_KEY";
+  readonly code = "INVALID_AGENT_KEY";
 
   constructor() {
-    super("The Leash key is invalid or revoked.");
+    super("The agent key is invalid or revoked.");
     this.name = "InvalidLeashKeyError";
   }
 }
 
 export class ActiveLeashKeyExistsError extends Error {
   constructor() {
-    super("An active Leash key already exists for this agent.");
+    super("An active agent key already exists for this agent.");
     this.name = "ActiveLeashKeyExistsError";
   }
 }
 
 export class ActiveLeashKeyNotFoundError extends Error {
   constructor() {
-    super("The active Leash key was not found.");
+    super("The active agent key was not found.");
     this.name = "ActiveLeashKeyNotFoundError";
   }
 }
 
 export class LeashAgentNotFoundError extends Error {
   constructor() {
-    super("The Leash agent was not found.");
+    super("The agent was not found.");
     this.name = "LeashAgentNotFoundError";
   }
 }
 
 export class LeashAgentInactiveError extends Error {
   constructor() {
-    super("A cancelled or nuked Leash agent cannot receive key material.");
+    super("A cancelled or nuked agent cannot receive key material.");
     this.name = "LeashAgentInactiveError";
   }
 }
@@ -158,7 +158,7 @@ async function issueScopedLeashKey(db: Database, input: InternalLeashKeyScope) {
         prefix: material.prefix,
       })
       .returning(keySummary);
-    if (!key) throw new Error("PostgreSQL did not return the issued Leash key");
+    if (!key) throw new Error("PostgreSQL did not return the issued agent key");
 
     return { key, secret: material.secret };
   });
@@ -208,7 +208,7 @@ async function rotateScopedLeashKey(db: Database, input: InternalLeashKeyTarget)
         rotatedFromId: previous.id,
       })
       .returning(keySummary);
-    if (!key) throw new Error("PostgreSQL did not return the rotated Leash key");
+    if (!key) throw new Error("PostgreSQL did not return the rotated agent key");
 
     const [event] = await transaction
       .insert(agentEvents)
@@ -223,7 +223,7 @@ async function rotateScopedLeashKey(db: Database, input: InternalLeashKeyTarget)
         type: "revoke",
       })
       .returning({ id: agentEvents.id });
-    if (!event) throw new Error("PostgreSQL did not return the Leash key rotation event");
+    if (!event) throw new Error("PostgreSQL did not return the agent key rotation event");
 
     return { key, secret: material.secret };
   });

@@ -1,12 +1,14 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { LeashFundsSnapshot } from "../../../../../lib/leash/fund-balances";
 import { FundsPanel } from "./funds-panel";
 
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+
 const address = "0x1111111111111111111111111111111111111111";
 
-describe("Leash funds surface", () => {
+describe("Agent funds surface", () => {
   it("renders only verified balances and keeps every B-04 money action disabled", () => {
     const snapshot = {
       agentAddress: address,
@@ -29,7 +31,12 @@ describe("Leash funds surface", () => {
     } satisfies LeashFundsSnapshot;
 
     const html = renderToStaticMarkup(
-      <FundsPanel agentName="Operations agent" agentStatus="provisioned" snapshot={snapshot} />,
+      <FundsPanel
+        agentId="33333333-3333-4333-8333-333333333333"
+        agentName="Operations agent"
+        agentStatus="provisioned"
+        snapshot={snapshot}
+      />,
     );
 
     expect(html).toContain("$8.50");
@@ -58,7 +65,12 @@ describe("Leash funds surface", () => {
     } satisfies LeashFundsSnapshot;
 
     const html = renderToStaticMarkup(
-      <FundsPanel agentName="New agent" agentStatus="provisioned" snapshot={snapshot} />,
+      <FundsPanel
+        agentId="33333333-3333-4333-8333-333333333333"
+        agentName="New agent"
+        agentStatus="provisioned"
+        snapshot={snapshot}
+      />,
     );
 
     expect(html).toContain("Not provisioned");
@@ -85,11 +97,17 @@ describe("Leash funds surface", () => {
     } satisfies LeashFundsSnapshot;
 
     const html = renderToStaticMarkup(
-      <FundsPanel agentName="Configured address" agentStatus="provisioned" snapshot={snapshot} />,
+      <FundsPanel
+        agentId="33333333-3333-4333-8333-333333333333"
+        agentName="Configured address"
+        agentStatus="provisioned"
+        snapshot={snapshot}
+      />,
     );
     expect(html).toContain(address);
     expect(html).toContain("Send native USDC on Base or Arbitrum to this address.");
     expect(html).toContain("Particle read configuration is unavailable.");
+    expect(html).not.toContain("Claim test funds");
   });
 
   it("labels reads live only when Particle and both float networks succeeded", () => {
@@ -109,7 +127,12 @@ describe("Leash funds surface", () => {
     } satisfies LeashFundsSnapshot;
 
     const html = renderToStaticMarkup(
-      <FundsPanel agentName="Live agent" agentStatus="provisioned" snapshot={snapshot} />,
+      <FundsPanel
+        agentId="33333333-3333-4333-8333-333333333333"
+        agentName="Live agent"
+        agentStatus="provisioned"
+        snapshot={snapshot}
+      />,
     );
     expect(html).toContain("LIVE READS");
     expect(html).not.toContain("PARTIAL READ");
@@ -141,7 +164,12 @@ describe("Leash funds surface", () => {
     } satisfies LeashFundsSnapshot;
 
     const html = renderToStaticMarkup(
-      <FundsPanel agentName="Funded agent" agentStatus="provisioned" snapshot={snapshot} />,
+      <FundsPanel
+        agentId="33333333-3333-4333-8333-333333333333"
+        agentName="Funded agent"
+        agentStatus="provisioned"
+        snapshot={snapshot}
+      />,
     );
     expect(html).toContain("$6.00");
     expect(html).toContain("ABOVE FIXED FLOOR");
@@ -164,11 +192,16 @@ describe("Leash funds surface", () => {
       unified: { state: "configuration_unavailable" },
     } satisfies LeashFundsSnapshot;
     const html = renderToStaticMarkup(
-      <FundsPanel agentName="Nuked agent" agentStatus="nuked" snapshot={snapshot} />,
+      <FundsPanel
+        agentId="33333333-3333-4333-8333-333333333333"
+        agentName="Nuked agent"
+        agentStatus="nuked"
+        snapshot={snapshot}
+      />,
     );
     expect(html).toContain("HISTORY ONLY");
     expect(html).toContain("Do not deposit");
-    expect(html).toContain("Leash withdrawal is unavailable after nuclear destruction");
+    expect(html).toContain("Agent withdrawal is unavailable after nuclear destruction");
     expect(html).toContain("EMPTY");
     expect(html).not.toContain("Send native USDC");
   });
@@ -189,10 +222,16 @@ describe("Leash funds surface", () => {
     } satisfies LeashFundsSnapshot;
 
     const html = renderToStaticMarkup(
-      <FundsPanel agentName="Integration agent" agentStatus="provisioned" snapshot={snapshot} />,
+      <FundsPanel
+        agentId="33333333-3333-4333-8333-333333333333"
+        agentName="Integration agent"
+        agentStatus="provisioned"
+        snapshot={snapshot}
+      />,
     );
 
-    expect(html).toContain("Test funds — not real money");
+    expect(html).toContain("Sandbox funds — no real value");
+    expect(html).toContain("Claim test funds");
     expect(html).toContain("Base Sepolia");
     expect(html).toContain("eip155:84532");
     expect(html).toContain("Send Circle Base Sepolia USDC test funds to this address.");

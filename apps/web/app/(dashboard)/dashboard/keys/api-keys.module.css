@@ -16,7 +16,7 @@
 
 .pageHeader h1 {
   margin: 0;
-  color: #1c1b18;
+  color: var(--tab-text);
   font-size: 19px;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -24,7 +24,7 @@
 
 .pageHeader p {
   margin: 4px 0 0;
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 12.5px;
 }
 
@@ -43,13 +43,13 @@
 }
 
 .testBadge {
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 
 .liveBadge {
-  background: #e8f3ec;
-  color: #257a46;
+  background: color-mix(in srgb, var(--tab-text) 5%, transparent);
+  color: var(--tab-text);
 }
 
 .createButton {
@@ -57,8 +57,8 @@
   padding: 0 14px;
   border: 0;
   border-radius: 9px;
-  background: #3b5bd9;
-  color: #fff;
+  background: var(--tab-text);
+  color: var(--tab-surface);
   font: inherit;
   font-size: 12.5px;
   font-weight: 500;
@@ -69,8 +69,8 @@
   margin: 16px 0 0;
   padding: 9px 12px;
   border-radius: 9px;
-  background: #faecec;
-  color: #8e2f34;
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, transparent);
+  color: var(--tab-status-danger);
   font-size: 12.5px;
   line-height: 1.5;
 }

@@ -14,14 +14,16 @@
         "DATABASE_URL",
         "EMAIL_API_KEY",
         "EMAIL_FROM",
-        "LEASH_PROVISIONING_PROFILE",
+        "FAUCET_FUNDER_PRIVATE_KEY",
         "MAGIC_OIDC_AUDIENCE",
         "MAGIC_OIDC_ISSUER",
         "MAGIC_OIDC_KEY_ID",
         "MAGIC_OIDC_PRIVATE_KEY_B64",
         "MAGIC_OIDC_PROVIDER_ID",
         "MAGIC_SECRET_KEY",
+        "NEXT_PUBLIC_APP_ORIGIN",
         "NEXT_PUBLIC_APP_URL",
+        "NEXT_PUBLIC_DOCS_ORIGIN",
         "NEXT_PUBLIC_MAGIC_PUBLISHABLE_KEY",
         "NEXT_PUBLIC_VAPID_PUBLIC_KEY",
         "PARTICLE_APP_ID",
@@ -29,6 +31,7 @@
         "PARTICLE_PROJECT_ID",
         "PAYMENT_INTENT_SIGNING_SECRET",
         "SESSION_SECRET",
+        "TAB_AGENT_PROVISIONING_PROFILE",
         "TAB_SECRET_KEY",
         "VAPID_PRIVATE_KEY",
         "WEBHOOK_SECRET_ENCRYPTION_KEY",
@@ -53,7 +56,8 @@
       "cache": false,
       "dependsOn": ["^build"],
       "outputs": ["coverage/**"],
-      "passThroughEnv": ["DATABASE_URL", "PAYMENT_INTENT_SIGNING_SECRET", "SESSION_SECRET"]
+      "passThroughEnv": ["DATABASE_URL", "PAYMENT_INTENT_SIGNING_SECRET", "SESSION_SECRET"],
+      "env": ["FAUCET_FUNDER_PRIVATE_KEY"]
     },
     "format": {
       "outputs": []

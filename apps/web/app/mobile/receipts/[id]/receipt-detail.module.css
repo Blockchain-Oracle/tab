@@ -1,0 +1,177 @@
+.page {
+  display: grid;
+  gap: 14px;
+  padding: 24px 18px 36px;
+}
+
+.back {
+  width: fit-content;
+  color: var(--tab-text-muted);
+  font-size: 11px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header p,
+.header h1,
+.testFunds,
+.blockedNote,
+.evidenceCard h2,
+.evidenceCard p {
+  margin: 0;
+}
+
+.header p,
+.evidenceCard h2 {
+  color: var(--tab-text-muted);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  margin-top: 4px;
+  font-size: 26px;
+  letter-spacing: -0.04em;
+}
+
+.status,
+.testFunds,
+.blockedNote {
+  width: fit-content;
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.settled {
+  color: var(--tab-status-success);
+  background: color-mix(in srgb, var(--tab-status-success) 11%, transparent);
+}
+
+.pending,
+.testFunds {
+  color: var(--tab-status-warning);
+  background: color-mix(in srgb, var(--tab-mode-test) 14%, transparent);
+}
+
+.failed,
+.blocked,
+.blockedNote {
+  color: var(--tab-status-danger);
+  background: color-mix(in srgb, var(--tab-status-danger) 9%, transparent);
+}
+
+.summary,
+.evidenceCard {
+  border: 1px solid var(--tab-line);
+  border-radius: 15px;
+  background: var(--tab-surface);
+}
+
+.summary {
+  padding: 5px 14px;
+}
+
+.summary dl {
+  margin: 0;
+}
+
+.summary dl > div {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--tab-canvas);
+}
+
+.summary dl > div:last-child {
+  border-bottom: 0;
+}
+
+.summary dt {
+  color: var(--tab-text-muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.summary dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--tab-text);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.mono,
+.evidenceCard code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.evidenceGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.evidenceCard {
+  display: grid;
+  gap: 10px;
+  padding: 15px;
+}
+
+.evidenceCard p {
+  color: var(--tab-text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.copyLine {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 9px;
+}
+
+.copyLine > :first-child {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  overflow-wrap: anywhere;
+}
+
+.copyLine b,
+.copyLine code,
+.copyLine span {
+  font-size: 11px;
+}
+
+.break {
+  overflow-wrap: anywhere;
+}
+
+.settlement a {
+  width: fit-content;
+  padding: 7px 9px;
+  border-radius: 7px;
+  color: var(--tab-color-paper);
+  background: var(--tab-status-success);
+  font-size: 10px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.back:focus-visible,
+.settlement a:focus-visible {
+  outline: var(--tab-focus-width) solid var(--tab-focus-color);
+  outline-offset: 2px;
+}

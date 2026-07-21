@@ -26,7 +26,7 @@ async function loadLocalSecret(name: "MAGIC_SECRET_KEY" | "SESSION_SECRET") {
 }
 
 async function provision(origin: string, token: string, name: string) {
-  const response = await fetch(`${origin}/api/leash/provision`, {
+  const response = await fetch(`${origin}/api/agents/provision`, {
     body: JSON.stringify({ name }),
     headers: {
       "content-type": "application/json",
@@ -46,7 +46,7 @@ async function provision(origin: string, token: string, name: string) {
   };
   expect(response.status, body.error?.code).toBe(200);
   expect(body.testFunds).toBe(true);
-  expect(body.label).toBe("Test funds — not real money");
+  expect(body.label).toBe("Sandbox funds — no real value");
   expect(body.agent?.paymentProfile).toBe("base_sepolia_integration");
   if (!body.agent?.address || !body.agent.id) {
     throw new Error("The deployed provision route returned incomplete agent evidence");

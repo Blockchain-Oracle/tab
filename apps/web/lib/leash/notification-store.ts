@@ -21,7 +21,7 @@ type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
 
 export class LeashNotificationNotFoundError extends Error {
   constructor() {
-    super("The Leash notification resource was not found.");
+    super("The Agent notification resource was not found.");
     this.name = "LeashNotificationNotFoundError";
   }
 }
@@ -74,7 +74,7 @@ export async function countOwnerUnreadNotifications(
 function cta(agentId: string, tier: "2" | "3", resolvedAt: Date | null) {
   if (tier !== "3" || resolvedAt) return null;
   return {
-    href: `/leash/cap?agentId=${encodeURIComponent(agentId)}#cap-controls`,
+    href: `/agents/cap?agentId=${encodeURIComponent(agentId)}#cap-controls`,
     kind: "cap_remediation" as const,
     label: "Review cap",
   };

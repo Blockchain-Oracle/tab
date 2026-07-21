@@ -149,7 +149,7 @@ describe("float-empty notifier multi-chain dedupe", () => {
       network: "eip155:84532",
       reservedAtomic: "1000",
       testFunds: true,
-      testFundsLabel: "Test funds — not real money",
+      testFundsLabel: "Sandbox funds — no real value",
     });
   });
 });

@@ -3,7 +3,7 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   clean: true,
   dts: true,
-  entry: { index: "src/index.ts", ua: "src/ua.ts" },
+  entry: { index: "src/index.ts", showcase: "src/showcase.ts", ua: "src/ua.ts" },
   external: [
     "@particle-network/universal-account-sdk",
     "magic-sdk",
@@ -15,7 +15,7 @@ export default defineConfig({
   format: ["esm", "cjs"],
   platform: "browser",
   sourcemap: true,
-  splitting: false,
+  splitting: true,
   target: "es2022",
   treeshake: true,
 });

@@ -69,7 +69,7 @@ export function useCheckoutController(options: ControllerOptions) {
   const readBalance = useCallback(
     async (context: CheckoutContext, buyer: BuyerRuntime, activeRun: number, amount: string) => {
       try {
-        const account = await services.loadAccount(context, buyer);
+        const account = await services.loadAccount(context, buyer, { apiBaseUrl, publishableKey });
         if (activeRun !== runtime.run.current) return;
         patch({ account });
         const required = Number(amount);
@@ -81,8 +81,20 @@ export function useCheckoutController(options: ControllerOptions) {
         if (activeRun === runtime.run.current) showFailure(error);
       }
     },
-    [patch, runtime, services, showFailure],
+    [apiBaseUrl, patch, publishableKey, runtime, services, showFailure],
   );
+
+  const getTestFunds = useCallback(async () => {
+    const buyer = model.buyer;
+    if (!buyer || model.context?.mode !== "test") {
+      throw new Error("Test funds exist only in test mode.");
+    }
+    return services.claimTestFunds({
+      apiBaseUrl,
+      buyerDidToken: buyer.didToken,
+      publishableKey,
+    });
+  }, [apiBaseUrl, model.buyer, model.context, publishableKey, services]);
 
   const acceptBuyer = useCallback(
     async (buyer: BuyerRuntime, context: CheckoutContext, activeRun: number, amount: string) => {
@@ -152,6 +164,7 @@ export function useCheckoutController(options: ControllerOptions) {
     ...auth,
     ...payment,
     dispatch,
+    getTestFunds,
     model,
     setEmail: (email: string) => patch({ email }),
     start,

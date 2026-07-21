@@ -19,19 +19,21 @@ afterAll(async () => {
   await harness.connection.client.end();
 });
 
-describe("GET /api/leash/receipts with real PostgreSQL", () => {
+describe("GET /api/agents/receipts with real PostgreSQL", () => {
   it("requires an owner session and wires the strict query parser", async () => {
     const owner = await harness.provision("strict");
-    const unauthorized = await GET(harness.request(`/api/leash/receipts?agentId=${owner.agentId}`));
+    const unauthorized = await GET(
+      harness.request(`/api/agents/receipts?agentId=${owner.agentId}`),
+    );
     expect(unauthorized.status).toBe(401);
     expect(unauthorized.headers.get("cache-control")).toBe("no-store");
 
     const malformed = [
-      "/api/leash/receipts",
-      `/api/leash/receipts?agentId=${owner.agentId}&agentId=${owner.agentId}`,
-      `/api/leash/receipts?agentId=${owner.agentId}&surprise=true`,
-      `/api/leash/receipts?agentId=${owner.agentId}&cursor=***`,
-      `/api/leash/receipts?agentId=${owner.agentId}&limit=101`,
+      "/api/agents/receipts",
+      `/api/agents/receipts?agentId=${owner.agentId}&agentId=${owner.agentId}`,
+      `/api/agents/receipts?agentId=${owner.agentId}&surprise=true`,
+      `/api/agents/receipts?agentId=${owner.agentId}&cursor=***`,
+      `/api/agents/receipts?agentId=${owner.agentId}&limit=101`,
     ];
     for (const path of malformed) {
       const response = await GET(harness.request(path, owner.token));
@@ -57,7 +59,7 @@ describe("GET /api/leash/receipts with real PostgreSQL", () => {
     }
 
     const first = await GET(
-      harness.request(`/api/leash/receipts?agentId=${owner.agentId}&limit=2`, owner.token),
+      harness.request(`/api/agents/receipts?agentId=${owner.agentId}&limit=2`, owner.token),
     );
     expect(first.status).toBe(200);
     expect(first.headers.get("cache-control")).toBe("no-store");
@@ -66,7 +68,7 @@ describe("GET /api/leash/receipts with real PostgreSQL", () => {
 
     const second = await GET(
       harness.request(
-        `/api/leash/receipts?agentId=${owner.agentId}&limit=2&cursor=${encodeURIComponent(firstBody.nextCursor)}`,
+        `/api/agents/receipts?agentId=${owner.agentId}&limit=2&cursor=${encodeURIComponent(firstBody.nextCursor)}`,
         owner.token,
       ),
     );
@@ -87,6 +89,8 @@ describe("GET /api/leash/receipts with real PostgreSQL", () => {
       "amountDisplay",
       "amountUsd",
       "asset",
+      "authorizationNonce",
+      "authorizationValidBefore",
       "capContext",
       "createdAt",
       "explorer",
@@ -118,7 +122,7 @@ describe("GET /api/leash/receipts with real PostgreSQL", () => {
     expect(receipts.find((receipt) => receipt.status === "blocked")).toMatchObject({
       explorer: null,
       network: { id: "eip155:8453", label: "Base", target: true },
-      reason: "LEASH_CAP_EXCEEDED",
+      reason: "CAP_EXCEEDED",
     });
     expect(receipts.find((receipt) => receipt.status === "pending")).toMatchObject({
       explorer: null,
@@ -133,7 +137,7 @@ describe("GET /api/leash/receipts with real PostgreSQL", () => {
     const foreign = await harness.provision("foreign-feed");
     const responses = await Promise.all(
       [foreign.agentId, randomUUID()].map((agentId) =>
-        GET(harness.request(`/api/leash/receipts?agentId=${agentId}`, owner.token)),
+        GET(harness.request(`/api/agents/receipts?agentId=${agentId}`, owner.token)),
       ),
     );
     expect(responses.map((response) => response.status)).toEqual([404, 404]);
@@ -145,8 +149,8 @@ describe("GET /api/leash/receipts with real PostgreSQL", () => {
     expect(bodies[0]).toEqual(bodies[1]);
     expect(bodies[0]).toEqual({
       error: {
-        code: "LEASH_RESOURCE_NOT_FOUND",
-        message: "The Leash receipt resource was not found.",
+        code: "RESOURCE_NOT_FOUND",
+        message: "The Agent receipt resource was not found.",
       },
     });
   });

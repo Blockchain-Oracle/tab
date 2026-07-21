@@ -168,7 +168,7 @@ export async function handleProvisionRequest(
           name: agent.name,
           paymentProfile: agent.paymentProfile,
         },
-        ...(testFunds ? { label: "Test funds — not real money" } : {}),
+        ...(testFunds ? { label: "Sandbox funds — no real value" } : {}),
         testFunds,
       },
       { headers: LEASH_RESPONSE_HEADERS },
@@ -181,7 +181,7 @@ export async function handleProvisionRequest(
       return leashError("INVALID_PROVISION_REQUEST", error.message, 400);
     }
     if (error instanceof AgentProvisionNotFoundError) {
-      return leashError("LEASH_AGENT_NOT_FOUND", error.message, 404);
+      return leashError("AGENT_NOT_FOUND", error.message, 404);
     }
     if (error instanceof AgentProvisionConflictError) {
       return leashError("AGENT_WALLET_CONFLICT", error.message, 409);

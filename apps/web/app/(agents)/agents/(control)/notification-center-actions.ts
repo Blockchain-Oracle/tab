@@ -34,7 +34,7 @@ export async function loadNotificationResult({
   if (filters.tier !== "all") query.set("tier", filters.tier);
   if (cursor) query.set("cursor", cursor);
 
-  const response = await request(`/api/leash/notifications?${query}`);
+  const response = await request(`/api/agents/notifications?${query}`);
   const body = (await response.json()) as NotificationResponse;
   if (!response.ok) {
     throw new Error(body.error?.message ?? "Notifications could not be loaded.");
@@ -55,7 +55,7 @@ export async function markNotificationsRead({
   onServerStateChanged: () => void;
   request?: NotificationRequest;
 }) {
-  const response = await request("/api/leash/notifications", {
+  const response = await request("/api/agents/notifications", {
     body: JSON.stringify(
       notificationId
         ? { action: "read_one", agentId, notificationId }

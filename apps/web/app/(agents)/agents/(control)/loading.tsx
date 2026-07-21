@@ -2,7 +2,12 @@ import styles from "./loading.module.css";
 
 export default function LeashControlLoading() {
   return (
-    <main aria-busy="true" aria-label="Loading Leash control data" className={styles.page}>
+    <main
+      aria-busy="true"
+      role="status"
+      aria-label="Loading Agent control data"
+      className={styles.page}
+    >
       <div className={styles.heading} />
       <div className={styles.banner} />
       <div className={styles.wideCard} />
@@ -12,7 +17,7 @@ export default function LeashControlLoading() {
         <div />
         <div />
       </section>
-      <span className={styles.srOnly}>Loading live Leash data…</span>
+      <span className={styles.srOnly}>Loading live Agent data…</span>
     </main>
   );
 }

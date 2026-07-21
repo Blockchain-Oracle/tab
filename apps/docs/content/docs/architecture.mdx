@@ -1,0 +1,103 @@
+---
+title: Architecture
+description: How the pieces fit — one rail, two payers, and where each secret lives.
+---
+
+## The system
+
+<Mermaid
+  chart={`flowchart LR
+  subgraph Merchant["Your storefront"]
+    PB["<PayButton> (@runtab/sdk)"]
+    IE["/api/payment-intent (your server, sk_)"]
+  end
+  subgraph Tab["Tab (app.*)"]
+    API["v1 API (pk_ / sk_)"]
+    DASH["Merchant dashboard"]
+    AGD["Agent dashboard"]
+    DB[("Postgres — payments, receipts, caps")]
+    FCT["Faucet (Base Sepolia only)"]
+  end
+  subgraph Agent["Agent side"]
+    MCP["tab-mcp proxy (agent_sk_)"]
+    SIGNER["Hosted signer"]
+  end
+  Buyer(("Buyer")) --> PB
+  PB -->|GET intent| IE
+  IE -->|"POST /v1/payment-intents (sk_)"| API
+  PB -->|"pk_ + intentToken"| API
+  AI(("AI agent")) --> MCP
+  MCP -->|"402 paid via x402"| RES["Any x402 resource"]
+  MCP --> SIGNER
+  API --> DB
+  DASH --> API
+  AGD --> API
+  FCT -->|"real Base Sepolia transfers"| Buyer
+  FCT --> SIGNER`}
+/>
+
+Three trust boundaries, three keys:
+
+- **`sk_…`** never leaves your server — it mints signed intents, so the
+  browser can never change a price.
+- **`pk_…`** is public — it scopes the SDK's checkout calls to your
+  merchant account, and settlement reporting also demands the buyer's own
+  identity token.
+- **`agent_sk_…`** lives only in the `tab-mcp` proxy environment — the AI
+  agent itself never sees a key, and the cap is enforced outside the model.
+
+## Human checkout (test mode)
+
+<Mermaid
+  chart={`sequenceDiagram
+  participant B as Buyer
+  participant S as <PayButton>
+  participant M as Your server
+  participant T as Tab API
+  participant C as Base Sepolia
+  B->>S: Click Pay
+  S->>M: GET /api/payment-intent
+  M->>T: POST /v1/payment-intents (sk_test_)
+  T-->>M: { intent, intentToken }
+  S->>T: POST /v1/payments (pk_test_ + intentToken)
+  B->>S: Email + one-time code
+  S->>T: GET /v1/checkout/test-balance
+  T->>C: USDC balanceOf(buyer)
+  C-->>T: real balance
+  alt insufficient
+    S->>T: POST /v1/checkout/test-funds (buyer identity token)
+    T->>C: transfer 2 test USDC + gas (waits for receipts)
+    S->>T: re-read balance
+  end
+  B->>S: Confirm
+  S->>T: PATCH /v1/payments/:id (report)
+  T-->>S: settled (test simulation)
+  T->>M: signed webhook (x-tab-signature)
+  T-->>B: receipt email (Resend)`}
+/>
+
+## Agent x402 payment
+
+<Mermaid
+  chart={`sequenceDiagram
+  participant A as AI agent
+  participant P as tab-mcp proxy
+  participant R as x402 resource
+  participant T as Tab API
+  participant H as Hosted signer
+  A->>P: tool call
+  P->>R: request
+  R-->>P: 402 Payment Required
+  P->>T: authorize within cap (agent_sk_)
+  T->>T: cap check — blocked receipts recorded too
+  T->>H: sign EIP-3009 authorization
+  H-->>T: signature (key never leaves)
+  P->>R: retry with payment
+  R-->>P: 200 OK
+  P-->>A: result (agent never saw a key)
+  T->>T: receipt: amount, network, tx hash, cap context`}
+/>
+
+The design rule everywhere: **money truth is recorded evidence** — settled
+means an on-chain hash, blocked means a recorded reason, and the model
+never holds the pen.

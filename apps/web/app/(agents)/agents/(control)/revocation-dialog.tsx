@@ -64,7 +64,7 @@ export function RevocationDialog({
       controller.abort();
       setLiveRead({ state: "unavailable" });
     }, LIVE_READ_TIMEOUT_MS);
-    fetch(`/api/leash/float-balances?agentId=${encodeURIComponent(agent.id)}`, {
+    fetch(`/api/agents/float-balances?agentId=${encodeURIComponent(agent.id)}`, {
       cache: "no-store",
       method: "GET",
       signal: controller.signal,

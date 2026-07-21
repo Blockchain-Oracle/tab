@@ -38,7 +38,7 @@ async function provision(capCents = "100") {
   if (!agent) throw new Error("Expected agent");
   const [key] = await connection.client<{ id: string }[]>`
     insert into leash_keys (agent_id, hashed_key, prefix, last4)
-    values (${agent.id}, ${randomBytes(32).toString("hex")}, 'leash_sk_', 'a1B2')
+    values (${agent.id}, ${randomBytes(32).toString("hex")}, 'agent_sk_', 'a1B2')
     returning id
   `;
   const [cycle] = await connection.client<{ id: string }[]>`
@@ -107,7 +107,7 @@ async function insertHistorical(
       request_fingerprint, authorization_valid_before, tx_hash, settlement_response, settled_at
     ) values (
       ${identity.agentId}, ${identity.cycleId}, ${status},
-      ${blocked ? "LEASH_CAP_EXCEEDED" : null}, '1', '0.000001', ${baseUsdc}, 'eip155:8453',
+      ${blocked ? "CAP_EXCEEDED" : null}, '1', '0.000001', ${baseUsdc}, 'eip155:8453',
       ${blocked ? "eip155:8453" : null}, ${payTo}, ${`https://${resourceHost}/old`},
       ${resourceHost}, ${`0x${randomBytes(32).toString("hex")}`},
       ${randomBytes(32).toString("hex")}, now() + interval '5 minutes',

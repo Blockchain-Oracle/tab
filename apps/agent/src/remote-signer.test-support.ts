@@ -1,7 +1,7 @@
 import type { PaymentResponseContext } from "@x402/core/client";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { LeashRemoteSigner } from "./remote-signer.js";
+import { TabRemoteSigner } from "./remote-signer.js";
 
 export const nowSeconds = 1_784_271_300;
 export const account = privateKeyToAccount(`0x${"11".repeat(32)}`);
@@ -91,10 +91,10 @@ export function failedPaymentContext(signature: `0x${string}`): PaymentResponseC
 }
 
 export function signerWithFetch(fetch: typeof globalThis.fetch) {
-  return new LeashRemoteSigner({
+  return new TabRemoteSigner({
     address: account.address,
     apiBaseUrl: "https://tab.example.test/",
-    apiKey: "leash_sk_secret",
+    apiKey: "agent_sk_secret",
     fetch,
     nowSeconds: () => nowSeconds,
     paymentProfile: "mainnet",

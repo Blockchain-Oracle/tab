@@ -1,0 +1,94 @@
+.page {
+  align-items: center;
+  background: var(--tab-canvas);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.panel {
+  background: var(--tab-surface);
+  border: 1px solid var(--tab-line);
+  border-radius: 14px;
+  max-width: 440px;
+  padding: 32px;
+  text-align: center;
+  width: 100%;
+}
+
+.mark {
+  align-items: center;
+  background: color-mix(in srgb, var(--tab-status-danger) 10%, var(--tab-surface));
+  border-radius: 999px;
+  color: var(--tab-status-danger);
+  display: inline-flex;
+  font-size: 18px;
+  font-weight: 700;
+  height: 44px;
+  justify-content: center;
+  margin: 0 auto 16px;
+  min-width: 44px;
+  padding: 0 12px;
+}
+
+.title {
+  color: var(--tab-text);
+  font-size: 20px;
+  font-weight: 650;
+  margin: 0 0 8px;
+}
+
+.detail {
+  color: var(--tab-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.moneyNote {
+  background: var(--tab-canvas);
+  border-radius: 8px;
+  color: var(--tab-text);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+}
+
+.digest {
+  color: var(--tab-text-muted);
+  font-size: 12px;
+  margin: 0 0 16px;
+}
+
+.digest code {
+  font-family: ui-monospace, monospace;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.retry {
+  background: var(--tab-action);
+  border: none;
+  border-radius: 10px;
+  color: var(--tab-action-text);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  height: 44px;
+}
+
+.retry:hover {
+  background: var(--tab-action-hover);
+}
+
+.home {
+  color: var(--tab-text-muted);
+  font-size: 14px;
+  text-decoration: underline;
+}

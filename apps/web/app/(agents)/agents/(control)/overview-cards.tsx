@@ -88,7 +88,7 @@ export function OverviewCards({
           </ul>
         ) : null}
         {agent.agentAddress && !terminal ? (
-          <Link href={`/leash/funds${query}`}>Add funds</Link>
+          <Link href={`/agents/funds${query}`}>Add funds</Link>
         ) : null}
       </article>
       <article>
@@ -109,10 +109,10 @@ export function OverviewCards({
         ) : (
           <small>{agent.connectionCount} recorded connections</small>
         )}
-        <Link href={`/leash/connect${query}`}>Manage connection</Link>
+        <Link href={`/agents/connect${query}`}>Manage connection</Link>
       </article>
       <article>
-        <span className={styles.cardLabel}>LEASH KEY</span>
+        <span className={styles.cardLabel}>AGENT KEY</span>
         <strong>{keyState(agent, keySummary)}</strong>
         <p className={styles.mono}>
           {keySummary ? maskedKey(keySummary) : "No active key material"}

@@ -106,7 +106,7 @@ export async function connectAgent(db: Database, input: ConnectAgentInput) {
         transport: agents.transport,
       });
     if (!connected?.firstSeenAt || !connected.lastSeenAt) {
-      throw new Error("The authenticated Leash agent was not found");
+      throw new Error("The authenticated agent was not found");
     }
 
     await transaction.insert(agentEvents).values({

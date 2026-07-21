@@ -8,7 +8,7 @@ import type { PaymentRequired } from "@x402/core/types";
 import { privateKeyToAccount } from "viem/accounts";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { createLeashFetch } from "./fetch-wrapper.js";
+import { createTabFetch } from "./fetch-wrapper.js";
 
 const payerAccount = privateKeyToAccount(`0x${"11".repeat(32)}`);
 const payer = payerAccount.address;
@@ -126,7 +126,7 @@ describe("durable payment authorization restart recovery", () => {
       address: payer,
       allowDevelopmentLoopback: true,
       apiBaseUrl: origin,
-      apiKey: "leash_sk_integration",
+      apiKey: "agent_sk_integration",
       fetch: globalThis.fetch,
       idempotencyKey: () => key,
       nowSeconds: () => durableNow,
@@ -134,12 +134,12 @@ describe("durable payment authorization restart recovery", () => {
       paymentStateDirectory: stateDirectory,
     };
 
-    await expect(createLeashFetch(options)(`${origin}/ambiguous`)).rejects.toThrow();
+    await expect(createTabFetch(options)(`${origin}/ambiguous`)).rejects.toThrow();
     expect(signRequests).toHaveLength(1);
     expect(paymentHeaders).toHaveLength(1);
 
     key = "different-payment";
-    const restartedProcess = createLeashFetch(options);
+    const restartedProcess = createTabFetch(options);
     await expect(restartedProcess(`${origin}/ambiguous`)).rejects.toMatchObject({
       code: "PAYMENT_RECONCILIATION_REQUIRED",
     });
@@ -149,7 +149,7 @@ describe("durable payment authorization restart recovery", () => {
     await expect((await restartedProcess(`${origin}/ambiguous`)).text()).resolves.toBe(
       "recovered result",
     );
-    await expect((await createLeashFetch(options)(`${origin}/ambiguous`)).text()).resolves.toBe(
+    await expect((await createTabFetch(options)(`${origin}/ambiguous`)).text()).resolves.toBe(
       "recovered result",
     );
     expect(signRequests).toHaveLength(1);
@@ -158,11 +158,11 @@ describe("durable payment authorization restart recovery", () => {
   });
 
   it("does not sign a 402 without an explicit payment idempotency key", async () => {
-    const leashFetch = createLeashFetch({
+    const leashFetch = createTabFetch({
       address: payer,
       allowDevelopmentLoopback: true,
       apiBaseUrl: origin,
-      apiKey: "leash_sk_integration",
+      apiKey: "agent_sk_integration",
       fetch: globalThis.fetch,
       paymentProfile: "mainnet",
       paymentStateDirectory: stateDirectory,
@@ -186,7 +186,7 @@ describe("durable payment authorization restart recovery", () => {
       address: payer,
       allowDevelopmentLoopback: true,
       apiBaseUrl: origin,
-      apiKey: "leash_sk_integration",
+      apiKey: "agent_sk_integration",
       authorizationState,
       fetch: globalThis.fetch,
       idempotencyKey: () => "expired-unused",
@@ -195,10 +195,10 @@ describe("durable payment authorization restart recovery", () => {
       paymentStateDirectory: stateDirectory,
     };
 
-    await expect(createLeashFetch(options)(`${origin}/ambiguous`)).rejects.toThrow();
+    await expect(createTabFetch(options)(`${origin}/ambiguous`)).rejects.toThrow();
     const expiredHeader = paymentHeaders[0];
     durableNow += 1_000;
-    const recovered = await createLeashFetch(options)(`${origin}/ambiguous`);
+    const recovered = await createTabFetch(options)(`${origin}/ambiguous`);
 
     await expect(recovered.text()).resolves.toBe("recovered result");
     expect(resetClock).toBe(true);
@@ -213,7 +213,7 @@ describe("durable payment authorization restart recovery", () => {
       address: payer,
       allowDevelopmentLoopback: true,
       apiBaseUrl: origin,
-      apiKey: "leash_sk_integration",
+      apiKey: "agent_sk_integration",
       authorizationState: async () => "used" as const,
       fetch: globalThis.fetch,
       idempotencyKey: () => "expired-used",
@@ -222,9 +222,9 @@ describe("durable payment authorization restart recovery", () => {
       paymentStateDirectory: stateDirectory,
     };
 
-    await expect(createLeashFetch(options)(`${origin}/ambiguous`)).rejects.toThrow();
+    await expect(createTabFetch(options)(`${origin}/ambiguous`)).rejects.toThrow();
     durableNow += 1_000;
-    const recovered = await createLeashFetch(options)(`${origin}/ambiguous`);
+    const recovered = await createTabFetch(options)(`${origin}/ambiguous`);
 
     await expect(recovered.text()).resolves.toBe("recovered result");
     expect(signRequests).toHaveLength(1);
@@ -237,7 +237,7 @@ describe("durable payment authorization restart recovery", () => {
       address: payer,
       allowDevelopmentLoopback: true,
       apiBaseUrl: origin,
-      apiKey: "leash_sk_integration",
+      apiKey: "agent_sk_integration",
       authorizationState: async () => {
         throw new Error("rpc unavailable");
       },
@@ -248,9 +248,9 @@ describe("durable payment authorization restart recovery", () => {
       paymentStateDirectory: stateDirectory,
     };
 
-    await expect(createLeashFetch(options)(`${origin}/ambiguous`)).rejects.toThrow();
+    await expect(createTabFetch(options)(`${origin}/ambiguous`)).rejects.toThrow();
     durableNow += 1_000;
-    await expect(createLeashFetch(options)(`${origin}/ambiguous`)).rejects.toMatchObject({
+    await expect(createTabFetch(options)(`${origin}/ambiguous`)).rejects.toMatchObject({
       code: "PAYMENT_ENVELOPE_CHAIN_STATE_UNRESOLVED",
     });
     expect(signRequests).toHaveLength(1);

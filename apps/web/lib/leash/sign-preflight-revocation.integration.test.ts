@@ -104,11 +104,11 @@ describe("revocation during the live-balance RPC gap", () => {
         receiptId: identity.receiptId,
         signerAvailable: true,
       }),
-    ).resolves.toMatchObject({ code: "INVALID_LEASH_KEY", kind: "failed" });
+    ).resolves.toMatchObject({ code: "INVALID_AGENT_KEY", kind: "failed" });
     const [stored] = await connection.db
       .select({ reason: receipts.reason, status: receipts.status })
       .from(receipts)
       .where(eq(receipts.id, identity.receiptId));
-    expect(stored).toEqual({ reason: "INVALID_LEASH_KEY", status: "failed" });
+    expect(stored).toEqual({ reason: "INVALID_AGENT_KEY", status: "failed" });
   });
 });

@@ -5,9 +5,9 @@
   justify-content: space-between;
   gap: 18px;
   padding: 12px 14px;
-  border: 1px solid #e8e6df;
+  border: 1px solid var(--tab-line);
   border-radius: 9px;
-  background: #fff;
+  background: var(--tab-surface);
 }
 
 .capMirror div {
@@ -23,7 +23,7 @@
 
 .capMirror span,
 .capMirror b {
-  color: #5f5d55;
+  color: var(--tab-text-muted);
   font-size: 11px;
 }
 
@@ -32,13 +32,13 @@
   height: 7px;
   overflow: hidden;
   border-radius: 999px;
-  background: #efede7;
+  background: var(--tab-canvas);
 }
 
 .capTrack i {
   display: block;
   height: 100%;
-  background: #206b4e;
+  background: var(--tab-status-success);
 }
 
 .limitAlert {
@@ -47,10 +47,10 @@
   justify-content: space-between;
   gap: 16px;
   padding: 12px 14px;
-  border: 1px solid #e8cf9f;
+  border: 1px solid color-mix(in srgb, var(--tab-mode-test) 30%, transparent);
   border-radius: 9px;
-  background: #fbf1dc;
-  color: #7a5410;
+  background: color-mix(in srgb, var(--tab-mode-test) 12%, transparent);
+  color: var(--tab-status-warning);
 }
 
 .limitAlert div {
@@ -71,8 +71,8 @@
   flex: 0 0 auto;
   padding: 7px 10px;
   border-radius: 7px;
-  background: #206b4e;
-  color: #fff;
+  background: var(--tab-status-success);
+  color: var(--tab-surface);
   font-size: 11px;
   font-weight: 700;
   text-decoration: none;

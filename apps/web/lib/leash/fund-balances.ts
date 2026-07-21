@@ -2,7 +2,7 @@ import {
   createUniversalAccountClient,
   type ParticleClientConfig,
   readAccountSnapshot,
-} from "@tab/sdk/ua";
+} from "@runtab/sdk/ua";
 
 import { readFloatBalance } from "./float-balance";
 import {

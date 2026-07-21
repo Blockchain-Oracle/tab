@@ -19,8 +19,8 @@ describe("GoLivePanel real readiness copy", () => {
       />,
     );
 
-    expect(html).not.toContain("You’re ready for Live mode");
-    expect(html).toContain("Live mode is enabled with setup remaining");
+    expect(html).not.toContain("You’re ready for Mainnet");
+    expect(html).toContain("Mainnet is enabled with setup remaining");
     expect(html.match(/Complete setup/g)).toHaveLength(3);
   });
 });

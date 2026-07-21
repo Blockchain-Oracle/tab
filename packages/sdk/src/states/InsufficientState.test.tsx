@@ -48,7 +48,7 @@ describe("InsufficientState test-mode funding", () => {
     expect(onRecheck).not.toHaveBeenCalled();
   });
 
-  it("keeps live mode on the manual add-funds path — no faucet offer", () => {
+  it("keeps Mainnet on the manual add-funds path — no faucet offer", () => {
     renderState({ mode: "live", onGetTestFunds: undefined });
     expect(screen.queryByText("Get free test funds")).toBeNull();
     expect(screen.getByRole("button", { name: "Add funds" })).toBeInTheDocument();

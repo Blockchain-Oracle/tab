@@ -113,6 +113,17 @@
   text-align: left;
 }
 
+.accountPopover .dangerAction {
+  color: var(--tab-status-danger);
+}
+
+.accountPopover .popoverNote {
+  color: var(--tab-text-muted);
+  font-size: 11px;
+  margin: 0;
+  padding: 0 9px 4px;
+}
+
 .accountPopover button:hover {
   background: color-mix(in srgb, var(--tab-text) 5%, transparent);
 }

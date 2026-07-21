@@ -4,10 +4,10 @@ import { record } from "./checkout-parsers";
 import { CheckoutApiError } from "./checkout-types";
 
 /**
- * Test-rail reads and grants. In test mode the checkout's money truth is
+ * Test-rail reads and grants. On Testnet the checkout's money truth is
  * the buyer's REAL Base Sepolia USDC — read on-chain by the Tab API — and
  * an empty wallet can claim starter test funds without leaving the flow.
- * None of this exists in live mode.
+ * None of this exists on Mainnet.
  */
 
 export type TestFundsLeg = {

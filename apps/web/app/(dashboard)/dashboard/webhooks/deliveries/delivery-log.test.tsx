@@ -107,7 +107,7 @@ describe("webhook delivery log client state", () => {
     expect(container.querySelector('[role="alert"]')).toBeNull();
   });
 
-  it("replaces test deliveries when refreshed props switch the client island to live mode", async () => {
+  it("replaces test deliveries when refreshed props switch the client island to Mainnet", async () => {
     await act(async () => {
       root.render(<DeliveryLog environment="test" initialDeliveries={[delivery("test")]} />);
     });

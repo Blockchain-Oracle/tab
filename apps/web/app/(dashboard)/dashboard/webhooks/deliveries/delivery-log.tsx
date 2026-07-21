@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
+import { CodeBlock } from "../../../../../components/code-block";
 import type { ApiEnvironment } from "../../../../../lib/auth/api-key";
 import type { DashboardWebhookDelivery } from "../../../../../lib/dashboard/webhooks-delivery-log";
 import {
@@ -139,18 +139,23 @@ function EnvironmentDeliveryLog({ initialDeliveries }: DeliveryLogProps) {
               <div className={styles.evidence}>
                 <div>
                   <h3>Request payload</h3>
-                  <pre>{prettyJson(delivery.request.body)}</pre>
+                  <CodeBlock code={prettyJson(delivery.request.body)} lang="json" />
                 </div>
                 <div className={styles.responseEvidence}>
                   <div>
                     <h3>
                       Response body <small>(first 500 characters)</small>
                     </h3>
-                    <pre>{delivery.response.bodySnippet ?? "No response body recorded."}</pre>
+                    <CodeBlock
+                      code={delivery.response.bodySnippet ?? "No response body recorded."}
+                    />
                   </div>
                   <div>
                     <h3>Request headers</h3>
-                    <pre>{`Content-Type: application/json\nX-Tab-Signature: ${delivery.request.signature ?? "Not signed"}`}</pre>
+                    <CodeBlock
+                      code={`Content-Type: application/json\nX-Tab-Signature: ${delivery.request.signature ?? "Not signed"}`}
+                      lang="http"
+                    />
                   </div>
                   <footer>
                     <span>

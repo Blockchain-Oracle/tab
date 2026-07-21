@@ -53,7 +53,7 @@ export function DashboardModeControl({ liveActivated, mode }: DashboardModeContr
 
   return (
     <section aria-label="Dashboard environment">
-      <div className={styles.modeLabel}>MODE</div>
+      <div className={styles.modeLabel}>NETWORK</div>
       <div className={styles.modeControl}>
         <button
           aria-pressed={mode === "test"}
@@ -62,7 +62,7 @@ export function DashboardModeControl({ liveActivated, mode }: DashboardModeContr
           onClick={() => changeMode("test")}
           type="button"
         >
-          TEST
+          TESTNET
         </button>
         <button
           aria-describedby={!liveActivated ? "live-mode-note" : undefined}
@@ -72,12 +72,12 @@ export function DashboardModeControl({ liveActivated, mode }: DashboardModeContr
           onClick={() => changeMode("live")}
           type="button"
         >
-          LIVE
+          MAINNET
         </button>
       </div>
       {!liveActivated ? (
         <p className={styles.modeNote} id="live-mode-note">
-          Complete Go Live setup before selecting production data.
+          Complete Go Live setup before switching to Mainnet.
         </p>
       ) : null}
       {error && !confirmLive ? (

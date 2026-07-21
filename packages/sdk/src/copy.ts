@@ -59,7 +59,7 @@ export const BUYER_COPY = {
     close: "Close — check receipts later",
     title: "Taking longer than expected",
   },
-  testMode: "Test mode — no real money moves",
+  testMode: "Testnet — no real money moves",
 } as const;
 
 export const buyerFormat = {

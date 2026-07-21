@@ -121,7 +121,7 @@
 .row code,
 .evidence code,
 .evidence pre {
-  font-family: var(--font-geist-mono), monospace;
+  margin: 7px 0 0;
 }
 
 .row > code:first-child {
@@ -188,8 +188,9 @@
   margin: 7px 0 0;
   padding: 12px 14px;
   border-radius: 9px;
-  background: var(--tab-action-hover);
-  color: var(--tab-line);
+  background: var(--tab-canvas);
+  border: 1px solid var(--tab-line);
+  color: var(--tab-text);
   font-size: 11px;
   line-height: 1.65;
   white-space: pre-wrap;

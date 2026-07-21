@@ -83,11 +83,15 @@
 [data-tab-shell-content] {
   display: flex;
   flex-direction: column;
+  /* Grid items default to min-height auto: without this, tall content grows
+     the column past the fixed frame and gets clipped instead of scrolling. */
+  min-height: 0;
   min-width: 0;
 }
 
 [data-tab-shell-main] {
   flex: 1;
+  min-height: 0;
   min-width: 0;
   outline: none;
   overflow-y: auto;

@@ -76,7 +76,9 @@ export function TransactionsTable({ rows, search }: TransactionsTableProps) {
                           {chainDisplay(row.tokenChainId).label}
                         </span>
                       </div>
-                      {row.env === "test" ? <span className={styles.testBadge}>TEST</span> : null}
+                      {row.env === "test" ? (
+                        <span className={styles.testBadge}>TESTNET</span>
+                      ) : null}
                     </div>
                   </td>
                   <td>

@@ -32,7 +32,7 @@ export type BuyerRuntime = BuyerWalletSession & { signer: PaymentSigner };
 export type AccountRuntime = {
   balanceUsd: number;
   depositAddress: string;
-  /** Null on the test rail — test mode never loads the Particle SDK. */
+  /** Null on the test rail — Testnet never loads the Particle SDK. */
   universalAccount: UniversalAccountPort | null;
 };
 

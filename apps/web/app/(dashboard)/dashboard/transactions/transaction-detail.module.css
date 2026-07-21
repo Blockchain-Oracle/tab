@@ -143,7 +143,7 @@
 .fullValue {
   display: block;
   overflow-wrap: anywhere;
-  color: var(--tab-action-hover);
+  color: var(--tab-text);
   font:
     11px / 1.5 var(--font-geist-mono),
     monospace;
@@ -167,7 +167,7 @@
 .evidenceField dd {
   overflow-wrap: anywhere;
   margin: 0;
-  color: var(--tab-action-hover);
+  color: var(--tab-text);
   font:
     11px / 1.45 var(--font-geist-mono),
     monospace;
@@ -218,16 +218,9 @@
 }
 
 .rawJson pre {
-  overflow-x: auto;
+  margin: 8px 0 0;
   max-height: 260px;
-  padding: 11px;
-  border-radius: 8px;
-  background: var(--tab-canvas);
-  color: var(--tab-action-hover);
-  font:
-    10.5px / 1.5 var(--font-geist-mono),
-    monospace;
-  white-space: pre-wrap;
+  overflow-y: auto;
 }
 
 .webhook,

@@ -1,3 +1,4 @@
+import { CodeBlock } from "../../../../components/code-block";
 import styles from "./webhook-verification-guide.module.css";
 
 export const WEBHOOK_SIGNATURE_HEADER_SHAPE =
@@ -44,7 +45,7 @@ export function WebhookVerificationGuide() {
         one-time <code>whsec_</code> signing secret.
       </p>
       <code className={styles.contract}>{WEBHOOK_SIGNATURE_HEADER_SHAPE}</code>
-      <pre>{WEBHOOK_VERIFIER_SNIPPET}</pre>
+      <CodeBlock code={WEBHOOK_VERIFIER_SNIPPET} lang="ts" />
       <h3>Payload and idempotency</h3>
       <code className={styles.contract}>{WEBHOOK_PAYMENT_PAYLOAD_SHAPE}</code>
       <p>{WEBHOOK_IDEMPOTENCY_GUIDANCE}</p>

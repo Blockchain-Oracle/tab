@@ -20,7 +20,7 @@ export const authCopy = {
     genericError: "Couldn’t create your account. Try again.",
     redirectBody: "Taking you to your Quickstart…",
     redirectTitle: "Account created",
-    subtitle: "Start accepting payments in test mode — no approval process, no forms.",
+    subtitle: "Start accepting payments on Testnet — no approval process, no forms.",
     title: "Create your Tab account",
   },
 } as const;

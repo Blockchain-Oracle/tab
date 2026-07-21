@@ -29,9 +29,10 @@ export function LiveModeDialog({ error, onCancel, onConfirm, switching }: LiveMo
       }}
       ref={dialogRef}
     >
-      <h2 id="live-mode-title">Switch to Live mode?</h2>
+      <h2 id="live-mode-title">Switch to Mainnet?</h2>
       <p>
-        Live payments move real funds and settle as USDC on Arbitrum One to your receiving address.
+        Mainnet payments move real funds and settle as USDC on Arbitrum One to your receiving
+        address.
       </p>
       {error ? (
         <p className={styles.error} role="alert">
@@ -48,7 +49,7 @@ export function LiveModeDialog({ error, onCancel, onConfirm, switching }: LiveMo
           onClick={onConfirm}
           type="button"
         >
-          {switching ? "Switching…" : "Switch to Live"}
+          {switching ? "Switching…" : "Switch to Mainnet"}
         </button>
       </div>
     </dialog>

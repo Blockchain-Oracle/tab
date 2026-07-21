@@ -48,7 +48,7 @@ export function GoLivePanel({
       if (!response.ok) throw new Error("Activation failed");
       router.refresh();
     } catch {
-      setError("Live mode was not enabled. Your dashboard remains safely in Test mode.");
+      setError("Mainnet was not enabled. Your dashboard remains safely on Testnet.");
     } finally {
       setBusy(false);
     }
@@ -60,14 +60,12 @@ export function GoLivePanel({
       <section className={styles.success}>
         <span aria-hidden="true">{readiness.ready ? "✓" : "!"}</span>
         <h1>
-          {readiness.ready
-            ? "You’re ready for Live mode"
-            : "Live mode is enabled with setup remaining"}
+          {readiness.ready ? "You’re ready for Mainnet" : "Mainnet is enabled with setup remaining"}
         </h1>
         <p>
           {readiness.ready
-            ? "All readiness checks are confirmed. Select LIVE in the sidebar when you want to view production data."
-            : "You acknowledged the missing checks when Live mode was enabled. No payment was created and no funds moved."}
+            ? "All readiness checks are confirmed. Select MAINNET in the sidebar when you want to view production data."
+            : "You acknowledged the missing checks when Mainnet was enabled. No payment was created and no funds moved."}
         </p>
         {!readiness.ready ? (
           <ul className={styles.activatedChecklist}>
@@ -88,10 +86,10 @@ export function GoLivePanel({
     <section className={styles.card}>
       <header>
         <span className={styles.eyebrow}>GO LIVE</span>
-        <h1>Enable live payments</h1>
+        <h1>Enable Mainnet payments</h1>
         <p>
           These checks come from your account records. Incomplete items are warnings, and enabling
-          Live mode never creates a payment or moves funds.
+          Mainnet never creates a payment or moves funds.
         </p>
       </header>
 
@@ -116,7 +114,7 @@ export function GoLivePanel({
             type="checkbox"
           />
           <span>
-            I understand the missing items above. Enable Live mode without marking them complete.
+            I understand the missing items above. Enable Mainnet without marking them complete.
           </span>
         </label>
       ) : null}
@@ -129,7 +127,7 @@ export function GoLivePanel({
           onClick={() => void activate()}
           type="button"
         >
-          {busy ? "Enabling…" : "Enable Live mode"}
+          {busy ? "Enabling…" : "Enable Mainnet"}
         </button>
       </footer>
     </section>

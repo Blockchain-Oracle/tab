@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
   const mode = typeof body === "object" && body !== null && "mode" in body ? body.mode : undefined;
   if (mode !== "test" && mode !== "live") {
-    return jsonError("INVALID_MODE", "Choose test or live mode.", 400);
+    return jsonError("INVALID_MODE", "Choose Testnet or Mainnet.", 400);
   }
 
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
@@ -50,11 +50,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (mode === "live" && !principal.liveActivatedAt) {
-    return jsonError(
-      "LIVE_NOT_ACTIVATED",
-      "Complete Go Live setup before selecting live mode.",
-      409,
-    );
+    return jsonError("LIVE_NOT_ACTIVATED", "Complete Go Live setup before selecting Mainnet.", 409);
   }
 
   const nextToken = await createSessionToken({

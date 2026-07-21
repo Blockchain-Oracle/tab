@@ -87,7 +87,7 @@ export function useCheckoutController(options: ControllerOptions) {
   const getTestFunds = useCallback(async () => {
     const buyer = model.buyer;
     if (!buyer || model.context?.mode !== "test") {
-      throw new Error("Test funds exist only in test mode.");
+      throw new Error("Test funds exist only on Testnet.");
     }
     return services.claimTestFunds({
       apiBaseUrl,

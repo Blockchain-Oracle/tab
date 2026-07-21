@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     );
     if (principal.env !== "test") {
       return withCors(
-        apiError("LIVE_MODE_NO_TEST_FUNDS", "Test funds are never granted in live mode.", 403),
+        apiError("LIVE_MODE_NO_TEST_FUNDS", "Test funds are never granted on Mainnet.", 403),
       );
     }
 

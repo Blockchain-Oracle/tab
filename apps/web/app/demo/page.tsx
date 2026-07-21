@@ -35,14 +35,14 @@ export default async function DemoPage() {
             <span aria-hidden="true">{merchant.businessName?.trim().charAt(0) || "T"}</span>
           )}
           <div>
-            <small>MERCHANT TEST PAGE</small>
+            <small>DEMO STOREFRONT</small>
             <h1>{merchant.businessName?.trim() || "Your store"}</h1>
           </div>
         </div>
 
         <div className={styles.product}>
           <div className={styles.productVisual} aria-hidden="true">
-            <span>TEST</span>
+            <span>TESTNET</span>
           </div>
           <div className={styles.productDetails}>
             <span className={styles.testBadge}>TEST PAYMENT</span>

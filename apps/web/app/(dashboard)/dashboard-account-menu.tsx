@@ -13,8 +13,27 @@ type DashboardAccountMenuProps = {
 export function DashboardAccountMenu({ businessName, email }: DashboardAccountMenuProps) {
   const [error, setError] = useState<string>();
   const [signingOut, setSigningOut] = useState(false);
+  const [switching, setSwitching] = useState(false);
   const accountName = businessName?.trim() || "Business name not set";
   const initial = (businessName?.trim() || email).charAt(0).toUpperCase();
+
+  async function switchWorkspace() {
+    if (switching || signingOut) return;
+    setSwitching(true);
+    setError(undefined);
+
+    try {
+      const response = await fetch("/api/workspace/switch", { method: "POST" });
+      const payload = (await response.json()) as { redirectTo?: string; message?: string };
+      if (!response.ok || !payload.redirectTo) {
+        throw new Error(payload.message ?? "Switch failed");
+      }
+      window.location.assign(payload.redirectTo);
+    } catch {
+      setError("Couldn’t switch workspaces. Try again.");
+      setSwitching(false);
+    }
+  }
 
   async function signOut() {
     if (signingOut) return;
@@ -47,7 +66,19 @@ export function DashboardAccountMenu({ businessName, email }: DashboardAccountMe
         </span>
       </summary>
       <div className={styles.accountPopover}>
-        <button disabled={signingOut} onClick={() => void signOut()} type="button">
+        <button
+          disabled={switching || signingOut}
+          onClick={() => void switchWorkspace()}
+          type="button"
+        >
+          {switching ? "Switching…" : "Switch to Agent workspace"}
+        </button>
+        <button
+          className={styles.dangerAction}
+          disabled={signingOut || switching}
+          onClick={() => void signOut()}
+          type="button"
+        >
           {signingOut ? "Signing out…" : "Sign out"}
         </button>
         {error ? <p role="alert">{error}</p> : null}

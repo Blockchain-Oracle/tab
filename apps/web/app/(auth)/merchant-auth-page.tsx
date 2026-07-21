@@ -32,10 +32,7 @@ export async function MerchantAuthPage({ flow }: { flow: AuthFlow }) {
   const configuration = authConfiguration();
 
   return (
-    <AuthSplitLayout
-      brandVariant="merchant"
-      footer="One account per merchant · Test mode by default"
-    >
+    <AuthSplitLayout brandVariant="merchant" footer="One account per merchant · Testnet by default">
       <MerchantAuthCard flow={flow} {...configuration} />
     </AuthSplitLayout>
   );

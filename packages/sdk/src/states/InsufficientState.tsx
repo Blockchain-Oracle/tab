@@ -10,7 +10,7 @@ type Props = {
   mode: "live" | "test";
   onAddFunds(): void;
   onCancel(): void;
-  /** Test mode only: claim starter Base Sepolia funds in-flow. */
+  /** Testnet only: claim starter Base Sepolia funds in-flow. */
   onGetTestFunds?: (() => Promise<TestFundsGrant>) | undefined;
   /** Called after a grant verifiably delivered USDC — recheck the balance. */
   onRecheck(): void;

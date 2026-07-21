@@ -74,11 +74,9 @@ export function useSilentResume({ enabled, onKnownEmail, publishableKey, verify 
 
   function dismiss() {
     abortRef.current?.abort();
-    try {
-      void getMagicClient(publishableKey).user.logout();
-    } catch {
-      // Dismiss must never surface an error; the form is shown regardless.
-    }
+    // Deliberately NOT logging out of Magic here: session persistence is a
+    // product decision (silent resume for dual-role users). Magic logout is
+    // reserved for a future explicit "Forget this device" action.
     setStatus("idle");
   }
 

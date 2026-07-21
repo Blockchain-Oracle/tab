@@ -69,7 +69,7 @@ export function DashboardShell({
       bannerSlot={
         mode === "test" ? (
           <div className={styles.testBanner} role="status">
-            Test mode — payments are simulated. No real funds move.
+            Testnet — sandbox funds, no real value. Mainnet stays locked until go-live.
           </div>
         ) : null
       }

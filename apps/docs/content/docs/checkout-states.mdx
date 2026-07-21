@@ -29,8 +29,8 @@ continues automatically — this is a real state, not a failure.
 
 ### Balance
 
-The buyer's balance is read for real — Base Sepolia USDC in test mode, the
-Universal Account total in live mode — and compared to the amount.
+The buyer's balance is read for real — Base Sepolia USDC on Testnet, the
+Universal Account total on Mainnet — and compared to the amount.
 
 ### Confirming → success
 
@@ -44,7 +44,7 @@ a receipt with a reference code and a stamped **402 → 200**.
 
 | State | When | What the buyer sees |
 | --- | --- | --- |
-| `insufficient` | Balance below amount | Exact shortfall; in test mode, an in-flow [test funds grant](/docs/test-funds) |
+| `insufficient` | Balance below amount | Exact shortfall; on Testnet, an in-flow [test funds grant](/docs/test-funds) |
 | `add-funds` | Buyer opts to top up | Their real deposit address + balance recheck |
 | `device-approval` | New device | "Approve from your inbox" — continues automatically |
 | `stuck` | Confirming exceeded 20s | "Still working — money may be in flight." Never claims failure while a transaction may exist |

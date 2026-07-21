@@ -30,15 +30,7 @@
 }
 
 .guide pre {
-  background: var(--tab-text);
-  border-radius: 10px;
-  color: var(--tab-line);
-  font-size: 12px;
-  line-height: 1.55;
   margin: 12px 0 0;
-  overflow-x: auto;
-  padding: 16px;
-  white-space: pre;
 }
 
 .contract {

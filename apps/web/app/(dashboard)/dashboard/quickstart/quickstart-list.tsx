@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { CodeBlock, type CodeLang } from "../../../../components/code-block";
 import styles from "./quickstart.module.css";
 
 type StepKey =
@@ -78,24 +79,27 @@ await tab.payments.list();
 function stepContent(key: StepKey, state: QuickstartState, appUrl: string) {
   const values: Record<
     StepKey,
-    { code?: string; description: string; href?: string; note?: string }
+    { code?: string; description: string; href?: string; lang?: CodeLang; note?: string }
   > = {
     install: {
       code: "npm install @runtab/sdk",
       description: "Add the checkout component to your merchant application.",
-      note: "Package publication is still blocked. Use the local workspace package until it is published.",
+      lang: "shell",
     },
     create_api_key: {
       code: tabServerSnippet(appUrl, state.maskedSecretKey),
+      lang: "ts",
       description: "Secret keys stay on your server and are shown only once.",
       href: "/dashboard/keys",
     },
     intent_endpoint: {
       code: `const response = await fetch("${appUrl}/api/v1/payment-intents", {\n  method: "POST",\n  headers: {\n    Authorization: \`Bearer \${process.env.TAB_SECRET_KEY}\`,\n    "Content-Type": "application/json"\n  },\n  body: JSON.stringify({ amount: "1.00", intentUrl: request.url })\n});\nreturn Response.json(await response.json(), { status: response.status });\n// Receiving address: ${state.receivingAddress ?? "not configured"}`,
+      lang: "ts",
       description: "Your server signs the amount and Tab derives the receiving address and asset.",
     },
     add_pay_button: {
       code: `<PayButton\n  apiBaseUrl="${appUrl}"\n  publishableKey="${state.publishableKey ?? "<YOUR_PUBLISHABLE_KEY>"}"\n  intentUrl="/api/demo/intent"\n  onSuccess={(transactionId, tokenChanges) =>\n    showOrderConfirmation(transactionId, tokenChanges)}\n/>`,
+      lang: "ts",
       description: "The component handles identity, balance, confirmation, and completion.",
     },
     configure_webhook: {
@@ -112,7 +116,7 @@ function stepContent(key: StepKey, state: QuickstartState, appUrl: string) {
       href: "/demo",
     },
     go_live: {
-      description: "Review the real readiness checks before enabling live mode.",
+      description: "Review the real readiness checks before enabling Mainnet.",
       href: "/dashboard/go-live",
       note: "Use a live secret key in production. Test keys never move real funds.",
     },
@@ -200,7 +204,9 @@ export function QuickstartList({ appUrl, state }: { appUrl: string; state: Quick
                   {!step.done && content.href ? <Link href={content.href}>Continue</Link> : null}
                 </div>
                 <p>{content.description}</p>
-                {content.code ? <pre>{content.code}</pre> : null}
+                {content.code ? (
+                  <CodeBlock code={content.code} lang={content.lang ?? "text"} />
+                ) : null}
                 {content.note ? <small>{content.note}</small> : null}
               </div>
             </li>

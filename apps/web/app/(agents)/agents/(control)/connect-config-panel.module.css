@@ -86,12 +86,4 @@
 
 .modes pre {
   margin: 9px 0 0;
-  padding: 13px;
-  overflow-x: auto;
-  border-radius: 9px;
-  background: var(--tab-action-hover);
-  color: var(--tab-line);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-  font-size: 11px;
-  line-height: 1.6;
 }

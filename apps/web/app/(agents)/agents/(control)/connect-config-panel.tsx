@@ -1,3 +1,4 @@
+import { CodeBlock } from "../../../../components/code-block";
 import { buildTabMcpConfiguration, LEASH_UPSTREAM_PLACEHOLDER } from "./connect-config";
 import styles from "./connect-config-panel.module.css";
 
@@ -41,9 +42,7 @@ export function ConnectConfigPanel({
               With no arguments, Agent exposes one <code>paid_fetch</code> tool for direct HTTP
               requests.
             </p>
-            <pre>
-              <code>{snippet(apiBaseUrl)}</code>
-            </pre>
+            <CodeBlock code={snippet(apiBaseUrl)} lang="json" />
           </article>
           <article>
             <h3>Proxy an existing MCP server</h3>
@@ -51,9 +50,7 @@ export function ConnectConfigPanel({
               Pass <code>--upstream</code> with your existing absolute Streamable HTTP MCP URL.
               Replace the explicit placeholder below before use.
             </p>
-            <pre>
-              <code>{snippet(apiBaseUrl, LEASH_UPSTREAM_PLACEHOLDER)}</code>
-            </pre>
+            <CodeBlock code={snippet(apiBaseUrl, LEASH_UPSTREAM_PLACEHOLDER)} lang="json" />
           </article>
         </div>
       )}

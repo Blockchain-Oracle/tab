@@ -52,7 +52,7 @@ never load it at all.
   ship goods from the signed webhook, which retries with backoff.
 - **Executed money is never silently unreported.** If the settlement report
   fails transiently, the SDK retries (1s / 4s / 10s) before surfacing state.
-- **Test mode is labeled.** Every test surface carries
+- **Testnet is labeled.** Every test surface carries
   "Sandbox funds — no real value", and test balances are real Base Sepolia
   USDC — see [Test funds](/docs/test-funds).
 

@@ -22,7 +22,7 @@ export function CheckoutStory() {
           <ul className="checkout-points">
             <li>Email + one-time code — nothing to install</li>
             <li>One balance across supported chains</li>
-            <li>Test mode is always labeled, never simulated</li>
+            <li>Testnet is always labeled, never simulated</li>
           </ul>
         </div>
 

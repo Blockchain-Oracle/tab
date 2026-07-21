@@ -1,0 +1,37 @@
+/* The one code-block treatment. Ink panel in dark mode (canvas = night),
+   paper panel in light mode — warm primary text in both. */
+.block {
+  margin: 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  border: 1px solid var(--tab-line);
+  border-radius: 9px;
+  background: var(--tab-canvas);
+  color: var(--tab-text);
+  font-family: var(--font-geist-mono, ui-monospace, "SFMono-Regular", Consolas, monospace);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+/* Evidence-ink syntax palette: nothing louder than the accent. */
+.kw {
+  color: var(--tab-accent);
+}
+
+.str {
+  color: var(--tab-status-success);
+}
+
+.num {
+  color: var(--tab-status-warning);
+}
+
+.key {
+  color: var(--tab-text);
+  font-weight: 600;
+}
+
+.cmt {
+  color: var(--tab-text-muted);
+}

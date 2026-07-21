@@ -25,7 +25,7 @@ export function OPTIONS() {
 
 /**
  * The test-mode checkout balance is the buyer's REAL Base Sepolia USDC —
- * read on-chain server-side. Test mode never shows a mainnet figure under
+ * read on-chain server-side. Testnet never shows a Mainnet figure under
  * a testnet label.
  */
 export async function GET(request: NextRequest) {
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     );
     if (principal.env !== "test") {
       return withCors(
-        apiError("LIVE_MODE_NO_TEST_BALANCE", "Test balances exist only in test mode.", 403),
+        apiError("LIVE_MODE_NO_TEST_BALANCE", "Test balances exist only on Testnet.", 403),
       );
     }
 

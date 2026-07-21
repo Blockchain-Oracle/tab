@@ -60,15 +60,15 @@ describe("dashboard transaction reality labels", () => {
     const liveHtml = renderToStaticMarkup(<TransactionsEmptyState mode="live" />);
 
     expect(testHtml).toContain("make a test payment");
-    expect(liveHtml).toContain("Verified live payments will appear here");
-    expect(liveHtml).toContain("Test payments stay in Test mode");
+    expect(liveHtml).toContain("Verified Mainnet payments will appear here");
+    expect(liveHtml).toContain("Testnet payments stay on Testnet");
     expect(liveHtml).not.toContain("make a test payment");
   });
 
   it("labels simulated test evidence without exposing payer email", () => {
     const html = renderToStaticMarkup(<TransactionsTable rows={[transaction()]} search={{}} />);
 
-    expect(html).toContain("TEST");
+    expect(html).toContain("TESTNET");
     expect(html).toContain("Sandbox simulation");
     expect(html).toContain("No delivery");
     expect(html).not.toContain("private-payer@example.test");
@@ -94,7 +94,7 @@ describe("dashboard transaction reality labels", () => {
     expect(html).toContain("Pending");
     expect(html).toContain("Unverified");
     expect(html).not.toContain("Sandbox simulation");
-    expect(html).not.toContain("TEST");
+    expect(html).not.toContain("TESTNET");
   });
 
   it("renders URL-backed filter controls and active values", () => {

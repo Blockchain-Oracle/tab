@@ -165,13 +165,14 @@
   margin-top: 14px;
   padding: 14px;
   border-radius: 9px;
-  background: var(--tab-action-hover);
+  background: var(--tab-canvas);
+  border: 1px solid var(--tab-line);
 }
 
 .secretBox code {
   min-width: 0;
   flex: 1;
-  color: var(--tab-line);
+  color: var(--tab-text);
   font-size: 12px;
   line-height: 1.6;
   overflow-wrap: anywhere;
@@ -181,7 +182,7 @@
   height: 30px;
   border: 0;
   background: rgb(255 255 255 / 10%);
-  color: var(--tab-line);
+  color: var(--tab-text);
 }
 
 .revealMeta {

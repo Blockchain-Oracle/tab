@@ -21,7 +21,7 @@ export function TransactionsEmptyState({ filtered = false, mode }: TransactionsE
           ? "No payments in this mode match all selected filters."
           : mode === "test"
             ? "Complete your integration and make a test payment — it will appear here."
-            : "Verified live payments will appear here. Test payments stay in Test mode."}
+            : "Verified Mainnet payments will appear here. Testnet payments stay on Testnet."}
       </p>
       <Link
         className={styles.primaryLink}

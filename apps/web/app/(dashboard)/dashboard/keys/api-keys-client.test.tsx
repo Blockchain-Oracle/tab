@@ -44,7 +44,7 @@ describe("API key environment state", () => {
     container.remove();
   });
 
-  it("replaces test rows when refreshed props switch the client island to live mode", async () => {
+  it("replaces test rows when refreshed props switch the client island to Mainnet", async () => {
     await act(async () => {
       root.render(<ApiKeysClient initialKeys={[key("test", "Test server")]} mode="test" />);
     });

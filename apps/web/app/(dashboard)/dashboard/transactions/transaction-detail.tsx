@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CodeBlock } from "../../../../components/code-block";
 import { chainDisplay } from "../../../../lib/payments/chain-display";
 import type { DashboardTransaction } from "../../../../lib/payments/dashboard-transactions";
 import {
@@ -96,7 +97,7 @@ export function TransactionDetail({ row, search }: TransactionDetailProps) {
             <div className={styles.titleLine}>
               <h2 id="transaction-detail-title">{formatUsd(row.amountUsd)}</h2>
               <span className={`${styles.status} ${styles[row.status]}`}>{row.status}</span>
-              {row.env === "test" ? <span className={styles.testBadge}>TEST</span> : null}
+              {row.env === "test" ? <span className={styles.testBadge}>TESTNET</span> : null}
             </div>
             <p>{row.refCode}</p>
           </div>
@@ -188,7 +189,7 @@ export function TransactionDetail({ row, search }: TransactionDetailProps) {
             <div className={styles.changes}>{structuredChanges(changes)}</div>
             <details className={styles.rawJson}>
               <summary>View raw JSON</summary>
-              <pre>{JSON.stringify(changes, null, 2)}</pre>
+              <CodeBlock code={JSON.stringify(changes, null, 2)} lang="json" />
             </details>
           </section>
 

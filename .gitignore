@@ -14,6 +14,8 @@ build/
 .turbo/
 .vercel/
 coverage/
+playwright-report/
+test-results/
 *.tsbuildinfo
 
 # OS / editor
@@ -22,3 +24,27 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+
+# fumadocs generated collections
+apps/docs/.source/
+
+# npm auth token — never commit
+.npmrc
+.vercel
+.env*
+
+# Agent/session working files — not part of the product
+AGENTS.md
+DESIGN.md
+PITCH-DECK-PROMPT.md
+instuctions.md
+.agents/
+.claude/
+.hotl/
+.playwright-mcp/
+/skills/
+skills-lock.json
+
+# Internal working docs + local media (product docs live in apps/docs)
+/docs/
+/media/

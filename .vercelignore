@@ -13,4 +13,4 @@ node_modules/
 .env.*
 apps/agent/
 apps/mobile/
-docs/
+/docs/

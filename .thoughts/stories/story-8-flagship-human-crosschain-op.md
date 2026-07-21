@@ -36,8 +36,8 @@ so that the resulting `transactionId` and Arbiscan-confirmed settlement demonstr
 
 ```
 Given the buyer has authenticated via Magic email OTP and `magic.user.getInfo()` has returned a public EOA address
-And that EOA holds a funded balance only on a non-Arbitrum chain (e.g., Base or Polygon), with zero settlement-token balance on Arbitrum One
-And a Particle UniversalAccount is constructed with `smartAccountOptions: { useEIP7702: true, ownerAddress: publicAddress, name: "UNIVERSAL", version: UNIVERSAL_ACCOUNT_VERSION }` and `tradeConfig: { universalGas: true }`
+And that EOA holds a funded balance only on a non-Arbitrum chain (e.g., Base), with zero settlement-token balance on Arbitrum One
+And a Particle UniversalAccount is constructed with `smartAccountOptions: { useEIP7702: true, ownerAddress: publicAddress, name: "UNIVERSAL", version: UNIVERSAL_ACCOUNT_VERSION }` (no `tradeConfig.universalGas` — removed in UA SDK V2; see Constraint 14)
 
 When `ua.createTransferTransaction({ token: { chainId: 42161, address: TOKEN }, amount, receiver: MERCHANT })` is called
 And the returned `tx.userOps` are iterated to collect each `userOp.eip7702Auth` not yet delegated, de-duped by nonce, into an `authorizations` array

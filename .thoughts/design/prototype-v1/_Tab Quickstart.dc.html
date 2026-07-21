@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes tq-shimmer{0%{background-position:-200px 0;}100%{background-position:200px 0;}}
+</style>
+</helmet>
+<div style="display:flex;width:100%;height:900px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="width:224px;flex:none;background:#F4F3EE;border-right:1px solid #E8E6DF;display:flex;flex-direction:column;padding:16px 12px 14px;">
+    <div style="display:flex;align-items:center;gap:9px;padding:4px 6px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#3B5BD9;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:13px;font-weight:700;">T</div>
+      <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em;">Tab</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-top:22px;">
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:#1C1B18;background:#E9E7E0;">Quickstart</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Transactions</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">API keys</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Webhooks</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Settings</div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#8C8A80;padding:0 6px;">MODE</div>
+    <div style="display:flex;background:#E9E7E0;border-radius:8px;padding:2px;margin-top:6px;">
+      <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,24,0.08);font-size:11.5px;font-weight:600;color:#96650F;">TEST</div>
+      <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:11.5px;font-weight:500;color:#8C8A80;cursor:pointer;">LIVE</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:6px;border-top:1px solid #E8E6DF;padding-top:12px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#F1EFE9;border:1px solid #E4E2DA;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">A</div>
+      <div style="min-width:0;">
+        <div style="font-size:12px;font-weight:600;line-height:1.2;white-space:nowrap;">Atlas Coffee Roasters</div>
+        <div style="font-size:10.5px;color:#8C8A80;white-space:nowrap;">dev@atlascoffee.com</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <div style="background:#FBF1DC;color:#7A5410;font-size:12px;padding:7px 28px;border-bottom:1px solid #F2E3C2;flex:none;">You are in test mode. Test payments are simulated and do not move real funds.</div>
+
+    <div style="flex:1;overflow:hidden;padding:24px 32px;">
+      <div style="max-width:760px;">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;">
+          <div style="font-size:19px;font-weight:600;letter-spacing:-0.01em;">Quickstart</div>
+          <div style="font-size:12px;color:#8C8A80;font-variant-numeric:tabular-nums;">{{ progressLabel }}</div>
+        </div>
+        <div style="font-size:13px;color:#5F5D55;margin-top:4px;">From install to your first settled payment. One action per step.</div>
+
+        <sc-if value="{{ showTestBanner }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:16px;background:#E8F3EC;border:1px solid #CBE5D4;border-radius:11px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:#FFFFFF;display:flex;align-items:center;justify-content:center;flex:none;">
+              <svg width="16" height="16" viewBox="0 0 24 24"><path d="M5 12.5l4.4 4.4L19 7.6" fill="none" stroke="#257A46" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:13.5px;font-weight:600;color:#1D6237;">Test payment received. Your integration is working.</div>
+              <div style="font-size:12px;color:#3E7052;margin-top:2px;">$12.00 from maya.chen@example.com · webhook delivered in 342ms</div>
+            </div>
+            <button style="height:34px;padding:0 14px;border:none;border-radius:8px;background:#257A46;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;flex:none;" style-hover="background:#1D6237;">Switch to Live mode</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:18px;">
+            <div style="height:76px;border-radius:12px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tq-shimmer 1.2s linear infinite;"></div>
+            <div style="height:76px;border-radius:12px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tq-shimmer 1.2s linear infinite;"></div>
+            <div style="height:76px;border-radius:12px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tq-shimmer 1.2s linear infinite;"></div>
+            <div style="height:76px;border-radius:12px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tq-shimmer 1.2s linear infinite;"></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showSteps }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:18px;">
+            <sc-for list="{{ steps }}" as="st" hint-placeholder-count="6">
+              <div style="display:flex;gap:14px;background:#FFFFFF;border:1px solid {{ st.border }};border-radius:12px;padding:16px 18px;">
+                <sc-if value="{{ st.done }}" hint-placeholder-val="{{ false }}">
+                  <div style="width:24px;height:24px;border-radius:50%;background:#E8F3EC;display:flex;align-items:center;justify-content:center;flex:none;margin-top:1px;">
+                    <svg width="12" height="12" viewBox="0 0 24 24"><path d="M5 12.5l4.4 4.4L19 7.6" fill="none" stroke="#257A46" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ st.activeMark }}" hint-placeholder-val="{{ false }}">
+                  <div style="width:24px;height:24px;border-radius:50%;background:#3B5BD9;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:none;margin-top:1px;">{{ st.n }}</div>
+                </sc-if>
+                <sc-if value="{{ st.pendingMark }}" hint-placeholder-val="{{ true }}">
+                  <div style="width:24px;height:24px;border-radius:50%;border:1.5px solid #DBD9D0;color:#8C8A80;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:none;margin-top:1px;">{{ st.n }}</div>
+                </sc-if>
+                <div style="flex:1;min-width:0;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                    <div style="font-size:14px;font-weight:600;letter-spacing:-0.005em;">{{ st.title }}</div>
+                    <sc-if value="{{ st.done }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:600;color:#257A46;">Done</span></sc-if>
+                    <sc-if value="{{ st.cta }}" hint-placeholder-val="{{ false }}"><button style="height:30px;padding:0 12px;border:none;border-radius:8px;background:#3B5BD9;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12px;font-weight:500;cursor:pointer;flex:none;" style-hover="background:#2E48B8;">{{ st.cta }}</button></sc-if>
+                  </div>
+                  <sc-if value="{{ st.desc }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:12.5px;line-height:1.5;color:#5F5D55;margin-top:3px;">{{ st.desc }}</div>
+                  </sc-if>
+                  <sc-if value="{{ st.code }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:relative;margin-top:10px;background:#26251F;border-radius:9px;padding:12px 14px;">
+                      <div style="font-family:'Geist Mono',monospace;font-size:11.5px;line-height:1.65;color:#E4E2D8;white-space:pre;overflow-x:auto;">{{ st.code }}</div>
+                      <div style="position:absolute;top:8px;right:8px;font-size:10.5px;font-weight:500;color:#B4B2A8;background:rgba(255,255,255,0.08);border-radius:6px;padding:3px 8px;cursor:pointer;" style-hover="background:rgba(255,255,255,0.16);color:#FFFFFF;">Copy</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ st.note }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:9px;font-size:11.5px;color:#96650F;background:#FBF1DC;border-radius:7px;padding:7px 10px;display:inline-block;">{{ st.note }}</div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;empty&quot;,&quot;options&quot;:[&quot;loading&quot;,&quot;empty&quot;,&quot;key_created&quot;,&quot;steps_progress&quot;,&quot;first_payment&quot;,&quot;live_migration&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Quickstart&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'empty';
+    // doneCount per state
+    const doneMap = { loading: 0, empty: 0, key_created: 2, steps_progress: 4, first_payment: 6, live_migration: 6 };
+    const done = doneMap[s] ?? 0;
+
+    const keyLine = done >= 2 ? 'const tab = new Tab("sk_test_\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022a3f9");' : 'const tab = new Tab("<YOUR_API_KEY>");';
+
+    const defs = [
+      { title: 'Install', code: 'npm install @tab/sdk' },
+      { title: 'Create your API key', desc: 'Secret keys are shown once. You’ll paste it into your server environment.', cta: done >= 2 ? null : 'Create API key', code: keyLine },
+      { title: 'Create your intent endpoint', desc: 'Your server pins the amount and receiving address. Buyers can’t modify it.', code: '// app/api/tab/intent/route.ts\nexport async function GET() {\n  return Response.json({\n    amount: "12.00",\n    currency: "USD",\n    receiver: "0x1a2b...cd9e",\n    token: { chainId: 42161, address: USDC_ARBITRUM }\n  });\n}' },
+      { title: 'Add the pay button', desc: 'One component. It handles auth, balance, confirmation, and success.', code: '<PayButton\n  intentUrl="/api/tab/intent"\n  onSuccess={(transactionId, tokenChanges) =>\n    showOrderConfirmation(transactionId)}\n/>' },
+      { title: 'Configure your webhook', desc: 'The webhook is your fulfillment signal — onSuccess alone is not reliable.', cta: done >= 5 ? null : (done === 4 ? 'Add webhook URL' : null), code: 'POST https://api.atlascoffee.com/webhooks/tab\n{ "transactionId": "0x8f2e...1b7d", "tokenChanges": [...] }' },
+      { title: 'Test it', desc: 'Complete a $12.00 payment on your demo page. We’ll detect it automatically.', cta: done === 5 ? 'Open demo page' : null }
+    ];
+
+    const steps = defs.map((d, i) => {
+      const isDone = i < done;
+      const isActive = i === done && s !== 'first_payment' && s !== 'live_migration';
+      return {
+        n: String(i + 1),
+        title: d.title,
+        desc: d.desc || false,
+        code: d.code || false,
+        cta: (isActive && d.cta) ? d.cta : false,
+        done: isDone,
+        activeMark: isActive,
+        pendingMark: !isDone && !isActive,
+        border: isActive ? '#C9D5F4' : '#E8E6DF',
+        note: false
+      };
+    });
+
+    if (s === 'live_migration') {
+      steps.push({
+        n: '7', title: 'Go live', desc: 'Real payments settle to your receiving address as USDC on Arbitrum One.',
+        cta: 'Switch to Live mode', code: false, done: false, activeMark: true, pendingMark: false,
+        border: '#C9D5F4',
+        note: 'Reminder: swap sk_test_ for your live key in production. Test keys never move real funds.'
+      });
+    }
+
+    return {
+      steps,
+      isLoading: s === 'loading',
+      showSteps: s !== 'loading',
+      showTestBanner: s === 'first_payment' || s === 'live_migration',
+      progressLabel: s === 'loading' ? '' : (Math.min(done, 6)) + ' of 6 steps complete'
+    };
+  }
+}
+</script>
+</body>
+</html>

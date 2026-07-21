@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes tk-spin{to{transform:rotate(360deg);}}
+@keyframes tk-shimmer{0%{background-position:-200px 0;}100%{background-position:200px 0;}}
+</style>
+</helmet>
+<div style="position:relative;display:flex;width:100%;height:900px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="width:224px;flex:none;background:#F4F3EE;border-right:1px solid #E8E6DF;display:flex;flex-direction:column;padding:16px 12px 14px;">
+    <div style="display:flex;align-items:center;gap:9px;padding:4px 6px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#3B5BD9;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:13px;font-weight:700;">T</div>
+      <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em;">Tab</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-top:22px;">
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Quickstart</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Transactions</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:#1C1B18;background:#E9E7E0;">API keys</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Webhooks</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Settings</div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#8C8A80;padding:0 6px;">MODE</div>
+    <sc-if value="{{ isTest }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;background:#E9E7E0;border-radius:8px;padding:2px;margin-top:6px;">
+        <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,24,0.08);font-size:11.5px;font-weight:600;color:#96650F;">TEST</div>
+        <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:11.5px;font-weight:500;color:#8C8A80;cursor:pointer;">LIVE</div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ isLive }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;background:#E9E7E0;border-radius:8px;padding:2px;margin-top:6px;">
+        <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:11.5px;font-weight:500;color:#8C8A80;cursor:pointer;">TEST</div>
+        <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,24,0.08);font-size:11.5px;font-weight:600;color:#257A46;">LIVE</div>
+      </div>
+    </sc-if>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:6px;border-top:1px solid #E8E6DF;padding-top:12px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#F1EFE9;border:1px solid #E4E2DA;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">A</div>
+      <div style="min-width:0;">
+        <div style="font-size:12px;font-weight:600;line-height:1.2;white-space:nowrap;">Atlas Coffee Roasters</div>
+        <div style="font-size:10.5px;color:#8C8A80;white-space:nowrap;">dev@atlascoffee.com</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <sc-if value="{{ isTest }}" hint-placeholder-val="{{ true }}">
+      <div style="background:#FBF1DC;color:#7A5410;font-size:12px;padding:7px 28px;border-bottom:1px solid #F2E3C2;flex:none;">You are in test mode. Test payments are simulated and do not move real funds.</div>
+    </sc-if>
+
+    <div style="padding:24px 32px 0;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:19px;font-weight:600;letter-spacing:-0.01em;">API keys</div>
+        <div style="font-size:12.5px;color:#5F5D55;margin-top:3px;">Publishable keys are safe in browser code. Secret keys stay on your server — shown once, never again.</div>
+      </div>
+      <button style="height:36px;padding:0 14px;border:none;border-radius:9px;background:#3B5BD9;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#2E48B8;">Create key</button>
+    </div>
+
+    <div style="padding:18px 32px;">
+
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:64px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#F5F4F0;display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="10" r="3.6" stroke="#8C8A80" stroke-width="1.6"></circle><path d="M10.6 10h7M15 10v3M17.6 10v2" stroke="#8C8A80" stroke-width="1.6" stroke-linecap="round"></path></svg>
+          </div>
+          <div style="font-size:14.5px;font-weight:600;margin-top:14px;">No API keys</div>
+          <div style="font-size:12.5px;color:#5F5D55;margin-top:4px;">Create your first key to start integrating.</div>
+          <button style="height:34px;padding:0 14px;margin-top:16px;border:none;border-radius:9px;background:#3B5BD9;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#2E48B8;">Create key</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLoadingTable }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+          <div style="height:16px;border-radius:6px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tk-shimmer 1.2s linear infinite;"></div>
+          <div style="height:38px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tk-shimmer 1.2s linear infinite;"></div>
+          <div style="height:38px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tk-shimmer 1.2s linear infinite;"></div>
+          <div style="height:38px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tk-shimmer 1.2s linear infinite;"></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isFetchError }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:56px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#FAECEC;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;color:#B4383D;">!</div>
+          <div style="font-size:14px;font-weight:600;margin-top:14px;">Unable to load API keys</div>
+          <div style="font-size:12.5px;color:#5F5D55;margin-top:4px;">Try refreshing.</div>
+          <button style="height:32px;padding:0 14px;margin-top:14px;border:1px solid #DBD9D0;border-radius:8px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12px;font-weight:500;cursor:pointer;" style-hover="background:#F8F7F4;">Retry</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showTable }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:1.1fr 1.7fr 0.9fr 1fr 0.9fr 1fr 130px;gap:12px;padding:10px 18px;border-bottom:1px solid #F0EEE8;font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">
+            <div>NAME</div><div>TOKEN</div><div>TYPE</div><div>PERMISSIONS</div><div>ENV</div><div>CREATED · LAST USED</div><div></div>
+          </div>
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="2">
+            <div style="display:grid;grid-template-columns:1.1fr 1.7fr 0.9fr 1fr 0.9fr 1fr 130px;gap:12px;padding:13px 18px;border-bottom:1px solid #F5F4F0;align-items:center;background:{{ r.bg }};">
+              <div style="font-size:13px;font-weight:500;">{{ r.name }}</div>
+              <div style="font-family:'Geist Mono',monospace;font-size:12px;color:#5F5D55;">{{ r.token }}</div>
+              <div style="font-size:12px;color:#5F5D55;">{{ r.type }}</div>
+              <div style="font-size:12px;color:#5F5D55;">{{ r.perm }}</div>
+              <div><span style="display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:0.03em;padding:2px 7px;border-radius:999px;background:{{ r.envBg }};color:{{ r.envColor }};">{{ r.env }}</span></div>
+              <div style="font-size:11.5px;color:#8C8A80;">{{ r.dates }}</div>
+              <div style="display:flex;gap:10px;justify-content:flex-end;font-size:12px;font-weight:500;color:#5F5D55;">
+                <span style="cursor:pointer;" style-hover="color:#1C1B18;">Rotate</span>
+                <span style="cursor:pointer;color:#B4383D;" style-hover="color:#8E2F34;">Delete</span>
+              </div>
+            </div>
+          </sc-for>
+          <div style="padding:10px 18px;font-size:11.5px;color:#8C8A80;">Secret keys can’t be revealed after creation — rotate instead.</div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(28,27,24,0.42);"></div>
+
+    <sc-if value="{{ isCreateModal }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;left:50%;top:200px;transform:translateX(-50%);width:440px;background:#FFFFFF;border-radius:14px;box-shadow:0 24px 64px rgba(28,27,24,0.3);padding:24px;">
+        <div style="font-size:16px;font-weight:600;letter-spacing:-0.01em;">Create API key</div>
+        <sc-if value="{{ createError }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px;border-radius:9px;padding:9px 12px;font-size:12.5px;background:#FAECEC;color:#8E2F34;">Unable to create key. Try again.</div>
+        </sc-if>
+        <div style="margin-top:16px;">
+          <div style="font-size:12px;font-weight:500;color:#5F5D55;margin-bottom:6px;">Key name <span style="font-weight:400;color:#8C8A80;">(optional)</span></div>
+          <div style="height:40px;border:1px solid #DBD9D0;border-radius:9px;display:flex;align-items:center;padding:0 12px;font-size:13px;background:{{ fieldBg }};color:#1C1B18;">CI deploy key</div>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="font-size:12px;font-weight:500;color:#5F5D55;margin-bottom:6px;">Permissions</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:flex-start;gap:9px;border:1.5px solid #3B5BD9;border-radius:9px;padding:10px 12px;background:#F7F9FE;">
+              <div style="width:14px;height:14px;border-radius:50%;border:4.5px solid #3B5BD9;background:#FFFFFF;flex:none;margin-top:1px;"></div>
+              <div><div style="font-size:12.5px;font-weight:600;">Full access</div><div style="font-size:11.5px;color:#5F5D55;margin-top:1px;">Read and write everything via the API.</div></div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:9px;border:1px solid #E8E6DF;border-radius:9px;padding:10px 12px;">
+              <div style="width:14px;height:14px;border-radius:50%;border:1.5px solid #B4B2A8;background:#FFFFFF;flex:none;margin-top:1px;"></div>
+              <div><div style="font-size:12.5px;font-weight:600;color:#5F5D55;">Sending access</div><div style="font-size:11.5px;color:#8C8A80;margin-top:1px;">Create intents and read transactions only.</div></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:9px;margin-top:20px;">
+          <button style="height:36px;padding:0 14px;border:1px solid #DBD9D0;border-radius:9px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#F8F7F4;">Cancel</button>
+          <sc-if value="{{ creating }}" hint-placeholder-val="{{ false }}">
+            <button disabled="{{ true }}" style="height:36px;padding:0 14px;border:none;border-radius:9px;background:#3B5BD9;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:8px;opacity:0.85;cursor:default;">{{ spinnerWhite }}<span>Creating…</span></button>
+          </sc-if>
+          <sc-if value="{{ notCreating }}" hint-placeholder-val="{{ true }}">
+            <button style="height:36px;padding:0 14px;border:none;border-radius:9px;background:#3B5BD9;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#2E48B8;">Create key</button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isRevealModal }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;left:50%;top:190px;transform:translateX(-50%);width:480px;background:#FFFFFF;border-radius:14px;box-shadow:0 24px 64px rgba(28,27,24,0.3);padding:24px;">
+        <div style="font-size:16px;font-weight:600;letter-spacing:-0.01em;">Your new secret key</div>
+        <div style="margin-top:12px;border-radius:9px;padding:10px 13px;font-size:12.5px;line-height:1.5;background:#FBF1DC;color:#7A5410;border:1px solid #F2E3C2;">For security reasons, you can only view this key once. Save it to a secure location before closing this dialog.</div>
+        <div style="margin-top:14px;background:#26251F;border-radius:9px;padding:14px;display:flex;align-items:center;gap:12px;">
+          <div style="flex:1;font-family:'Geist Mono',monospace;font-size:12.5px;line-height:1.6;color:#E4E2D8;word-break:break-all;">sk_test_9wKpQ2vR8xL3nT6jD4hF1gS5aE0cV7bN2uM9yH8k4a3f9</div>
+          <sc-if value="{{ copied }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:none;font-size:11.5px;font-weight:600;color:#7BC297;background:rgba(37,122,70,0.25);border-radius:7px;padding:5px 10px;">Copied!</div>
+          </sc-if>
+          <sc-if value="{{ notCopied }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:none;font-size:11.5px;font-weight:500;color:#E4E2D8;background:rgba(255,255,255,0.1);border-radius:7px;padding:5px 10px;cursor:pointer;" style-hover="background:rgba(255,255,255,0.18);">Copy</div>
+          </sc-if>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+          <div style="font-size:11.5px;color:#8C8A80;">CI deploy key · Sending access · TEST</div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+          <button style="height:36px;padding:0 16px;border:none;border-radius:9px;background:#1C1B18;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#33312C;">I’ve saved my key</button>
+        </div>
+      </div>
+    </sc-if>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;list&quot;,&quot;options&quot;:[&quot;empty&quot;,&quot;loading&quot;,&quot;list&quot;,&quot;live&quot;,&quot;fetch_error&quot;,&quot;create&quot;,&quot;creating&quot;,&quot;create_error&quot;,&quot;reveal&quot;,&quot;reveal_copied&quot;,&quot;reveal_closed&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;API keys&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'list';
+    const R = React;
+    const spinnerWhite = R.createElement('span', { style: { width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.35)', borderTopColor: '#FFFFFF', display: 'inline-block', animation: 'tk-spin 0.8s linear infinite', flex: 'none' } });
+
+    const isLive = s === 'live';
+    const testEnv = { env: 'TEST', envBg: '#FBF1DC', envColor: '#96650F' };
+    const liveEnv = { env: 'LIVE', envBg: '#E8F3EC', envColor: '#257A46' };
+
+    let rows = [
+      Object.assign({ name: 'Server key', token: 'sk_test_\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022a3f9', type: 'Secret', perm: 'Full access', dates: 'Jul 2, 2026 · 2 min ago', bg: '#FFFFFF' }, testEnv),
+      Object.assign({ name: 'Storefront', token: 'pk_test_\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022d114', type: 'Publishable', perm: '—', dates: 'Jul 2, 2026 · 14 min ago', bg: '#FFFFFF' }, testEnv)
+    ];
+    if (isLive) {
+      rows = [
+        Object.assign({ name: 'Server key', token: 'sk_live_\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022b7c2', type: 'Secret', perm: 'Full access', dates: 'Jul 2, 2026 · Never', bg: '#FFFFFF' }, liveEnv),
+        Object.assign({ name: 'Storefront', token: 'pk_live_\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022m3x8', type: 'Publishable', perm: '—', dates: 'Jul 2, 2026 · Never', bg: '#FFFFFF' }, liveEnv)
+      ];
+    }
+    if (s === 'reveal_closed') {
+      rows = [Object.assign({ name: 'CI deploy key', token: 'sk_test_\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022f9q2', type: 'Secret', perm: 'Sending access', dates: 'Just now · Never', bg: '#F7F9FE' }, testEnv)].concat(rows);
+    }
+
+    const modalStates = ['create', 'creating', 'create_error', 'reveal', 'reveal_copied'];
+    return {
+      spinnerWhite,
+      rows,
+      isTest: !isLive,
+      isLive,
+      isEmpty: s === 'empty',
+      isLoadingTable: s === 'loading',
+      isFetchError: s === 'fetch_error',
+      showTable: !['empty', 'loading', 'fetch_error'].includes(s),
+      modalOpen: modalStates.includes(s),
+      isCreateModal: s === 'create' || s === 'creating' || s === 'create_error',
+      isRevealModal: s === 'reveal' || s === 'reveal_copied',
+      creating: s === 'creating',
+      notCreating: s !== 'creating',
+      createError: s === 'create_error',
+      copied: s === 'reveal_copied',
+      notCopied: s !== 'reveal_copied',
+      fieldBg: s === 'creating' ? '#F8F7F4' : '#FFFFFF'
+    };
+  }
+}
+</script>
+</body>
+</html>

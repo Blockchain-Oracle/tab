@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes tl-spin{to{transform:rotate(360deg);}}
+@keyframes tl-shimmer{0%{background-position:-200px 0;}100%{background-position:200px 0;}}
+</style>
+</helmet>
+<div style="position:relative;display:flex;width:100%;height:900px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="width:224px;flex:none;background:#F4F3EE;border-right:1px solid #E8E6DF;display:flex;flex-direction:column;padding:16px 12px 14px;">
+    <div style="display:flex;align-items:center;gap:9px;padding:4px 6px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#3B5BD9;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:13px;font-weight:700;">T</div>
+      <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em;">Tab</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-top:22px;">
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Quickstart</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Transactions</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">API keys</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:#1C1B18;background:#E9E7E0;">Webhooks</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Settings</div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#8C8A80;padding:0 6px;">MODE</div>
+    <div style="display:flex;background:#E9E7E0;border-radius:8px;padding:2px;margin-top:6px;">
+      <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,24,0.08);font-size:11.5px;font-weight:600;color:#96650F;">TEST</div>
+      <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:11.5px;font-weight:500;color:#8C8A80;cursor:pointer;">LIVE</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:6px;border-top:1px solid #E8E6DF;padding-top:12px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#F1EFE9;border:1px solid #E4E2DA;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">A</div>
+      <div style="min-width:0;">
+        <div style="font-size:12px;font-weight:600;line-height:1.2;white-space:nowrap;">Atlas Coffee Roasters</div>
+        <div style="font-size:10.5px;color:#8C8A80;white-space:nowrap;">dev@atlascoffee.com</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <div style="background:#FBF1DC;color:#7A5410;font-size:12px;padding:7px 28px;border-bottom:1px solid #F2E3C2;flex:none;">You are in test mode. Test payments are simulated and do not move real funds.</div>
+
+    <div style="padding:24px 32px 0;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#8C8A80;"><span style="cursor:pointer;" style-hover="color:#1C1B18;">Webhooks</span><span>›</span><span style="color:#1C1B18;font-weight:500;">Delivery log</span></div>
+        <div style="font-size:19px;font-weight:600;letter-spacing:-0.01em;margin-top:4px;">Webhook delivery log</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button style="height:34px;padding:0 12px;border:1px solid #DBD9D0;border-radius:8px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#F8F7F4;">Filter status</button>
+      </div>
+    </div>
+
+    <div style="padding:18px 32px 24px;">
+
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:70px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#F5F4F0;display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 12h4l2.5-6 3 12 2.5-6h4" stroke="#B4B2A8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+          <div style="font-size:14px;font-weight:600;margin-top:14px;">No webhook deliveries yet</div>
+          <div style="font-size:12.5px;color:#5F5D55;margin-top:4px;">Deliveries appear here the moment a payment settles.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+          <div style="height:16px;border-radius:6px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tl-shimmer 1.2s linear infinite;"></div>
+          <div style="height:40px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tl-shimmer 1.2s linear infinite;"></div>
+          <div style="height:40px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tl-shimmer 1.2s linear infinite;"></div>
+          <div style="height:40px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tl-shimmer 1.2s linear infinite;"></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isFetchError }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:64px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#FAECEC;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;color:#B4383D;">!</div>
+          <div style="font-size:14px;font-weight:600;margin-top:14px;">Unable to load webhook log</div>
+          <div style="font-size:12.5px;color:#5F5D55;margin-top:4px;">Try refreshing.</div>
+          <button style="height:32px;padding:0 14px;margin-top:14px;border:1px solid #DBD9D0;border-radius:8px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12px;font-weight:500;cursor:pointer;" style-hover="background:#F8F7F4;">Retry</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showTable }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:100px 1.2fr 1.2fr 1.3fr 0.9fr;gap:12px;padding:10px 18px;border-bottom:1px solid #F0EEE8;font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">
+            <div>STATUS</div><div>RESULT</div><div>TRANSACTIONID</div><div>ATTEMPT</div><div style="text-align:right;">WHEN</div>
+          </div>
+
+          <sc-for list="{{ rows }}" as="d" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:100px 1.2fr 1.2fr 1.3fr 0.9fr;gap:12px;padding:12px 18px;border-bottom:1px solid #F5F4F0;align-items:center;cursor:pointer;" style-hover="background:#FBFAF7;">
+              <div style="display:flex;align-items:center;gap:7px;">
+                <span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;color:{{ d.codeColor }};">{{ d.code }}</span>
+                <sc-if value="{{ d.retrying }}" hint-placeholder-val="{{ false }}">{{ spinnerInk }}</sc-if>
+              </div>
+              <div style="font-size:12.5px;font-weight:500;color:{{ d.labelColor }};">{{ d.label }}</div>
+              <div style="font-family:'Geist Mono',monospace;font-size:11.5px;color:#3B5BD9;">{{ d.tx }}</div>
+              <div style="font-size:11.5px;color:#8C8A80;">{{ d.attempt }}</div>
+              <div style="font-size:11.5px;color:#8C8A80;text-align:right;" title="{{ d.iso }}">{{ d.when }}</div>
+            </div>
+          </sc-for>
+
+          <sc-if value="{{ showExpanded }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#FBFAF7;border-bottom:1px solid #F0EEE8;padding:16px 18px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">REQUEST PAYLOAD</div>
+                    <span style="font-size:11px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="color:#1C1B18;">Copy</span>
+                  </div>
+                  <div style="margin-top:7px;background:#26251F;border-radius:9px;padding:12px 14px;font-family:'Geist Mono',monospace;font-size:11px;line-height:1.7;color:#E4E2D8;white-space:pre;overflow-x:auto;">{{ payloadJson }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                  <div>
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">RESPONSE BODY <span style="font-weight:400;">(first 500 chars)</span></div>
+                    <div style="margin-top:7px;background:#FFFFFF;border:1px solid #EFEDE7;border-radius:9px;padding:10px 12px;font-family:'Geist Mono',monospace;font-size:11px;line-height:1.6;color:#5F5D55;">{"ok":true,"received":"0x8f2e…1b7d"}</div>
+                  </div>
+                  <div>
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">HEADERS <span style="font-weight:400;cursor:pointer;color:#3B5BD9;">▸ expand</span></div>
+                    <div style="margin-top:7px;font-family:'Geist Mono',monospace;font-size:11px;line-height:1.7;color:#5F5D55;">Content-Type: application/json<br>X-Tab-Signature: t=1783088581,v1=5f2a…9c4d</div>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <div style="font-size:11.5px;color:#8C8A80;">Response time: <span style="font-family:'Geist Mono',monospace;color:#1C1B18;">342ms</span></div>
+                    <button style="height:28px;padding:0 12px;border:1px solid #DBD9D0;border-radius:7px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:11.5px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#F8F7F4;">Resend delivery</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 18px;">
+            <span style="font-size:11.5px;color:#8C8A80;">6 deliveries · retries use exponential backoff, max 3 attempts</span>
+            <div style="display:flex;gap:8px;">
+              <button disabled="{{ true }}" style="height:28px;padding:0 11px;border:1px solid #E8E6DF;border-radius:7px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:11.5px;font-weight:500;color:#B4B2A8;cursor:not-allowed;">Previous</button>
+              <button style="height:28px;padding:0 11px;border:1px solid #DBD9D0;border-radius:7px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:11.5px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#F8F7F4;">Next</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;populated&quot;,&quot;options&quot;:[&quot;empty&quot;,&quot;loading&quot;,&quot;populated&quot;,&quot;expanded&quot;,&quot;retrying&quot;,&quot;fetch_error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Delivery log&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'populated';
+    const R = React;
+    const spinnerInk = R.createElement('span', { style: { width: 11, height: 11, borderRadius: '50%', border: '2px solid rgba(28,27,24,0.12)', borderTopColor: '#96650F', display: 'inline-block', animation: 'tl-spin 0.8s linear infinite', flex: 'none' } });
+
+    const base = [
+      { code: '200', codeColor: '#257A46', label: 'Delivered', labelColor: '#257A46', tx: '0x8f2e…1b7d', attempt: 'Attempt 1 of 3 · 342ms', when: '2 min ago', iso: '2026-07-02T14:23:02Z', retrying: false },
+      { code: '200', codeColor: '#257A46', label: 'Delivered', labelColor: '#257A46', tx: '0x4b7c…e29a', attempt: 'Attempt 1 of 3 · 301ms', when: '38 min ago', iso: '2026-07-02T13:47:20Z', retrying: false },
+      { code: '500', codeColor: '#B4383D', label: s === 'retrying' ? 'Retrying (attempt 2 of 3)' : 'Failed', labelColor: s === 'retrying' ? '#96650F' : '#B4383D', tx: '0x5e4f…c810', attempt: s === 'retrying' ? 'Next retry in 4 min' : 'Attempt 2 of 3', when: '5 hr ago', iso: '2026-07-02T09:14:40Z', retrying: s === 'retrying' },
+      { code: '404', codeColor: '#B4383D', label: 'Failed', labelColor: '#B4383D', tx: '0x7d1b…a93c', attempt: 'Attempt 3 of 3 · gave up', when: '1 day ago', iso: '2026-07-01T16:42:07Z', retrying: false },
+      { code: 'TIMEOUT', codeColor: '#B4383D', label: 'Timeout', labelColor: '#B4383D', tx: '0x9b3d…f7a1', attempt: 'Attempt 3 of 3 · gave up', when: '1 day ago', iso: '2026-07-01T10:08:50Z', retrying: false },
+      { code: '200', codeColor: '#257A46', label: 'Delivered', labelColor: '#257A46', tx: '0x2a6c…9d5e', attempt: 'Attempt 1 of 3 · 289ms', when: '1 day ago', iso: '2026-07-01T10:08:49Z', retrying: false }
+    ];
+
+    let rows = base;
+    if (s === 'expanded') rows = base.slice(0, 1);
+
+    return {
+      spinnerInk,
+      rows,
+      isEmpty: s === 'empty',
+      isLoading: s === 'loading',
+      isFetchError: s === 'fetch_error',
+      showTable: !['empty', 'loading', 'fetch_error'].includes(s),
+      showExpanded: s === 'expanded',
+      payloadJson: '{\n  "transactionId": "0x8f2e...1b7d",\n  "tokenChanges": [{\n    "token": "0xaf88...5831",\n    "chainId": 42161,\n    "amount": "12000000",\n    "receiver": "0x1a2b...cd9e"\n  }]\n}'
+    };
+  }
+}
+</script>
+</body>
+</html>

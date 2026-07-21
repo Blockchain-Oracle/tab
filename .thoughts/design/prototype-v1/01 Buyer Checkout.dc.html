@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#EDEBE4;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}</style>
+</helmet>
+<div style="padding:56px 64px 96px;color:#1C1B18;">
+
+  <div style="max-width:880px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">TAB + LEASH · SURFACE 1 OF 4</div>
+    <h1 style="margin:10px 0 0;font-family:'Newsreader',serif;font-size:44px;font-weight:500;letter-spacing:-0.01em;line-height:1.05;">Buyer checkout <span style="color:#8C8A80;">(Tab SDK)</span></h1>
+    <p style="margin:14px 0 0;font-size:14px;line-height:1.6;color:#5F5D55;max-width:620px;">Screens B1–B6 at 375px, embedded in the demo merchant page. One shared container: the Magic auth steps and the Tab checkout panel live in the same bottom sheet. Zero crypto vocabulary appears on any frame. State IDs match the product surface map.</p>
+    <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;">
+      <a href="00 Cover.dc.html" style="text-decoration:none;font-size:12px;font-weight:500;color:#5F5D55;background:#FFFFFF;border:1px solid #DBD8CE;border-radius:999px;padding:6px 12px;">← Cover &amp; decisions</a>
+      <a href="02 Merchant Dashboard.dc.html" style="text-decoration:none;font-size:12px;font-weight:500;color:#5F5D55;background:#FFFFFF;border:1px solid #DBD8CE;border-radius:999px;padding:6px 12px;">Merchant dashboard →</a>
+      <a href="03 Leash Dashboard.dc.html" style="text-decoration:none;font-size:12px;font-weight:500;color:#5F5D55;background:#FFFFFF;border:1px solid #DBD8CE;border-radius:999px;padding:6px 12px;">Leash web →</a>
+      <a href="04 Leash Mobile.dc.html" style="text-decoration:none;font-size:12px;font-weight:500;color:#5F5D55;background:#FFFFFF;border:1px solid #DBD8CE;border-radius:999px;padding:6px 12px;">Leash mobile →</a>
+    </div>
+  </div>
+
+  <!-- ============ B1 ============ -->
+  <section id="B1" style="margin-top:72px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">B1 · TAB SDK COMPONENT</div>
+    <h2 style="margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">&lt;PayButton&gt; in the merchant page</h2>
+    <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#5F5D55;max-width:640px;">The button is the story: IDLE → LOADING → AUTH → PROCESSING → SUCCESS. It disables during LOADING and PROCESSING (double-submit blocked). SUCCESS morphs in place — the checkmark draws in over 450ms, then the label reads “Done”.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:24px;align-items:flex-start;">
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B1 — IDLE">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B1 — IDLE</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">First handshake: “Pay $12.00” + lock. Enabled.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="idle" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B1 — LOADING">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B1 — LOADING</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Intent fetch + auth init. Disabled, spinner, no interim screen.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B1 — AUTH">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B1 — AUTH</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Sheet has focus; page and button dimmed behind the scrim.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" sheet="email_entry" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B1 — PROCESSING">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B1 — PROCESSING</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Reassurance state. Disabled; double-submit blocked.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="processing" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B1 — SUCCESS">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B1 — SUCCESS</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Animated: green flood + checkmark draw-in, label morphs to “Done”.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="success" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B1 — ERROR">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B1 — ERROR</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Calm, blame-free. Re-enabled in place; buyer data preserved.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="error" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B1 — DISABLED_INSUFFICIENT_FUNDS">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B1 — DISABLED_INSUFFICIENT_FUNDS</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Disabled but legible; message is visible and blame-free.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="disabled_funds" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ B2 ============ -->
+  <section id="B2" style="margin-top:72px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">B2 · MAGIC SDK (MOCKED)</div>
+    <h2 style="margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">Email entry</h2>
+    <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#5F5D55;max-width:640px;">Rendered by the Magic SDK — mocked faithfully here inside the shared sheet. Back arrow always present (exits to IDLE). CTA stays disabled until a valid email is typed.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:24px;align-items:flex-start;">
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B2 — EMAIL_ENTRY">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B2 — EMAIL_ENTRY</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Field focused, CTA disabled until valid email.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" sheet="email_entry" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B2 — EMAIL_SUBMITTING">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B2 — EMAIL_SUBMITTING</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Field locked; code dispatching. Back arrow still available.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" sheet="email_submitting" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ B3 ============ -->
+  <section id="B3" style="margin-top:72px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">B3 · MAGIC SDK (MOCKED)</div>
+    <h2 style="margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">6-box OTP</h2>
+    <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#5F5D55;max-width:640px;">The verified Privy/Dynamic pattern: back arrow, envelope, masked email, six boxes, auto-advance, auto-submit on the 6th digit, resend link. The same component reappears in merchant sign-up and log-in (MA1/MA2).</p>
+    <div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:24px;align-items:flex-start;">
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B3 — OTP_AWAITING_INPUT">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B3 — OTP_AWAITING_INPUT</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">First box focused with caret; auto-advance per character.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" sheet="otp_awaiting" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B3 — OTP_AUTO_SUBMITTING">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B3 — OTP_AUTO_SUBMITTING</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">6th digit entered → submits itself. No confirm button exists.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" sheet="otp_submitting" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B3 — OTP_WRONG_CODE">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B3 — OTP_WRONG_CODE</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Boxes clear and turn red; retry in place.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" sheet="otp_wrong" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B3 — OTP_EXPIRED">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B3 — OTP_EXPIRED</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">A new code is already on its way — no dead end.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" sheet="otp_expired" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B3 — OTP_RATE_LIMITED">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B3 — OTP_RATE_LIMITED</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Boxes disabled; wait copy with explicit duration.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" sheet="otp_limited" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B3 — OTP_NOT_RECEIVED">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B3 — OTP_NOT_RECEIVED</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">After resend: ~30s cooldown before the link re-activates.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" sheet="otp_not_received" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B3 — RETURNING_USER_SKIP">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B3 — RETURNING_USER_SKIP</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Valid session → B2/B3 never appear. LOADING lands directly on the checkout panel while the balance shimmers in.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" sheet="bal_loading" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ B4 ============ -->
+  <section id="B4" style="margin-top:72px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">B4 · TAB SDK</div>
+    <h2 style="margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">Checkout confirmation panel</h2>
+    <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#5F5D55;max-width:640px;">The buyer’s only decision point: merchant, amount, one balance number, one button. CTA verb resolved as “Pay $12.00”. Dismissal is blocked while processing. No breakdowns, no currency codes.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:24px;align-items:flex-start;">
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B4 — BALANCE_LOADING">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B4 — BALANCE_LOADING</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Skeleton shimmer on the balance; CTA disabled.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" sheet="bal_loading" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B4 — BALANCE_READY">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B4 — BALANCE_READY</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">“$847.32 available” — one number, no per-source breakdown.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" sheet="bal_ready" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B4 — INSUFFICIENT_BALANCE">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B4 — INSUFFICIENT_BALANCE</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">USD shortfall, fiat-first: “You’re $3.50 short.” CTA disabled.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="loading" sheet="insufficient" balance="$8.50" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B4 — CONFIRMING">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B4 — CONFIRMING</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">CTA disabled; close control removed — dismissal blocked in flight.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="processing" sheet="confirming" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ B5 ============ -->
+  <section id="B5" style="margin-top:72px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">B5 · TAB SDK</div>
+    <h2 style="margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">Optimistic success</h2>
+    <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#5F5D55;max-width:640px;">Fires instantly when the payment is sent — no waiting, no confirmation progress. Checkmark circle pops and the stroke draws in (CSS keyframes, ~500ms). Reference number is “Reference #”, never a raw hash. Stays until explicitly closed.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:24px;align-items:flex-start;">
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B5 — OPTIMISTIC_SUCCESS">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B5 — OPTIMISTIC_SUCCESS</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Peak moment: animated check, amount, merchant, Reference #TAB-7B4A2, email note.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="success" sheet="success" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ B6 ============ -->
+  <section id="B6" style="margin-top:72px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">B6 · TAB SDK</div>
+    <h2 style="margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">Error / retry panel</h2>
+    <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#5F5D55;max-width:640px;">The buyer is never blamed and never sees a technical error. Retry happens in place — no reload, data preserved. Every string below passes the vocabulary ban list.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:24px;align-items:flex-start;">
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B6 — INSUFFICIENT_BALANCE_ERROR">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B6 — INSUFFICIENT_BALANCE_ERROR</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">No retry offered — nothing to retry until the buyer has funds.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="disabled_funds" sheet="err_insufficient" balance="$8.50" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B6 — TRANSACTION_FAILED">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B6 — TRANSACTION_FAILED</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">“You have not been charged” — retry in place.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="error" sheet="err_failed" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B6 — NETWORK_ERROR">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B6 — NETWORK_ERROR</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Connectivity failure during any async call.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="error" sheet="err_network" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;" data-screen-label="B6 — MAGIC_AUTH_FAILED">
+        <div><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">B6 — MAGIC_AUTH_FAILED</span><div style="font-size:11px;color:#8C8A80;max-width:340px;margin-top:2px;">Terminal auth failure → restart from the email step.</div></div>
+        <div style="width:375px;border-radius:16px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_Buyer Frame" button="error" sheet="err_auth" hint-size="375px,740px"></dc-import></div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+</x-dc>
+</body>
+</html>

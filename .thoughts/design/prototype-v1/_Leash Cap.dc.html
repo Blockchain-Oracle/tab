@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes lc-spin{to{transform:rotate(360deg);}}
+</style>
+</helmet>
+<div style="display:flex;width:100%;height:900px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="width:224px;flex:none;background:#F4F3EE;border-right:1px solid #E8E6DF;display:flex;flex-direction:column;padding:16px 12px 14px;">
+    <div style="display:flex;align-items:center;gap:9px;padding:4px 6px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#206B4E;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:13px;font-weight:700;">L</div>
+      <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em;">Leash</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-top:22px;">
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Overview</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Payments</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Notifications <span style="min-width:17px;height:17px;border-radius:9px;background:#206B4E;color:#FFFFFF;font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;">2</span></div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:#1C1B18;background:#E9E7E0;">Cap &amp; limits</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Connect agent</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Revocation</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Setup &amp; funds</div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px;border-top:1px solid #E8E6DF;padding-top:12px;">
+      <div style="width:26px;height:26px;border-radius:50%;background:#E7F3EF;border:1px solid #BEE0D6;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#17503A;">AB</div>
+      <div style="min-width:0;"><div style="font-size:12px;font-weight:600;line-height:1.2;">Abu</div><div style="font-size:10.5px;color:#8C8A80;white-space:nowrap;">abu@example.dev</div></div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+    <div style="padding:22px 32px 0;">
+      <div style="font-size:19px;font-weight:600;letter-spacing:-0.01em;">Cap &amp; limits</div>
+      <div style="font-size:12.5px;color:#5F5D55;margin-top:3px;">The leash. A hard, app-layer ceiling on what Research Agent v2 can spend per cycle.</div>
+    </div>
+
+    <div style="padding:16px 32px 24px;max-width:768px;display:flex;flex-direction:column;gap:14px;">
+
+      <sc-if value="{{ toastText }}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius:9px;padding:10px 13px;font-size:12.5px;background:{{ toastBg }};color:{{ toastColor }};display:flex;align-items:center;gap:8px;">{{ toastText }}</div>
+      </sc-if>
+
+      <sc-if value="{{ isUncapped }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:11px;background:#FBF1DC;border:1px solid #F2E3C2;border-radius:11px;padding:12px 15px;">
+          <span style="font-size:10.5px;font-weight:700;letter-spacing:0.05em;color:#96650F;background:#FFFFFF;border-radius:6px;padding:3px 8px;flex:none;">NO CAP SET</span>
+          <span style="flex:1;font-size:12.5px;font-weight:500;color:#7A5410;">Your agent is active but uncapped. Every x402 request it makes will be paid. Set a cap now.</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showBar }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:20px 22px;">
+          <sc-if value="{{ barBanner }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:11px;background:{{ barBannerBg }};border:1px solid {{ barBannerBorder }};border-radius:10px;padding:10px 14px;margin-bottom:16px;">
+              <span style="font-size:10.5px;font-weight:700;letter-spacing:0.05em;color:{{ barBannerTagColor }};background:#FFFFFF;border-radius:6px;padding:3px 8px;flex:none;">{{ barBannerTag }}</span>
+              <span style="flex:1;font-size:12.5px;font-weight:500;color:{{ barBannerColor }};">{{ barBanner }}</span>
+              <sc-if value="{{ showResetCycle }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:600;color:{{ barBannerColor }};text-decoration:underline;cursor:pointer;flex:none;">Reset cycle</span></sc-if>
+            </div>
+          </sc-if>
+          <div style="display:flex;align-items:baseline;gap:9px;">
+            <span style="font-size:32px;font-weight:600;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1;">{{ spend }}</span>
+            <span style="font-size:14px;color:#5F5D55;font-variant-numeric:tabular-nums;">/ {{ cap }} · resets {{ freq }}</span>
+            <span style="font-size:13px;font-weight:600;color:{{ pctColor }};font-variant-numeric:tabular-nums;">({{ pct }})</span>
+          </div>
+          <div style="margin-top:13px;height:12px;border-radius:6px;background:#F1EFE9;overflow:hidden;display:flex;">
+            <div style="width:{{ barW }};height:100%;background:{{ barColor }};flex:none;"></div>
+            <sc-if value="{{ overflowSeg }}" hint-placeholder-val="{{ false }}">
+              <div style="width:{{ overflowW }};height:100%;background:repeating-linear-gradient(-45deg,#C13A40 0px,#C13A40 5px,#8E2F34 5px,#8E2F34 10px);flex:none;"></div>
+            </sc-if>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:9px;font-size:11.5px;color:#8C8A80;">
+            <span>75% → Alert · 100% → Action required + halt <span style="color:#B4B2A8;">(thresholds fixed)</span></span>
+            <span>{{ blockedNote }}</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:20px 22px;{{ formDim }}">
+        <div style="font-size:13px;font-weight:600;">Cap configuration</div>
+        <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:16px;margin-top:14px;">
+          <div>
+            <div style="font-size:12px;font-weight:500;color:#5F5D55;margin-bottom:6px;">Cap amount</div>
+            <sc-if value="{{ isEditingField }}" hint-placeholder-val="{{ false }}">
+              <div style="height:40px;border:1.5px solid #206B4E;border-radius:9px;box-shadow:0 0 0 3px rgba(32,107,78,0.12);display:flex;align-items:center;padding:0 12px;font-size:13.5px;font-variant-numeric:tabular-nums;background:#FFFFFF;">$ 15.00</div>
+            </sc-if>
+            <sc-if value="{{ notEditingField }}" hint-placeholder-val="{{ true }}">
+              <div style="height:40px;border:1px solid #DBD9D0;border-radius:9px;display:flex;align-items:center;padding:0 12px;font-size:13.5px;font-variant-numeric:tabular-nums;background:#FFFFFF;color:{{ capFieldColor }};">{{ capField }}</div>
+            </sc-if>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:500;color:#5F5D55;margin-bottom:6px;">Reset frequency</div>
+            <div style="display:flex;background:#EFEDE7;border-radius:9px;padding:2px;height:40px;box-sizing:border-box;">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;border-radius:7px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,24,0.08);font-size:12px;font-weight:600;">Daily</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;border-radius:7px;font-size:12px;font-weight:500;color:#8C8A80;cursor:pointer;">Weekly</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;border-radius:7px;font-size:12px;font-weight:500;color:#8C8A80;cursor:pointer;">Monthly</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;border-radius:7px;font-size:12px;font-weight:500;color:#8C8A80;cursor:pointer;">Never</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:500;color:#5F5D55;margin-bottom:6px;">Cycle started</div>
+            <div style="height:40px;border:1px solid #E8E6DF;border-radius:9px;display:flex;align-items:center;padding:0 12px;font-size:12.5px;background:#F8F7F4;color:#5F5D55;">Jul 2, 2026 · 00:00 UTC</div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:500;color:#5F5D55;margin-bottom:6px;">Next reset <span style="font-weight:400;color:#8C8A80;">(derived)</span></div>
+            <div style="height:40px;border:1px solid #E8E6DF;border-radius:9px;display:flex;align-items:center;padding:0 12px;font-size:12.5px;background:#F8F7F4;color:#5F5D55;">Jul 3, 2026 · 00:00 UTC — in 9h 37m</div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:12px;line-height:1.55;color:#5F5D55;background:#F8F7F4;border:1px solid #EFEDE7;border-radius:9px;padding:9px 12px;">Payments stop when the cap is reached. The agent does not continue spending.</div>
+          <div style="font-size:12px;line-height:1.55;color:#5F5D55;background:#F8F7F4;border:1px solid #EFEDE7;border-radius:9px;padding:9px 12px;">Notification delivery may lag a few minutes after a threshold is crossed. Set your cap below your true maximum to account for this.</div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:16px;border-top:1px solid #F0EEE8;">
+          <div style="font-size:11.5px;color:#8C8A80;">Cap changes take effect on the agent’s next loop check — no restart.</div>
+          <div style="display:flex;gap:9px;">
+            <sc-if value="{{ isEditingField }}" hint-placeholder-val="{{ false }}">
+              <button style="height:36px;padding:0 14px;border:1px solid #DBD9D0;border-radius:9px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#F8F7F4;">Cancel</button>
+            </sc-if>
+            <sc-if value="{{ saveIdle }}" hint-placeholder-val="{{ true }}">
+              <button style="height:36px;padding:0 16px;border:none;border-radius:9px;background:#206B4E;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#17503A;">{{ saveLabel }}</button>
+            </sc-if>
+            <sc-if value="{{ saveSaving }}" hint-placeholder-val="{{ false }}">
+              <button disabled="{{ true }}" style="height:36px;padding:0 16px;border:none;border-radius:9px;background:#206B4E;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:8px;opacity:0.85;cursor:default;">{{ spinnerWhite }}<span>Saving…</span></button>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;active&quot;,&quot;options&quot;:[&quot;unconfigured&quot;,&quot;active&quot;,&quot;near&quot;,&quot;at_limit&quot;,&quot;editing&quot;,&quot;saving&quot;,&quot;save_success&quot;,&quot;save_error&quot;,&quot;overage&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Cap&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'active';
+    const R = React;
+    const spinnerWhite = R.createElement('span', { style: { width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.35)', borderTopColor: '#FFFFFF', display: 'inline-block', animation: 'lc-spin 0.8s linear infinite', flex: 'none' } });
+
+    const sm = {
+      active: { spend: '$4.20', cap: '$10.00', pct: '42%', w: '42%', color: '#206B4E', pctColor: '#17503A' },
+      near: { spend: '$7.60', cap: '$10.00', pct: '76%', w: '76%', color: '#E0A33E', pctColor: '#96650F' },
+      at_limit: { spend: '$10.00', cap: '$10.00', pct: '100%', w: '100%', color: '#C13A40', pctColor: '#B4383D' },
+      overage: { spend: '$4.20', cap: '$3.00', pct: '140%', w: '71%', color: '#C13A40', pctColor: '#B4383D' }
+    }[s] || { spend: '$4.20', cap: '$10.00', pct: '42%', w: '42%', color: '#206B4E', pctColor: '#17503A' };
+
+    let barBanner = false, barBannerTag = 'ALERT', barBannerBg = '#FBF1DC', barBannerBorder = '#F2E3C2', barBannerTagColor = '#96650F', barBannerColor = '#7A5410';
+    if (s === 'near') barBanner = 'Your agent is approaching its cap.';
+    if (s === 'at_limit') { barBanner = 'Payments are halted. Raise the cap or reset the cycle to resume.'; barBannerTag = 'ACTION REQUIRED'; barBannerBg = '#FAECEC'; barBannerBorder = '#F0D5D6'; barBannerTagColor = '#B4383D'; barBannerColor = '#8E2F34'; }
+    if (s === 'overage') { barBanner = 'Cap lowered below current spend — payments halted immediately and an Action required notification fired.'; barBannerTag = 'ACTION REQUIRED'; barBannerBg = '#FAECEC'; barBannerBorder = '#F0D5D6'; barBannerTagColor = '#B4383D'; barBannerColor = '#8E2F34'; }
+
+    let toastText = false, toastBg = '#E8F3EC', toastColor = '#1D6237';
+    if (s === 'save_success') toastText = 'Cap updated to $15.00 daily. The spend bar recalculated immediately.';
+    if (s === 'save_error') { toastText = 'Couldn’t save your cap. The previous cap ($10.00 daily) is still in effect. Try again.'; toastBg = '#FAECEC'; toastColor = '#8E2F34'; }
+
+    return {
+      spinnerWhite,
+      isUncapped: s === 'unconfigured',
+      showBar: s !== 'unconfigured',
+      spend: sm.spend, cap: sm.cap, pct: sm.pct, barW: sm.w, barColor: sm.color, pctColor: sm.pctColor,
+      freq: 'daily',
+      overflowSeg: s === 'overage',
+      overflowW: s === 'overage' ? '29%' : '0%',
+      blockedNote: s === 'at_limit' ? '2 blocked attempts this cycle (not counted)' : (s === 'overage' ? '$1.20 of overage is prior settled spend — nothing was clawed back' : 'Blocked and failed payments don’t count toward spend'),
+      barBanner, barBannerTag, barBannerBg, barBannerBorder, barBannerTagColor, barBannerColor,
+      showResetCycle: s === 'at_limit' || s === 'overage',
+      isEditingField: s === 'editing' || s === 'saving',
+      notEditingField: s !== 'editing' && s !== 'saving',
+      capField: s === 'unconfigured' ? '$ 0.00 — no cap set' : '$ ' + sm.cap.replace('$', ''),
+      capFieldColor: s === 'unconfigured' ? '#B4B2A8' : '#1C1B18',
+      saveIdle: s !== 'saving',
+      saveSaving: s === 'saving',
+      saveLabel: s === 'unconfigured' ? 'Set cap' : 'Save cap',
+      toastText, toastBg, toastColor,
+      formDim: s === 'saving' ? 'opacity:0.6;' : ''
+    };
+  }
+}
+</script>
+</body>
+</html>

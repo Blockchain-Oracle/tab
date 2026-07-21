@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes ls-spin{to{transform:rotate(360deg);}}
+</style>
+</helmet>
+<div style="display:flex;width:100%;height:900px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="width:224px;flex:none;background:#F4F3EE;border-right:1px solid #E8E6DF;display:flex;flex-direction:column;padding:16px 12px 14px;">
+    <div style="display:flex;align-items:center;gap:9px;padding:4px 6px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#206B4E;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:13px;font-weight:700;">L</div>
+      <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em;">Leash</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-top:22px;">
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Overview</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Payments</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Notifications <span style="min-width:17px;height:17px;border-radius:9px;background:#206B4E;color:#FFFFFF;font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;">2</span></div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Cap &amp; limits</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Connect agent</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Revocation</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:#1C1B18;background:#E9E7E0;">Setup &amp; funds</div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px;border-top:1px solid #E8E6DF;padding-top:12px;">
+      <div style="width:26px;height:26px;border-radius:50%;background:#E7F3EF;border:1px solid #BEE0D6;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#17503A;">AB</div>
+      <div style="min-width:0;"><div style="font-size:12px;font-weight:600;line-height:1.2;">Abu</div><div style="font-size:10.5px;color:#8C8A80;white-space:nowrap;">abu@example.dev</div></div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+    <div style="padding:22px 32px 0;">
+      <div style="font-size:19px;font-weight:600;letter-spacing:-0.01em;">Setup &amp; funds</div>
+      <div style="font-size:12.5px;color:#5F5D55;margin-top:3px;">Server key status and the agent’s USDC balance. The key never appears here — only its status.</div>
+    </div>
+
+    <div style="padding:16px 32px 24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:1020px;align-items:start;">
+
+      <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:20px 22px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:13px;font-weight:600;">Server key</div>
+          <sc-if value="{{ keyProvisioned }}" hint-placeholder-val="{{ true }}">
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:#E7F3EF;color:#17503A;border:1px solid #BEE0D6;"><span style="width:5px;height:5px;border-radius:50%;background:#206B4E;"></span>Provisioned</span>
+          </sc-if>
+          <sc-if value="{{ keyMissing }}" hint-placeholder-val="{{ false }}">
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:#FFFFFF;color:#8C8A80;border:1px solid #DBD9D0;"><span style="width:5px;height:5px;border-radius:50%;background:#B4B2A8;"></span>Not provisioned</span>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ keyProvisioned }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:16px;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">AGENT ADDRESS · SAME ON EVERY NETWORK</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+              <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#1C1B18;">0x7F3a9c2E17d4B8f6A0e5C3d94b21A8e604b39C4e</span>
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style="flex:none;cursor:pointer;"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5" stroke="#8C8A80" stroke-width="1.4"></rect><path d="M9.5 4.5v-1a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1" stroke="#8C8A80" stroke-width="1.4"></path></svg>
+            </div>
+            <div style="font-size:11px;color:#8C8A80;margin-top:4px;">One address on Base, Arbitrum, and Polygon — for your reference, not a key value.</div>
+          </div>
+          <div style="margin-top:14px;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">KEY HEALTH</div>
+            <div style="font-size:12.5px;margin-top:5px;">{{ keyHealth }}</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ keyMissing }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ isRepro }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:14px;border-radius:10px;padding:10px 13px;font-size:12px;line-height:1.55;background:#FAECEC;color:#8E2F34;border:1px solid #F0D5D6;">A new key is required after nuclear revocation. The previous key was permanently deleted.</div>
+          </sc-if>
+          <div style="margin-top:14px;font-size:13px;font-weight:600;">A server key is required before your agent can make payments.</div>
+          <div style="margin-top:10px;border:1px solid #EFEDE7;border-radius:10px;overflow:hidden;">
+            <div style="display:flex;gap:10px;padding:10px 13px;border-bottom:1px solid #F5F4F0;font-size:12.5px;color:#5F5D55;"><span style="font-weight:600;color:#1C1B18;">1</span>Run <span style="font-family:'Geist Mono',monospace;background:#F5F4F0;border-radius:5px;padding:1px 6px;">npx leash provision</span> in your server environment</div>
+            <div style="display:flex;gap:10px;padding:10px 13px;border-bottom:1px solid #F5F4F0;font-size:12.5px;color:#5F5D55;"><span style="font-weight:600;color:#1C1B18;">2</span>Fund the agent address that appears here</div>
+            <div style="display:flex;gap:10px;padding:10px 13px;font-size:12.5px;color:#5F5D55;"><span style="font-weight:600;color:#1C1B18;">3</span>Set a spending cap in Cap &amp; limits</div>
+          </div>
+          <button style="height:34px;padding:0 14px;margin-top:14px;border:none;border-radius:9px;background:#206B4E;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#17503A;">View provisioning guide</button>
+        </sc-if>
+
+        <div style="margin-top:16px;font-size:12px;line-height:1.55;color:#5F5D55;background:#F8F7F4;border:1px solid #EFEDE7;border-radius:9px;padding:9px 12px;">Your server key is held securely in the environment. It is never shown here.</div>
+      </div>
+
+      <div style="background:#FFFFFF;border:1px solid {{ floatCardBorder }};border-radius:12px;padding:20px 22px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:13px;font-weight:600;">Agent treasury</div>
+          <sc-if value="{{ lowChip }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;letter-spacing:0.04em;color:#96650F;background:#FBF1DC;border-radius:5px;padding:2px 7px;">LOW</span></sc-if>
+          <sc-if value="{{ emptyChip }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;letter-spacing:0.04em;color:#B4383D;background:#FAECEC;border-radius:5px;padding:2px 7px;">EMPTY</span></sc-if>
+          <sc-if value="{{ rebalChip }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;letter-spacing:0.04em;color:#17503A;background:#E7F3EF;border-radius:5px;padding:2px 7px;">REBALANCING</span></sc-if>
+        </div>
+
+        <div style="display:flex;align-items:baseline;gap:8px;margin-top:12px;">
+          <span style="font-size:30px;font-weight:600;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1;">{{ float }}</span>
+          <span style="font-size:12px;color:#8C8A80;">USDC · one total across three networks</span>
+        </div>
+
+        <div style="margin-top:12px;border:1px solid #EFEDE7;border-radius:10px;overflow:hidden;">
+          <sc-for list="{{ chains }}" as="c" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid #F5F4F0;">
+              <span style="font-size:12.5px;font-weight:500;">{{ c.name }}</span>
+              <sc-if value="{{ c.primary }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;font-weight:700;letter-spacing:0.05em;color:#17503A;background:#E7F3EF;border-radius:4px;padding:1.5px 6px;">PRIMARY</span></sc-if>
+              <sc-if value="{{ c.busy }}" hint-placeholder-val="{{ false }}">
+                <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#96650F;">{{ spinnerInk }}topping up · {{ c.busyNote }}</span>
+              </sc-if>
+              <span style="flex:1;"></span>
+              <span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;">{{ c.amount }}</span>
+            </div>
+          </sc-for>
+          <div style="padding:8px 13px;font-size:10.5px;color:#8C8A80;">Base is kept topped up first — the primary settlement network for x402 resources. Rebalancing runs in the background.</div>
+        </div>
+
+        <sc-if value="{{ warnLine }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:10px;border-radius:9px;padding:9px 12px;font-size:12px;line-height:1.5;background:{{ warnBg }};color:{{ warnColor }};">{{ warnLine }}</div>
+        </sc-if>
+
+        <div style="margin-top:14px;font-size:11px;color:#8C8A80;">Low-balance warning fires below $5.00, or below 20% of your last top-up — whichever comes first.</div>
+
+        <div style="margin-top:14px;border-top:1px solid #F0EEE8;padding-top:14px;">
+          <sc-if value="{{ topupForm }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;gap:9px;">
+              <div style="width:120px;height:38px;border:1px solid #DBD9D0;border-radius:9px;display:flex;align-items:center;padding:0 12px;font-size:13px;font-variant-numeric:tabular-nums;background:#FFFFFF;">$ 20.00</div>
+              <button style="flex:1;height:38px;border:none;border-radius:9px;background:#206B4E;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;{{ topupUrgent }}" style-hover="background:#17503A;">Add funds from your unified balance</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ topupBusy }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:10px;height:38px;border:1px solid #E8E6DF;border-radius:9px;padding:0 13px;background:#F8F7F4;">
+              {{ spinnerInk }}
+              <span style="font-size:12.5px;color:#5F5D55;">Transferring $20.00 from your unified balance…</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ topupToast }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:10px;border-radius:9px;padding:9px 12px;font-size:12.5px;background:{{ topupToastBg }};color:{{ topupToastColor }};">{{ topupToast }}</div>
+          </sc-if>
+          <div style="margin-top:10px;font-size:11.5px;line-height:1.55;color:#8C8A80;">Funds come from your unified balance and land on Base first. Leash rebalances across networks in the background as your agent spends — a separate step from the agent’s payments.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;funded&quot;,&quot;options&quot;:[&quot;not_provisioned&quot;,&quot;funded&quot;,&quot;low_float&quot;,&quot;empty_float&quot;,&quot;topup_progress&quot;,&quot;topup_success&quot;,&quot;topup_error&quot;,&quot;rebalancing&quot;,&quot;reprovisioning&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Setup&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'funded';
+    const R = React;
+    const spinnerInk = R.createElement('span', { style: { width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(28,27,24,0.12)', borderTopColor: '#206B4E', display: 'inline-block', animation: 'ls-spin 0.8s linear infinite', flex: 'none' } });
+
+    const keyMissing = s === 'not_provisioned' || s === 'reprovisioning';
+    const floatMap = { funded: '$24.80', low_float: '$3.50', empty_float: '$0.00', topup_progress: '$3.50', topup_success: '$23.50', topup_error: '$3.50', rebalancing: '$24.80' };
+    const float = keyMissing ? '$0.00' : (floatMap[s] || '$24.80');
+
+    const chain = (name, amount, primary, busy, busyNote) => ({ name, amount, primary: !!primary, busy: !!busy, busyNote: busyNote || '' });
+    const chainMap = {
+      low: [chain('Base', '$2.10', true), chain('Arbitrum', '$0.90'), chain('Polygon', '$0.50')],
+      empty: [chain('Base', '$0.00', true), chain('Arbitrum', '$0.00'), chain('Polygon', '$0.00')],
+      success: [chain('Base', '$12.90', true), chain('Arbitrum', '$6.10'), chain('Polygon', '$4.50')],
+      rebal: [chain('Base', '$8.20', true, true, '+$6.00 arriving'), chain('Arbitrum', '$12.10'), chain('Polygon', '$4.50')],
+      normal: [chain('Base', '$14.20', true), chain('Arbitrum', '$6.10'), chain('Polygon', '$4.50')]
+    };
+    let chains = chainMap.normal;
+    if (s === 'low_float' || s === 'topup_progress' || s === 'topup_error') chains = chainMap.low;
+    if (s === 'empty_float') chains = chainMap.empty;
+    if (s === 'topup_success') chains = chainMap.success;
+    if (s === 'rebalancing') chains = chainMap.rebal;
+    if (keyMissing) chains = chainMap.empty;
+
+    let warnLine = false, warnBg = '#FBF1DC', warnColor = '#7A5410';
+    if (s === 'low_float' || s === 'topup_error' || s === 'topup_progress') warnLine = 'Your agent may not be able to pay — add funds.';
+    if (s === 'empty_float') { warnLine = 'Add funds to restore payments. The agent cannot pay with an empty balance.'; warnBg = '#FAECEC'; warnColor = '#8E2F34'; }
+
+    let topupToast = false, topupToastBg = '#E8F3EC', topupToastColor = '#1D6237';
+    if (s === 'topup_success') topupToast = 'Funds added. New treasury total: $23.50 USDC across three networks.';
+    if (s === 'topup_error') { topupToast = 'Transfer failed. Your unified balance may be insufficient, or the transfer timed out.'; topupToastBg = '#FAECEC'; topupToastColor = '#8E2F34'; }
+
+    return {
+      spinnerInk,
+      keyProvisioned: !keyMissing,
+      keyMissing,
+      isRepro: s === 'reprovisioning',
+      keyHealth: 'Provisioned and active · last rotation Jun 12, 2026',
+      float,
+      chains,
+      rebalChip: s === 'rebalancing',
+      lowChip: s === 'low_float' || s === 'topup_progress' || s === 'topup_error',
+      emptyChip: s === 'empty_float',
+      floatCardBorder: s === 'empty_float' ? '#E8B6B9' : (s === 'low_float' || s === 'topup_error' ? '#F2E3C2' : '#E8E6DF'),
+      warnLine, warnBg, warnColor,
+      topupForm: s !== 'topup_progress',
+      topupBusy: s === 'topup_progress',
+      topupToast, topupToastBg, topupToastColor,
+      topupUrgent: s === 'empty_float' ? 'box-shadow:0 0 0 3px rgba(32,107,78,0.18);' : ''
+    };
+  }
+}
+</script>
+</body>
+</html>

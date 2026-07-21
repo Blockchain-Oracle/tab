@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes ts-spin{to{transform:rotate(360deg);}}
+@keyframes ts-shimmer{0%{background-position:-200px 0;}100%{background-position:200px 0;}}
+</style>
+</helmet>
+<div style="display:flex;width:100%;height:900px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="width:224px;flex:none;background:#F4F3EE;border-right:1px solid #E8E6DF;display:flex;flex-direction:column;padding:16px 12px 14px;">
+    <div style="display:flex;align-items:center;gap:9px;padding:4px 6px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#3B5BD9;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:13px;font-weight:700;">T</div>
+      <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em;">Tab</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-top:22px;">
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Quickstart</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Transactions</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">API keys</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Webhooks</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:#1C1B18;background:#E9E7E0;">Settings</div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#8C8A80;padding:0 6px;">MODE</div>
+    <div style="display:flex;background:#E9E7E0;border-radius:8px;padding:2px;margin-top:6px;">
+      <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,24,0.08);font-size:11.5px;font-weight:600;color:#96650F;">TEST</div>
+      <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:11.5px;font-weight:500;color:#8C8A80;cursor:pointer;">LIVE</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:6px;border-top:1px solid #E8E6DF;padding-top:12px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#F1EFE9;border:1px solid #E4E2DA;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">A</div>
+      <div style="min-width:0;">
+        <div style="font-size:12px;font-weight:600;line-height:1.2;white-space:nowrap;">Atlas Coffee Roasters</div>
+        <div style="font-size:10.5px;color:#8C8A80;white-space:nowrap;">dev@atlascoffee.com</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <div style="background:#FBF1DC;color:#7A5410;font-size:12px;padding:7px 28px;border-bottom:1px solid #F2E3C2;flex:none;">You are in test mode. Test payments are simulated and do not move real funds.</div>
+    <div style="padding:24px 32px 0;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:19px;font-weight:600;letter-spacing:-0.01em;">Settings</div>
+    </div>
+
+    <div style="padding:20px 32px;max-width:672px;">
+
+      <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:22px;">
+          <div style="width:120px;height:12px;border-radius:6px;background:linear-gradient(90deg,#EDEBE4 25%,#F5F4F0 50%,#EDEBE4 75%);background-size:400px 100%;animation:ts-shimmer 1.2s linear infinite;"></div>
+          <div style="width:100%;height:42px;border-radius:9px;background:linear-gradient(90deg,#EDEBE4 25%,#F5F4F0 50%,#EDEBE4 75%);background-size:400px 100%;animation:ts-shimmer 1.2s linear infinite;"></div>
+          <div style="width:60%;height:42px;border-radius:9px;background:linear-gradient(90deg,#EDEBE4 25%,#F5F4F0 50%,#EDEBE4 75%);background-size:400px 100%;animation:ts-shimmer 1.2s linear infinite;"></div>
+          <div style="width:80%;height:42px;border-radius:9px;background:linear-gradient(90deg,#EDEBE4 25%,#F5F4F0 50%,#EDEBE4 75%);background-size:400px 100%;animation:ts-shimmer 1.2s linear infinite;"></div>
+          <div style="width:140px;height:36px;border-radius:9px;background:linear-gradient(90deg,#EDEBE4 25%,#F5F4F0 50%,#EDEBE4 75%);background-size:400px 100%;animation:ts-shimmer 1.2s linear infinite;"></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isForm }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ showSaveError }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-bottom:14px;border-radius:9px;padding:10px 13px;font-size:12.5px;background:#FAECEC;color:#8E2F34;">Couldn’t save settings. Your previous values are still in effect. Try again.</div>
+        </sc-if>
+        <sc-if value="{{ showSaved }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-bottom:14px;border-radius:9px;padding:10px 13px;font-size:12.5px;background:#E8F3EC;color:#1D6237;display:flex;align-items:center;gap:8px;">
+            <svg width="13" height="13" viewBox="0 0 24 24"><path d="M5 12.5l4.4 4.4L19 7.6" fill="none" stroke="#257A46" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            Settings saved.
+          </div>
+        </sc-if>
+
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:22px;{{ formOpacity }}">
+
+          <div>
+            <div style="font-size:12px;font-weight:500;color:#5F5D55;margin-bottom:6px;">Business name</div>
+            <sc-if value="{{ isEditing }}" hint-placeholder-val="{{ false }}">
+              <div style="height:42px;border:1.5px solid #3B5BD9;border-radius:9px;box-shadow:0 0 0 3px rgba(59,91,217,0.12);display:flex;align-items:center;padding:0 13px;font-size:13.5px;background:#FFFFFF;">Atlas Coffee Roasters — Oakland</div>
+            </sc-if>
+            <sc-if value="{{ notEditing }}" hint-placeholder-val="{{ true }}">
+              <div style="height:42px;border:1px solid #DBD9D0;border-radius:9px;display:flex;align-items:center;padding:0 13px;font-size:13.5px;background:#FFFFFF;">Atlas Coffee Roasters</div>
+            </sc-if>
+            <div style="font-size:11.5px;color:#8C8A80;margin-top:6px;">Shown to buyers in the checkout panel.</div>
+          </div>
+
+          <div>
+            <div style="font-size:12px;font-weight:500;color:#5F5D55;margin-bottom:6px;">Business logo</div>
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div style="width:48px;height:48px;border-radius:11px;background:#F1EFE9;border:1px solid #E4E2DA;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;">A</div>
+              <div style="flex:1;">
+                <sc-if value="{{ logoIdle }}" hint-placeholder-val="{{ true }}">
+                  <button style="height:32px;padding:0 12px;border:1px solid #DBD9D0;border-radius:8px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#F8F7F4;">Upload logo</button>
+                  <div style="font-size:11.5px;color:#8C8A80;margin-top:6px;">JPG or PNG, up to 2MB. Optional — buyers see your name if absent.</div>
+                </sc-if>
+                <sc-if value="{{ logoUploading }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="flex:1;height:6px;border-radius:3px;background:#EDEBE4;overflow:hidden;"><div style="width:62%;height:100%;border-radius:3px;background:#3B5BD9;"></div></div>
+                    <span style="font-size:11.5px;color:#5F5D55;font-variant-numeric:tabular-nums;">62%</span>
+                  </div>
+                  <div style="font-size:11.5px;color:#8C8A80;margin-top:6px;">Uploading atlas-mark.png…</div>
+                </sc-if>
+                <sc-if value="{{ logoError }}" hint-placeholder-val="{{ false }}">
+                  <button style="height:32px;padding:0 12px;border:1px solid #DBD9D0;border-radius:8px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;">Upload logo</button>
+                  <div style="font-size:11.5px;color:#8E2F34;margin-top:6px;">Couldn’t upload logo. Try a JPG or PNG under 2MB.</div>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:12px;font-weight:500;color:#5F5D55;margin-bottom:6px;">Receiving address</div>
+            <div style="height:42px;border:1px solid #E8E6DF;border-radius:9px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;background:#F8F7F4;">
+              <span style="font-family:'Geist Mono',monospace;font-size:12.5px;color:#5F5D55;">0x1a2b••••••••cd9e</span>
+              <div style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#5F5D55;font-size:12px;font-weight:500;" style-hover="color:#1C1B18;">
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"></rect><path d="M9.5 4.5v-1a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1" stroke="currentColor" stroke-width="1.4"></path></svg>
+                Copy
+              </div>
+            </div>
+            <div style="font-size:11.5px;color:#8C8A80;margin-top:6px;">Payments settle to this address. It must match the <span style="font-family:'Geist Mono',monospace;">receiver</span> in your intent endpoint.</div>
+          </div>
+
+          <div>
+            <div style="font-size:12px;font-weight:500;color:#5F5D55;margin-bottom:6px;">Settlement token</div>
+            <div style="height:42px;border:1px solid #E8E6DF;border-radius:9px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;background:#F8F7F4;">
+              <span style="font-size:13px;color:#5F5D55;">USDC on Arbitrum One</span>
+              <svg width="12" height="13" viewBox="0 0 14 15" fill="none"><rect x="1.5" y="6.2" width="11" height="7.6" rx="2" fill="#B4B2A8"></rect><path d="M4 6V4.6a3 3 0 0 1 6 0V6" stroke="#B4B2A8" stroke-width="1.6" fill="none"></path></svg>
+            </div>
+            <div style="font-size:11.5px;color:#8C8A80;margin-top:6px;">Fixed by Tab — shown for transparency. Not configurable.</div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;border-top:1px solid #F0EEE8;padding-top:18px;">
+            <sc-if value="{{ saveDisabled }}" hint-placeholder-val="{{ true }}">
+              <button disabled="{{ true }}" style="height:36px;padding:0 16px;border:none;border-radius:9px;background:#EBE9E3;color:#8C8A80;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:not-allowed;">Save settings</button>
+            </sc-if>
+            <sc-if value="{{ saveEnabled }}" hint-placeholder-val="{{ false }}">
+              <button style="height:36px;padding:0 16px;border:none;border-radius:9px;background:#3B5BD9;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#2E48B8;">Save settings</button>
+            </sc-if>
+            <sc-if value="{{ saveSaving }}" hint-placeholder-val="{{ false }}">
+              <button disabled="{{ true }}" style="height:36px;padding:0 16px;border:none;border-radius:9px;background:#3B5BD9;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:8px;opacity:0.85;cursor:default;">{{ spinnerWhite }}<span>Saving…</span></button>
+            </sc-if>
+          </div>
+
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;idle&quot;,&quot;options&quot;:[&quot;loading&quot;,&quot;idle&quot;,&quot;editing&quot;,&quot;saving&quot;,&quot;saved&quot;,&quot;error&quot;,&quot;logo_uploading&quot;,&quot;logo_error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Settings&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'idle';
+    const R = React;
+    const spinnerWhite = R.createElement('span', { style: { width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.35)', borderTopColor: '#FFFFFF', display: 'inline-block', animation: 'ts-spin 0.8s linear infinite', flex: 'none' } });
+    return {
+      spinnerWhite,
+      isLoading: s === 'loading',
+      isForm: s !== 'loading',
+      isEditing: s === 'editing',
+      notEditing: s !== 'editing',
+      showSaved: s === 'saved',
+      showSaveError: s === 'error',
+      logoIdle: s !== 'logo_uploading' && s !== 'logo_error',
+      logoUploading: s === 'logo_uploading',
+      logoError: s === 'logo_error',
+      saveDisabled: s === 'idle' || s === 'saved' || s === 'logo_uploading',
+      saveEnabled: s === 'editing' || s === 'error' || s === 'logo_error',
+      saveSaving: s === 'saving',
+      formOpacity: s === 'saving' ? 'opacity:0.55;pointer-events:none;' : ''
+    };
+  }
+}
+</script>
+</body>
+</html>

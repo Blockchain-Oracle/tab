@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes lo-pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+@keyframes lo-shimmer{0%{background-position:-200px 0;}100%{background-position:200px 0;}}
+</style>
+</helmet>
+<div style="display:flex;width:100%;height:900px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="width:224px;flex:none;background:#F4F3EE;border-right:1px solid #E8E6DF;display:flex;flex-direction:column;padding:16px 12px 14px;">
+    <div style="display:flex;align-items:center;gap:9px;padding:4px 6px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#206B4E;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:13px;font-weight:700;">L</div>
+      <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em;">Leash</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-top:22px;">
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:#1C1B18;background:#E9E7E0;">Overview</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Payments</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Notifications <span style="min-width:17px;height:17px;border-radius:9px;background:{{ badgeBg }};color:#FFFFFF;font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;">{{ badgeCount }}</span></div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Cap &amp; limits</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Connect agent</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Revocation</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Setup &amp; funds</div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px;border-top:1px solid #E8E6DF;padding-top:12px;">
+      <div style="width:26px;height:26px;border-radius:50%;background:#E7F3EF;border:1px solid #BEE0D6;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#17503A;">AB</div>
+      <div style="min-width:0;">
+        <div style="font-size:12px;font-weight:600;line-height:1.2;">Abu</div>
+        <div style="font-size:10.5px;color:#8C8A80;white-space:nowrap;">abu@example.dev</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 32px 0;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-size:19px;font-weight:600;letter-spacing:-0.01em;">Research Agent v2</div>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:999px;background:{{ chipBg }};color:{{ chipColor }};border:1px solid {{ chipBorder }};"><span style="width:6px;height:6px;border-radius:50%;background:{{ chipDot }};{{ chipDotAnim }}"></span>{{ chipLabel }}</span>
+      </div>
+      <div style="display:flex;gap:9px;">
+        <sc-for list="{{ actions }}" as="a" hint-placeholder-count="2">
+          <sc-if value="{{ a.primary }}" hint-placeholder-val="{{ false }}">
+            <button style="height:34px;padding:0 14px;border:none;border-radius:9px;background:#206B4E;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#17503A;">{{ a.label }}</button>
+          </sc-if>
+          <sc-if value="{{ a.danger }}" hint-placeholder-val="{{ false }}">
+            <button style="height:34px;padding:0 14px;border:1px solid #F0D5D6;border-radius:9px;background:#FFFFFF;color:#B4383D;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#FAECEC;">{{ a.label }}</button>
+          </sc-if>
+          <sc-if value="{{ a.neutral }}" hint-placeholder-val="{{ true }}">
+            <button style="height:34px;padding:0 14px;border:1px solid #DBD9D0;border-radius:9px;background:#FFFFFF;color:#1C1B18;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#F8F7F4;">{{ a.label }}</button>
+          </sc-if>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="padding:18px 32px 28px;display:flex;flex-direction:column;gap:14px;overflow:hidden;">
+
+      <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:14px;">
+          <div style="width:160px;height:12px;border-radius:6px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lo-shimmer 1.2s linear infinite;"></div>
+          <div style="width:280px;height:34px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lo-shimmer 1.2s linear infinite;"></div>
+          <div style="height:12px;border-radius:6px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lo-shimmer 1.2s linear infinite;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+          <div style="height:118px;border-radius:12px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lo-shimmer 1.2s linear infinite;"></div>
+          <div style="height:118px;border-radius:12px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lo-shimmer 1.2s linear infinite;"></div>
+          <div style="height:118px;border-radius:12px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lo-shimmer 1.2s linear infinite;"></div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px;">
+          <div style="height:34px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lo-shimmer 1.2s linear infinite;"></div>
+          <div style="height:34px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lo-shimmer 1.2s linear infinite;"></div>
+          <div style="height:34px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lo-shimmer 1.2s linear infinite;"></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:56px 32px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+          <div style="width:52px;height:52px;border-radius:14px;background:#E7F3EF;display:flex;align-items:center;justify-content:center;">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="10" r="3.6" stroke="#206B4E" stroke-width="1.6"></circle><path d="M10.6 10h7M15 10v3M17.6 10v2" stroke="#206B4E" stroke-width="1.6" stroke-linecap="round"></path></svg>
+          </div>
+          <div style="font-size:16px;font-weight:600;margin-top:16px;">A server key is required before your agent can make payments</div>
+          <div style="font-size:12.5px;line-height:1.55;color:#5F5D55;margin-top:6px;max-width:420px;">Provision a key, fund the agent’s balance, and set a spending cap. The key is held in your server environment — it is never shown in this dashboard.</div>
+          <button style="height:36px;padding:0 16px;margin-top:18px;border:none;border-radius:9px;background:#206B4E;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#17503A;">Set up agent</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showBody }}" hint-placeholder-val="{{ true }}">
+
+        <sc-if value="{{ bannerText }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:11px;background:{{ bannerBg }};border:1px solid {{ bannerBorder }};border-radius:11px;padding:12px 16px;">
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.05em;color:{{ bannerTagColor }};background:#FFFFFF;border-radius:6px;padding:3px 8px;flex:none;">{{ bannerTag }}</span>
+            <span style="flex:1;font-size:12.5px;font-weight:500;color:{{ bannerTextColor }};">{{ bannerText }}</span>
+            <sc-if value="{{ bannerCta }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:600;color:{{ bannerTextColor }};text-decoration:underline;cursor:pointer;flex:none;">{{ bannerCta }}</span></sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ cancelledNotice }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:11px;background:#FAECEC;border:1px solid #F0D5D6;border-radius:11px;padding:12px 16px;">
+            <span style="flex:1;font-size:12.5px;font-weight:500;color:#8E2F34;">Server key rotated. This agent needs re-provisioning before it can pay again.</span>
+            <span style="font-size:12px;font-weight:600;color:#8E2F34;text-decoration:underline;cursor:pointer;flex:none;">Provision new key</span>
+          </div>
+        </sc-if>
+
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:20px 22px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#8C8A80;">SPEND THIS CYCLE</div>
+            <div style="font-size:11.5px;color:#8C8A80;">Cap edits live in <span style="font-weight:600;color:#5F5D55;cursor:pointer;">Cap &amp; limits</span></div>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:9px;margin-top:10px;">
+            <span style="font-size:34px;font-weight:600;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1;">{{ spend }}</span>
+            <span style="font-size:14px;color:#5F5D55;font-variant-numeric:tabular-nums;">/ {{ cap }} daily cap</span>
+            <span style="font-size:13px;font-weight:600;color:{{ pctColor }};font-variant-numeric:tabular-nums;">({{ pct }})</span>
+          </div>
+          <div style="margin-top:14px;height:12px;border-radius:6px;background:#F1EFE9;overflow:hidden;">
+            <div style="width:{{ barW }};height:100%;border-radius:6px;background:{{ barColor }};"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:11.5px;color:#8C8A80;">
+            <span>Resets daily · Next reset Jul 3, 2026 00:00 UTC (in 9h 37m)</span>
+            <span>Blocked and failed payments don’t count toward spend</span>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+          <div style="background:#FFFFFF;border:1px solid {{ floatBorder }};border-radius:12px;padding:16px 18px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#8C8A80;">AGENT BALANCE</div>
+              <sc-if value="{{ lowFloat }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;letter-spacing:0.04em;color:#96650F;background:#FBF1DC;border-radius:5px;padding:2px 6px;">LOW</span></sc-if>
+            </div>
+            <div style="font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:8px;">{{ float }}</div>
+            <div style="font-size:11.5px;color:#8C8A80;margin-top:2px;">USDC · unified across 3 networks</div>
+            <div style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#8C8A80;margin-top:5px;font-variant-numeric:tabular-nums;">{{ floatBreakdown }}</div>
+            <sc-if value="{{ lowFloat }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:11.5px;color:#96650F;margin-top:8px;">Your agent may not be able to pay — <span style="font-weight:600;text-decoration:underline;cursor:pointer;">add funds</span></div>
+            </sc-if>
+            <sc-if value="{{ notLowFloat }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size:11.5px;font-weight:500;color:#206B4E;margin-top:8px;cursor:pointer;">Add funds →</div>
+            </sc-if>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:16px 18px;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#8C8A80;">CONNECTED AGENT</div>
+            <div style="display:flex;align-items:center;gap:7px;margin-top:8px;">
+              <span style="font-size:14px;font-weight:600;">Claude Code</span>
+              <span style="width:5px;height:5px;border-radius:50%;background:{{ connDot }};"></span>
+              <span style="font-size:11px;font-weight:600;color:{{ connColor }};">{{ connLabel }}</span>
+            </div>
+            <div style="font-family:'Geist Mono',monospace;font-size:11px;color:#5F5D55;margin-top:3px;">Leash MCP · leash_sk_••••q4d8</div>
+            <div style="font-size:11.5px;font-weight:500;color:#206B4E;margin-top:8px;cursor:pointer;">Manage connection →</div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:16px 18px;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#8C8A80;">SERVER KEY</div>
+            <div style="display:flex;align-items:center;gap:7px;margin-top:8px;">
+              <span style="font-size:14px;font-weight:600;">{{ keyStatus }}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+              <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#5F5D55;">0x7F3a…9C4e</span>
+              <svg width="11" height="11" viewBox="0 0 14 14" fill="none" style="cursor:pointer;"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5" stroke="#8C8A80" stroke-width="1.4"></rect><path d="M9.5 4.5v-1a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1" stroke="#8C8A80" stroke-width="1.4"></path></svg>
+            </div>
+            <div style="font-size:11.5px;color:#8C8A80;margin-top:8px;">Held in your server environment — never shown here.</div>
+          </div>
+        </div>
+
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid #F0EEE8;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <span style="font-size:13px;font-weight:600;">Recent payments</span>
+              <sc-if value="{{ liveChip }}" hint-placeholder-val="{{ true }}">
+                <span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#17503A;background:#E7F3EF;border-radius:999px;padding:3px 9px;"><span style="width:5px;height:5px;border-radius:50%;background:#206B4E;animation:lo-pulse 1.6s ease-in-out infinite;"></span>Live · ~3s polling</span>
+              </sc-if>
+            </div>
+            <span style="font-size:11.5px;font-weight:500;color:#206B4E;cursor:pointer;">View all →</span>
+          </div>
+          <sc-if value="{{ feedEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:36px;text-align:center;">
+              <div style="font-size:13px;font-weight:500;color:#5F5D55;">Your agent hasn’t made any payments yet</div>
+              <div style="font-size:11.5px;color:#8C8A80;margin-top:4px;">x402 receipts appear here in real time once the agent starts paying for resources.</div>
+            </div>
+          </sc-if>
+          <sc-for list="{{ feed }}" as="r" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:90px 1.6fr 110px 150px 90px;gap:12px;padding:11px 18px;border-bottom:1px solid #F5F4F0;align-items:center;">
+              <div style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;">{{ r.usd }}</div>
+              <div style="font-family:'Geist Mono',monospace;font-size:11.5px;color:#5F5D55;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.url }}</div>
+              <div><span style="display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ r.stBg }};color:{{ r.stColor }};">{{ r.status }}</span></div>
+              <div style="font-family:'Geist Mono',monospace;font-size:11px;color:#3B5BD9;">{{ r.tx }} <span style="color:#8C8A80;">· {{ r.net }}</span></div>
+              <div style="font-size:11px;color:#8C8A80;text-align:right;">{{ r.when }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;active&quot;,&quot;options&quot;:[&quot;active&quot;,&quot;near&quot;,&quot;halted&quot;,&quot;paused&quot;,&quot;frozen&quot;,&quot;cancelled&quot;,&quot;not_provisioned&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;low_float&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Overview&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'active';
+
+    const chips = {
+      active: { chipLabel: 'Active', chipBg: '#E7F3EF', chipColor: '#17503A', chipBorder: '#BEE0D6', chipDot: '#206B4E', anim: true },
+      near: { chipLabel: 'Active', chipBg: '#E7F3EF', chipColor: '#17503A', chipBorder: '#BEE0D6', chipDot: '#206B4E', anim: true },
+      halted: { chipLabel: 'Halted — cap reached', chipBg: '#FAECEC', chipColor: '#8E2F34', chipBorder: '#F0D5D6', chipDot: '#C13A40', anim: false },
+      paused: { chipLabel: 'Paused', chipBg: '#EFEDE7', chipColor: '#5F5D55', chipBorder: '#DBD9D0', chipDot: '#8C8A80', anim: false },
+      frozen: { chipLabel: 'Frozen', chipBg: '#EAF1F9', chipColor: '#2C5580', chipBorder: '#C9DCEF', chipDot: '#3A6EA5', anim: false },
+      cancelled: { chipLabel: 'Cancelled', chipBg: '#FAECEC', chipColor: '#8E2F34', chipBorder: '#F0D5D6', chipDot: '#C13A40', anim: false },
+      not_provisioned: { chipLabel: 'Not provisioned', chipBg: '#FFFFFF', chipColor: '#8C8A80', chipBorder: '#DBD9D0', chipDot: '#B4B2A8', anim: false },
+      loading: { chipLabel: 'Loading…', chipBg: '#F5F4F0', chipColor: '#8C8A80', chipBorder: '#E8E6DF', chipDot: '#B4B2A8', anim: false },
+      empty: { chipLabel: 'Active', chipBg: '#E7F3EF', chipColor: '#17503A', chipBorder: '#BEE0D6', chipDot: '#206B4E', anim: true },
+      low_float: { chipLabel: 'Active', chipBg: '#E7F3EF', chipColor: '#17503A', chipBorder: '#BEE0D6', chipDot: '#206B4E', anim: true }
+    };
+    const c = chips[s] || chips.active;
+
+    const actionSets = {
+      active: [{ label: 'Adjust cap', neutral: true }, { label: 'Pause agent', neutral: true }],
+      near: [{ label: 'Raise cap', primary: true }, { label: 'Pause agent', neutral: true }],
+      halted: [{ label: 'Raise cap', primary: true }, { label: 'Revoke', danger: true }],
+      paused: [{ label: 'Resume agent', primary: true }, { label: 'Revoke', danger: true }],
+      frozen: [{ label: 'Unfreeze agent', primary: true }, { label: 'Revoke', danger: true }],
+      cancelled: [{ label: 'Provision new key', primary: true }],
+      not_provisioned: [{ label: 'Set up agent', primary: true }],
+      loading: [],
+      empty: [{ label: 'Adjust cap', neutral: true }, { label: 'Pause agent', neutral: true }],
+      low_float: [{ label: 'Add funds', primary: true }, { label: 'Pause agent', neutral: true }]
+    };
+
+    const spendMap = {
+      near: { spend: '$7.60', pct: '76%', w: '76%', color: '#E0A33E', pctColor: '#96650F' },
+      halted: { spend: '$10.00', pct: '100%', w: '100%', color: '#C13A40', pctColor: '#B4383D' },
+      empty: { spend: '$0.00', pct: '0%', w: '0%', color: '#206B4E', pctColor: '#8C8A80' }
+    };
+    const sm = spendMap[s] || { spend: '$4.20', pct: '42%', w: '42%', color: '#206B4E', pctColor: '#17503A' };
+
+    let bannerText = false, bannerTag = 'ALERT', bannerBg = '#FBF1DC', bannerBorder = '#F2E3C2', bannerTagColor = '#96650F', bannerTextColor = '#7A5410', bannerCta = false;
+    if (s === 'near') { bannerText = 'Your agent is approaching its cap — 76% used. It keeps paying until the cap is reached.'; bannerCta = 'Review feed'; }
+    if (s === 'halted') { bannerText = 'Payments halted — cap reached. The next payment was blocked before it was sent.'; bannerTag = 'ACTION REQUIRED'; bannerBg = '#FAECEC'; bannerBorder = '#F0D5D6'; bannerTagColor = '#B4383D'; bannerTextColor = '#8E2F34'; bannerCta = 'Raise cap'; }
+
+    const feedRows = [
+      { usd: '$0.42', url: 'api.searchgrid.io/v1/search', status: 'Settled', stBg: '#E8F3EC', stColor: '#257A46', tx: '0x8f2e…1b7d', net: 'Base', when: '2 min ago' },
+      { usd: '$0.08', url: 'data.arxival.net/v2/papers/fetch', status: 'Settled', stBg: '#E8F3EC', stColor: '#257A46', tx: '0x3c9a…e42f', net: 'Arbitrum', when: '6 min ago' },
+      { usd: '$1.20', url: 'api.mapgrid.dev/v1/tiles/batch', status: 'Settled', stBg: '#E8F3EC', stColor: '#257A46', tx: '0x7d1b…a93c', net: 'Base', when: '11 min ago' },
+      { usd: '$0.02', url: 'feeds.newswire.dev/v1/query', status: 'Failed', stBg: '#FAECEC', stColor: '#B4383D', tx: '—', net: 'Polygon', when: '24 min ago' }
+    ];
+    const haltedRows = [
+      { usd: '$0.45', url: 'api.searchgrid.io/v1/search', status: 'Blocked', stBg: '#2A2925', stColor: '#F4F3EE', tx: '—', net: '—', when: 'just now' }
+    ].concat(feedRows.slice(0, 3));
+
+    let feed = feedRows;
+    if (s === 'halted') feed = haltedRows;
+    if (s === 'empty' || s === 'not_provisioned' || s === 'loading') feed = [];
+    if (s === 'paused' || s === 'frozen' || s === 'cancelled') feed = feedRows;
+
+    return {
+      chipLabel: c.chipLabel, chipBg: c.chipBg, chipColor: c.chipColor, chipBorder: c.chipBorder, chipDot: c.chipDot,
+      chipDotAnim: c.anim ? 'animation:lo-pulse 1.6s ease-in-out infinite;' : '',
+      badgeCount: s === 'halted' ? '3' : '2',
+      badgeBg: s === 'halted' ? '#C13A40' : '#206B4E',
+      actions: actionSets[s] || [],
+      isLoading: s === 'loading',
+      isSetup: s === 'not_provisioned',
+      showBody: s !== 'loading' && s !== 'not_provisioned',
+      bannerText, bannerTag, bannerBg, bannerBorder, bannerTagColor, bannerTextColor, bannerCta,
+      cancelledNotice: s === 'cancelled',
+      spend: sm.spend, cap: '$10.00', pct: sm.pct, barW: sm.w, barColor: sm.color, pctColor: sm.pctColor,
+      float: s === 'low_float' ? '$3.50' : '$24.80',
+      floatBreakdown: s === 'low_float' ? 'Base 2.10 · Arb 0.90 · Pol 0.50' : 'Base 14.20 · Arb 6.10 · Pol 4.50',
+      connDot: s === 'halted' || s === 'paused' || s === 'frozen' || s === 'cancelled' ? '#B4B2A8' : '#206B4E',
+      connColor: s === 'halted' || s === 'paused' || s === 'frozen' || s === 'cancelled' ? '#8C8A80' : '#17503A',
+      connLabel: s === 'cancelled' ? 'Key rotated' : (s === 'paused' || s === 'frozen' || s === 'halted' ? 'Idle' : 'Active'),
+      lowFloat: s === 'low_float',
+      notLowFloat: s !== 'low_float',
+      floatBorder: s === 'low_float' ? '#F2E3C2' : '#E8E6DF',
+      keyStatus: s === 'cancelled' ? 'Rotated' : 'Provisioned',
+      liveChip: s === 'active' || s === 'near' || s === 'empty' || s === 'low_float',
+      feedEmpty: s === 'empty',
+      feed
+    };
+  }
+}
+</script>
+</body>
+</html>

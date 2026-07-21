@@ -21,7 +21,7 @@ so that I stay in control of autonomous agent spending without drowning in noise
 
 - **AC-6 (traces to R-DASH-3):** A payment to an unrecognized or unusual resource URL triggers a Tier 2 banner notification, regardless of current cumulative spend level.
 
-- **AC-7 (traces to R-DASH-3, AC-DASH-3-c, R-LEASH-4):** A payment attempt that would push cumulative spend past 100% of cap is blocked before the x402 call is made. A Tier 3 interrupt notification fires and requires owner action. The attempt is logged in the feed with status `blocked` — distinct from `failed` (a `blocked` attempt never issued an x402 call; a `failed` attempt did and was rejected by the facilitator). Ledger status enum: `success | failed | blocked`. The agent does not resume payments until the owner raises the cap or resets the cycle.
+- **AC-7 (traces to R-DASH-3, AC-DASH-3-c, R-LEASH-4):** A payment attempt that would push cumulative spend past 100% of cap is blocked before the x402 call is made. A Tier 3 interrupt notification fires and requires owner action. The attempt is logged in the feed with status `blocked` — distinct from `failed` (a `blocked` attempt never issued an x402 call; a `failed` attempt did and was rejected by the facilitator). Canonical ledger status enum: `pending | settled | failed | blocked` (`settled` replaces `success`). The agent does not resume payments until the owner raises the cap or resets the cycle.
 
 - **AC-8 (traces to R-DASH-3, AC-DASH-3-a):** Tier 3 never fires on a routine settled payment below any threshold. A Tier 3 notification is conclusive evidence that something requires the owner's attention.
 

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes tw-spin{to{transform:rotate(360deg);}}
+@keyframes tw-shimmer{0%{background-position:-200px 0;}100%{background-position:200px 0;}}
+</style>
+</helmet>
+<div style="position:relative;display:flex;width:100%;height:900px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="width:224px;flex:none;background:#F4F3EE;border-right:1px solid #E8E6DF;display:flex;flex-direction:column;padding:16px 12px 14px;">
+    <div style="display:flex;align-items:center;gap:9px;padding:4px 6px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#3B5BD9;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:13px;font-weight:700;">T</div>
+      <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em;">Tab</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-top:22px;">
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Quickstart</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Transactions</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">API keys</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:#1C1B18;background:#E9E7E0;">Webhooks</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Settings</div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#8C8A80;padding:0 6px;">MODE</div>
+    <div style="display:flex;background:#E9E7E0;border-radius:8px;padding:2px;margin-top:6px;">
+      <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,24,0.08);font-size:11.5px;font-weight:600;color:#96650F;">TEST</div>
+      <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:11.5px;font-weight:500;color:#8C8A80;cursor:pointer;">LIVE</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:6px;border-top:1px solid #E8E6DF;padding-top:12px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#F1EFE9;border:1px solid #E4E2DA;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">A</div>
+      <div style="min-width:0;">
+        <div style="font-size:12px;font-weight:600;line-height:1.2;white-space:nowrap;">Atlas Coffee Roasters</div>
+        <div style="font-size:10.5px;color:#8C8A80;white-space:nowrap;">dev@atlascoffee.com</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <div style="background:#FBF1DC;color:#7A5410;font-size:12px;padding:7px 28px;border-bottom:1px solid #F2E3C2;flex:none;">You are in test mode. Test payments are simulated and do not move real funds.</div>
+
+    <div style="padding:24px 32px 0;">
+      <div style="font-size:19px;font-weight:600;letter-spacing:-0.01em;">Webhooks</div>
+      <div style="font-size:12.5px;color:#5F5D55;margin-top:3px;">Your canonical fulfillment signal. Every settlement POSTs <span style="font-family:'Geist Mono',monospace;">{ transactionId, tokenChanges }</span> to your endpoint, signed with <span style="font-family:'Geist Mono',monospace;">X-Tab-Signature</span>.</div>
+    </div>
+
+    <div style="padding:18px 32px 24px;max-width:860px;">
+
+      <sc-if value="{{ showSavedToast }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-bottom:12px;border-radius:9px;padding:10px 13px;font-size:12.5px;background:#E8F3EC;color:#1D6237;display:flex;align-items:center;gap:8px;">
+          <svg width="13" height="13" viewBox="0 0 24 24"><path d="M5 12.5l4.4 4.4L19 7.6" fill="none" stroke="#257A46" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          {{ toastText }}
+        </div>
+      </sc-if>
+      <sc-if value="{{ showSaveError }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-bottom:12px;border-radius:9px;padding:10px 13px;font-size:12.5px;background:#FAECEC;color:#8E2F34;">Could not save webhook URL. Check the URL format and try again.</div>
+      </sc-if>
+
+      <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:14px;">
+          <div style="width:140px;height:13px;border-radius:6px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tw-shimmer 1.2s linear infinite;"></div>
+          <div style="height:42px;border-radius:9px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tw-shimmer 1.2s linear infinite;"></div>
+          <div style="width:55%;height:42px;border-radius:9px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tw-shimmer 1.2s linear infinite;"></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isUnconfigured }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:22px;">
+          <div style="font-size:14px;font-weight:600;">Add a webhook URL to receive payment confirmations.</div>
+          <div style="font-size:12.5px;color:#5F5D55;margin-top:4px;">HTTPS only. We’ll generate your signing secret when you save.</div>
+          <div style="display:flex;gap:10px;margin-top:14px;">
+            <div style="flex:1;height:42px;border:1px solid #DBD9D0;border-radius:9px;display:flex;align-items:center;padding:0 13px;font-family:'Geist Mono',monospace;font-size:12.5px;color:{{ urlColor }};background:#FFFFFF;">{{ urlValue }}</div>
+            <sc-if value="{{ isSaving }}" hint-placeholder-val="{{ false }}">
+              <button disabled="{{ true }}" style="height:42px;padding:0 18px;border:none;border-radius:9px;background:#3B5BD9;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;opacity:0.85;cursor:default;">{{ spinnerWhite }}<span>Saving…</span></button>
+            </sc-if>
+            <sc-if value="{{ notSaving }}" hint-placeholder-val="{{ true }}">
+              <button style="height:42px;padding:0 18px;border:none;border-radius:9px;background:#3B5BD9;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:13px;font-weight:500;cursor:pointer;" style-hover="background:#2E48B8;">Save</button>
+            </sc-if>
+          </div>
+          <div style="font-size:11.5px;color:#8C8A80;margin-top:12px;">Tab will retry failed deliveries up to 3 times with exponential backoff.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isConfigured }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:22px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-size:13px;font-weight:600;">Endpoint</div>
+            <div style="display:flex;gap:8px;">
+              <button style="height:30px;padding:0 12px;border:1px solid #DBD9D0;border-radius:8px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#F8F7F4;">Send test webhook</button>
+              <button style="height:30px;padding:0 12px;border:1px solid #DBD9D0;border-radius:8px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#F8F7F4;">Edit</button>
+              <button style="height:30px;padding:0 12px;border:1px solid #F0D5D6;border-radius:8px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12px;font-weight:500;color:#B4383D;cursor:pointer;" style-hover="background:#FAECEC;">Delete</button>
+            </div>
+          </div>
+          <sc-if value="{{ isEditing }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:10px;margin-top:10px;">
+              <div style="flex:1;height:42px;border:1.5px solid #3B5BD9;border-radius:9px;box-shadow:0 0 0 3px rgba(59,91,217,0.12);display:flex;align-items:center;padding:0 13px;font-family:'Geist Mono',monospace;font-size:12.5px;background:#FFFFFF;">https://api.atlascoffee.com/webhooks/tab-v2</div>
+              <button style="height:42px;padding:0 16px;border:none;border-radius:9px;background:#3B5BD9;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:13px;font-weight:500;cursor:pointer;" style-hover="background:#2E48B8;">Save</button>
+              <button style="height:42px;padding:0 14px;border:1px solid #DBD9D0;border-radius:9px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#F8F7F4;">Cancel</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ notEditing }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top:10px;height:42px;border:1px solid #E8E6DF;border-radius:9px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;background:#F8F7F4;">
+              <span style="font-family:'Geist Mono',monospace;font-size:12.5px;color:#1C1B18;">https://api.atlascoffee.com/webhooks/tab</span>
+              <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#257A46;"><span style="width:6px;height:6px;border-radius:50%;background:#257A46;"></span>Listening</span>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:1px solid #F0EEE8;">
+            <div>
+              <div style="font-size:13px;font-weight:600;">Signing secret</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+                <span style="font-family:'Geist Mono',monospace;font-size:12.5px;color:#5F5D55;">whsec_••••••••k2f7</span>
+                <span style="font-size:11px;color:#8C8A80;">HMAC-SHA256 · shown once at creation</span>
+              </div>
+            </div>
+            <button style="height:30px;padding:0 12px;border:1px solid #DBD9D0;border-radius:8px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#F8F7F4;">Regenerate</button>
+          </div>
+          <div style="font-size:11.5px;color:#8C8A80;margin-top:14px;">Tab will retry failed deliveries up to 3 times with exponential backoff.</div>
+        </div>
+
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;overflow:hidden;margin-top:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #F0EEE8;">
+            <div style="font-size:13px;font-weight:600;">Recent deliveries</div>
+            <span style="font-size:11.5px;font-weight:500;color:#3B5BD9;cursor:pointer;">View full log</span>
+          </div>
+          <sc-for list="{{ logRows }}" as="d" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:110px 1fr 1.1fr 120px 90px;gap:12px;padding:11px 18px;border-bottom:1px solid #F5F4F0;align-items:center;">
+              <div style="display:flex;align-items:center;gap:7px;">
+                <span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;color:{{ d.codeColor }};">{{ d.code }}</span>
+                <sc-if value="{{ d.retrying }}" hint-placeholder-val="{{ false }}">{{ spinnerInk }}</sc-if>
+              </div>
+              <div style="font-size:12px;color:{{ d.labelColor }};font-weight:500;">{{ d.label }}</div>
+              <div style="font-family:'Geist Mono',monospace;font-size:11.5px;color:#3B5BD9;">{{ d.tx }}</div>
+              <div style="font-size:11.5px;color:#8C8A80;">{{ d.attempt }}</div>
+              <div style="font-size:11.5px;color:#8C8A80;text-align:right;">{{ d.when }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+
+  <sc-if value="{{ showSecretModal }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(28,27,24,0.42);"></div>
+    <div style="position:absolute;left:50%;top:200px;transform:translateX(-50%);width:480px;background:#FFFFFF;border-radius:14px;box-shadow:0 24px 64px rgba(28,27,24,0.3);padding:24px;">
+      <div style="font-size:16px;font-weight:600;letter-spacing:-0.01em;">Your signing secret</div>
+      <div style="margin-top:12px;border-radius:9px;padding:10px 13px;font-size:12.5px;line-height:1.5;background:#FBF1DC;color:#7A5410;border:1px solid #F2E3C2;">For security reasons, you can only view this signing secret once. Save it to a secure location.</div>
+      <div style="margin-top:14px;background:#26251F;border-radius:9px;padding:14px;display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;font-family:'Geist Mono',monospace;font-size:12.5px;line-height:1.6;color:#E4E2D8;word-break:break-all;">whsec_8kQm2vX9pL4nT7jD3hF6gS1aE5cV0bN2uMk2f7</div>
+        <div style="flex:none;font-size:11.5px;font-weight:500;color:#E4E2D8;background:rgba(255,255,255,0.1);border-radius:7px;padding:5px 10px;cursor:pointer;" style-hover="background:rgba(255,255,255,0.18);">Copy</div>
+      </div>
+      <div style="font-size:11.5px;color:#8C8A80;margin-top:10px;">Verify every delivery by checking <span style="font-family:'Geist Mono',monospace;">X-Tab-Signature</span> with this secret.</div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+        <button style="height:36px;padding:0 16px;border:none;border-radius:9px;background:#1C1B18;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#33312C;">I’ve saved my secret</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showDeleteModal }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(28,27,24,0.42);"></div>
+    <div style="position:absolute;left:50%;top:240px;transform:translateX(-50%);width:440px;background:#FFFFFF;border-radius:14px;box-shadow:0 24px 64px rgba(28,27,24,0.3);padding:24px;">
+      <div style="font-size:16px;font-weight:600;letter-spacing:-0.01em;">Remove this webhook URL?</div>
+      <div style="font-size:12.5px;line-height:1.55;color:#5F5D55;margin-top:8px;">Tab will not deliver payment notifications until you add a new one. Your signing secret will be discarded.</div>
+      <div style="display:flex;justify-content:flex-end;gap:9px;margin-top:20px;">
+        <button style="height:36px;padding:0 14px;border:1px solid #DBD9D0;border-radius:9px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#F8F7F4;">Cancel</button>
+        <button style="height:36px;padding:0 14px;border:none;border-radius:9px;background:#C13A40;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#A82F35;">Remove webhook</button>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;configured&quot;,&quot;options&quot;:[&quot;unconfigured&quot;,&quot;loading&quot;,&quot;configured&quot;,&quot;editing&quot;,&quot;saving&quot;,&quot;save_success&quot;,&quot;save_error&quot;,&quot;secret_reveal&quot;,&quot;delete_confirm&quot;,&quot;deleted&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Webhooks&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'configured';
+    const R = React;
+    const spinnerWhite = R.createElement('span', { style: { width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.35)', borderTopColor: '#FFFFFF', display: 'inline-block', animation: 'tw-spin 0.8s linear infinite', flex: 'none' } });
+    const spinnerInk = R.createElement('span', { style: { width: 11, height: 11, borderRadius: '50%', border: '2px solid rgba(28,27,24,0.12)', borderTopColor: '#96650F', display: 'inline-block', animation: 'tw-spin 0.8s linear infinite', flex: 'none' } });
+
+    const logRows = [
+      { code: '200', codeColor: '#257A46', label: 'Delivered', labelColor: '#257A46', tx: '0x8f2e…1b7d', attempt: 'Attempt 1 of 3 · 342ms', when: '2 min ago', retrying: false },
+      { code: '500', codeColor: '#B4383D', label: 'Retrying (attempt 2 of 3)', labelColor: '#96650F', tx: '0x5e4f…c810', attempt: 'Next retry in 4 min', when: '5 hr ago', retrying: true },
+      { code: 'TIMEOUT', codeColor: '#B4383D', label: 'Timeout', labelColor: '#B4383D', tx: '0x9b3d…f7a1', attempt: 'Attempt 3 of 3 · gave up', when: '1 day ago', retrying: false },
+      { code: '200', codeColor: '#257A46', label: 'Delivered', labelColor: '#257A46', tx: '0x2a6c…9d5e', attempt: 'Attempt 1 of 3 · 289ms', when: '1 day ago', retrying: false }
+    ];
+
+    const unconfiguredish = ['unconfigured', 'saving', 'save_error', 'deleted'];
+    const configuredish = ['configured', 'editing', 'save_success', 'secret_reveal', 'delete_confirm'];
+
+    return {
+      spinnerWhite, spinnerInk, logRows,
+      isLoading: s === 'loading',
+      isUnconfigured: unconfiguredish.includes(s),
+      isConfigured: configuredish.includes(s),
+      isEditing: s === 'editing',
+      notEditing: s !== 'editing',
+      isSaving: s === 'saving',
+      notSaving: s !== 'saving',
+      showSavedToast: s === 'save_success' || s === 'deleted',
+      toastText: s === 'deleted' ? 'Webhook removed.' : 'Webhook URL saved. Your signing secret is ready — view it once now.',
+      showSaveError: s === 'save_error',
+      urlValue: s === 'unconfigured' || s === 'deleted' ? 'https://your-server.com/webhooks/tab' : 'https://api.atlascoffee.com/webhooks/tab',
+      urlColor: s === 'unconfigured' || s === 'deleted' ? '#B4B2A8' : '#1C1B18',
+      showSecretModal: s === 'secret_reveal',
+      showDeleteModal: s === 'delete_confirm'
+    };
+  }
+}
+</script>
+</body>
+</html>

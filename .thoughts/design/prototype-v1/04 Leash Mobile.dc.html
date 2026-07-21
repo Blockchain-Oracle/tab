@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#EDEBE4;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}</style>
+</helmet>
+<div style="padding:56px 64px 96px;color:#1C1B18;">
+
+  <div style="max-width:880px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">TAB + LEASH · SURFACE 4 OF 4</div>
+    <h1 style="margin:10px 0 0;font-family:'Newsreader',serif;font-size:44px;font-weight:500;letter-spacing:-0.01em;line-height:1.05;">Agent owner mobile PWA <span style="color:#8C8A80;">(Leash)</span></h1>
+    <p style="margin:14px 0 0;font-size:14px;line-height:1.6;color:#5F5D55;max-width:640px;">P1–P6 at 375px. Monitor / Notify / Revoke only — no cap editing, no config, no signing. Every revoke action is an HTTP call. Tab bar navigation: Overview · Feed · Controls.</p>
+    <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;">
+      <a href="00 Cover.dc.html" style="text-decoration:none;font-size:12px;font-weight:500;color:#5F5D55;background:#FFFFFF;border:1px solid #DBD8CE;border-radius:999px;padding:6px 12px;">← Cover &amp; decisions</a>
+      <a href="01 Buyer Checkout.dc.html" style="text-decoration:none;font-size:12px;font-weight:500;color:#5F5D55;background:#FFFFFF;border:1px solid #DBD8CE;border-radius:999px;padding:6px 12px;">← Buyer checkout</a>
+      <a href="02 Merchant Dashboard.dc.html" style="text-decoration:none;font-size:12px;font-weight:500;color:#5F5D55;background:#FFFFFF;border:1px solid #DBD8CE;border-radius:999px;padding:6px 12px;">← Merchant dashboard</a>
+      <a href="03 Leash Dashboard.dc.html" style="text-decoration:none;font-size:12px;font-weight:500;color:#5F5D55;background:#FFFFFF;border:1px solid #DBD8CE;border-radius:999px;padding:6px 12px;">← Leash web</a>
+    </div>
+  </div>
+
+  <!-- P1 -->
+  <section id="P1" style="margin-top:72px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">P1 · MOBILE COMMAND CENTER</div>
+    <h2 style="margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">Overview</h2>
+    <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#5F5D55;max-width:640px;">Stripped to essentials: status chip → one big unified treasury number with a per-network line (Base · Arb · Pol) → spend bar → last payment → controls. Cap is read-only here; editing is web-only.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:24px;align-items:flex-start;">
+      <div data-screen-label="P1 — NORMAL"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P1 — NORMAL</span></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Overview" state="normal" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P1 — NEAR-LIMIT"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P1 — NEAR-LIMIT</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">Non-blocking inline banner; warning bar.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Overview" state="near" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P1 — OVER-LIMIT / CAP HIT"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P1 — OVER-LIMIT / CAP HIT</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">Non-dismissable interrupt; Revoke section prominent.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Overview" state="over" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P1 — PAUSED"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P1 — PAUSED</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">“Loop halted… key intact.” Warm gray chip.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Overview" state="paused" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P1 — FROZEN"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P1 — FROZEN</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">“No transactions can be submitted. Key intact.” Steel-blue chip — deliberately colder than Paused.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Overview" state="frozen" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P1 — CANCELLED"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P1 — CANCELLED</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">“Server key rotated.” No resume control.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Overview" state="cancelled" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P1 — NUCLEAR / NOT PROVISIONED"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P1 — NUCLEAR / NOT PROVISIONED</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">Spend bar absent; no revoke controls.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Overview" state="nuclear" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P1 — OFFLINE"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P1 — OFFLINE</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">Stale data indicator; controls disabled.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Overview" state="offline" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P1 — LOADING"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P1 — LOADING</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">Skeleton shimmer; layout preserved.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Overview" state="loading" hint-size="375px,812px"></dc-import></div></div>
+    </div>
+  </section>
+
+  <!-- P2 -->
+  <section id="P2" style="margin-top:72px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">P2 · MOBILE FEED</div>
+    <h2 style="margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">Payment Feed</h2>
+    <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#5F5D55;max-width:640px;">Card list, USD only (atomic units live in the receipt). txHash short-form and tappable. Pull-to-refresh implied at the top of the list.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:24px;align-items:flex-start;">
+      <div data-screen-label="P2 — POPULATED"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P2 — POPULATED</span></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Feed" state="populated" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P2 — EMPTY"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P2 — EMPTY</span></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Feed" state="empty" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P2 — LOADING"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P2 — LOADING</span></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Feed" state="loading" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P2 — OFFLINE"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P2 — OFFLINE</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">Last-fetched rows, stale; pull-to-refresh re-attempts.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Feed" state="offline" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P2 — NEAR-LIMIT BANNER"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P2 — NEAR-LIMIT BANNER</span></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Feed" state="near_banner" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P2 — OVER-LIMIT INTERRUPT"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P2 — OVER-LIMIT INTERRUPT</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">Sticky banner; blocked cards on top; feed static.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Feed" state="over_interrupt" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P2 — PAUSED / READ-ONLY"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P2 — PAUSED / FROZEN / CANCELLED / NUCLEAR</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">Historical rows read-only; status banner at top.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Feed" state="halted_readonly" hint-size="375px,812px"></dc-import></div></div>
+    </div>
+  </section>
+
+  <!-- P3 -->
+  <section id="P3" style="margin-top:72px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">P3 · RECEIPT SHEET</div>
+    <h2 style="margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">Receipt Detail</h2>
+    <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#5F5D55;max-width:640px;">Bottom sheet. Full network detail lives here — CAIP-2 id and a per-chain explorer link (Basescan / Arbiscan / Polygonscan); the feed shows just the network name. Blocked receipts state plainly that nothing was submitted.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:24px;align-items:flex-start;">
+      <div data-screen-label="P3 — SETTLED RECEIPT"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P3 — SETTLED RECEIPT</span></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Receipt" state="settled" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P3 — FAILED RECEIPT"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P3 — FAILED RECEIPT</span></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Receipt" state="failed" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P3 — BLOCKED RECEIPT"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P3 — BLOCKED RECEIPT</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">No txHash by design.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Receipt" state="blocked" hint-size="375px,812px"></dc-import></div></div>
+    </div>
+  </section>
+
+  <!-- P4 -->
+  <section id="P4" style="margin-top:72px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">P4 · OS PUSH — LOCK SCREEN</div>
+    <h2 style="margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">Push Notification (compact)</h2>
+    <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#5F5D55;max-width:640px;">Title 6–8 words, body ~10. Anti-cry-wolf rule: “Action required” pushes never fire for routine settled payments. Tapping deep-links into the PWA at the right state.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:24px;align-items:flex-start;">
+
+      <div data-screen-label="P4 — TIER 2 APPROACHING CAP">
+        <div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P4 — ALERT · APPROACHING CAP</span></div>
+        <div style="width:375px;height:640px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);background:linear-gradient(180deg,#191917 0%,#100F0E 100%);position:relative;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 22px 0;font-size:12px;font-weight:600;color:#F4F3EE;opacity:0.9;"><span>9:41</span><div style="display:flex;gap:5px;align-items:center;"><div style="width:16px;height:8px;border:1px solid rgba(244,243,238,0.8);border-radius:2.5px;"></div></div></div>
+          <div style="text-align:center;margin-top:64px;">
+            <div style="font-size:15px;font-weight:500;color:rgba(244,243,238,0.85);">Wednesday, July 2</div>
+            <div style="font-size:78px;font-weight:300;letter-spacing:-0.02em;color:#F4F3EE;line-height:1;margin-top:4px;font-variant-numeric:tabular-nums;">13:58</div>
+          </div>
+          <div style="position:absolute;left:12px;right:12px;top:308px;background:rgba(244,243,238,0.95);border-radius:18px;padding:12px 14px;display:flex;gap:11px;align-items:flex-start;">
+            <div style="width:32px;height:32px;border-radius:8px;background:#206B4E;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:15px;font-weight:700;flex:none;">L</div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:12.5px;font-weight:600;color:#1C1B18;">Leash: approaching spending cap</span><span style="font-size:10.5px;color:#5F5D55;">now</span></div>
+              <div style="font-size:12.5px;color:#33312C;margin-top:2px;line-height:1.4;">Agent at 76% of $10.00. $2.40 remaining.</div>
+            </div>
+          </div>
+          <div style="position:absolute;bottom:22px;left:0;right:0;display:flex;justify-content:space-between;padding:0 44px;">
+            <div style="width:42px;height:42px;border-radius:50%;background:rgba(244,243,238,0.14);"></div>
+            <div style="width:42px;height:42px;border-radius:50%;background:rgba(244,243,238,0.14);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div data-screen-label="P4 — TIER 2 UNUSUAL DESTINATION">
+        <div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P4 — ALERT · UNUSUAL DESTINATION</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">First-seen-domain heuristic (resolved).</div></div>
+        <div style="width:375px;height:640px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);background:linear-gradient(180deg,#191917 0%,#100F0E 100%);position:relative;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 22px 0;font-size:12px;font-weight:600;color:#F4F3EE;opacity:0.9;"><span>9:41</span><div style="display:flex;gap:5px;align-items:center;"><div style="width:16px;height:8px;border:1px solid rgba(244,243,238,0.8);border-radius:2.5px;"></div></div></div>
+          <div style="text-align:center;margin-top:64px;">
+            <div style="font-size:15px;font-weight:500;color:rgba(244,243,238,0.85);">Tuesday, July 1</div>
+            <div style="font-size:78px;font-weight:300;letter-spacing:-0.02em;color:#F4F3EE;line-height:1;margin-top:4px;font-variant-numeric:tabular-nums;">19:12</div>
+          </div>
+          <div style="position:absolute;left:12px;right:12px;top:308px;background:rgba(244,243,238,0.95);border-radius:18px;padding:12px 14px;display:flex;gap:11px;align-items:flex-start;">
+            <div style="width:32px;height:32px;border-radius:8px;background:#206B4E;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:15px;font-weight:700;flex:none;">L</div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:12.5px;font-weight:600;color:#1C1B18;">Leash: unusual payment destination</span><span style="font-size:10.5px;color:#5F5D55;">now</span></div>
+              <div style="font-size:12.5px;color:#33312C;margin-top:2px;line-height:1.4;">Agent paid premium.datamall.xyz — tap to review.</div>
+            </div>
+          </div>
+          <div style="position:absolute;bottom:22px;left:0;right:0;display:flex;justify-content:space-between;padding:0 44px;">
+            <div style="width:42px;height:42px;border-radius:50%;background:rgba(244,243,238,0.14);"></div>
+            <div style="width:42px;height:42px;border-radius:50%;background:rgba(244,243,238,0.14);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div data-screen-label="P4 — TIER 3 AGENT HALTED">
+        <div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P4 — ACTION REQUIRED · AGENT HALTED</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">Time-sensitive interrupt delivery.</div></div>
+        <div style="width:375px;height:640px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);background:linear-gradient(180deg,#191917 0%,#100F0E 100%);position:relative;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 22px 0;font-size:12px;font-weight:600;color:#F4F3EE;opacity:0.9;"><span>9:41</span><div style="display:flex;gap:5px;align-items:center;"><div style="width:16px;height:8px;border:1px solid rgba(244,243,238,0.8);border-radius:2.5px;"></div></div></div>
+          <div style="text-align:center;margin-top:64px;">
+            <div style="font-size:15px;font-weight:500;color:rgba(244,243,238,0.85);">Wednesday, July 2</div>
+            <div style="font-size:78px;font-weight:300;letter-spacing:-0.02em;color:#F4F3EE;line-height:1;margin-top:4px;font-variant-numeric:tabular-nums;">14:23</div>
+          </div>
+          <div style="position:absolute;left:12px;right:12px;top:308px;background:rgba(244,243,238,0.97);border-radius:18px;padding:12px 14px;display:flex;gap:11px;align-items:flex-start;border:1.5px solid rgba(193,58,64,0.55);">
+            <div style="width:32px;height:32px;border-radius:8px;background:#C13A40;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:15px;font-weight:700;flex:none;">L</div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:12.5px;font-weight:600;color:#1C1B18;">Leash: agent halted — cap reached</span><span style="font-size:10.5px;color:#5F5D55;">now</span></div>
+              <div style="font-size:12.5px;color:#33312C;margin-top:2px;line-height:1.4;">Spending cap hit. Agent stopped. Tap to act.</div>
+            </div>
+          </div>
+          <div style="position:absolute;bottom:22px;left:0;right:0;display:flex;justify-content:space-between;padding:0 44px;">
+            <div style="width:42px;height:42px;border-radius:50%;background:rgba(244,243,238,0.14);"></div>
+            <div style="width:42px;height:42px;border-radius:50%;background:rgba(244,243,238,0.14);"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- P5 -->
+  <section id="P5" style="margin-top:72px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">P5 · OS PUSH — EXPANDED</div>
+    <h2 style="margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">Expanded Notification</h2>
+    <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#5F5D55;max-width:640px;">Pulled-down view. The Action-required expansion carries a “Revoke” action button — a soft pause fired from the lock screen via a service-worker HTTP call (resolved).</p>
+    <div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:24px;align-items:flex-start;">
+
+      <div data-screen-label="P5 — TIER 2 EXPANDED">
+        <div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P5 — ALERT · EXPANDED</span></div>
+        <div style="width:375px;height:640px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);background:linear-gradient(180deg,#191917 0%,#100F0E 100%);position:relative;">
+          <div style="position:absolute;inset:0;background:rgba(16,15,14,0.55);"></div>
+          <div style="position:absolute;left:12px;right:12px;top:130px;background:rgba(244,243,238,0.97);border-radius:20px;padding:14px 16px;">
+            <div style="display:flex;gap:11px;align-items:flex-start;">
+              <div style="width:34px;height:34px;border-radius:9px;background:#206B4E;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:16px;font-weight:700;flex:none;">L</div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:600;color:#1C1B18;">Leash: approaching spending cap</span><span style="font-size:10.5px;color:#5F5D55;">13:58</span></div>
+                <div style="font-size:12.5px;color:#33312C;margin-top:2px;">Agent at 76% of $10.00. $2.40 remaining.</div>
+              </div>
+            </div>
+            <div style="margin-top:12px;border-top:1px solid rgba(28,27,24,0.1);padding-top:11px;display:flex;flex-direction:column;gap:7px;font-size:12px;color:#33312C;">
+              <div style="display:flex;justify-content:space-between;"><span style="color:#5F5D55;">Current spend</span><span style="font-weight:600;font-variant-numeric:tabular-nums;">$7.60</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:#5F5D55;">Cap</span><span style="font-weight:600;font-variant-numeric:tabular-nums;">$10.00 · resets daily</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:#5F5D55;">Last payment</span><span style="font-weight:600;font-variant-numeric:tabular-nums;">$0.42 — api.searchgrid.io</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:#5F5D55;">Resource</span><span style="font-family:'Geist Mono',monospace;font-size:11px;">api.searchgrid.io/v1/search</span></div>
+            </div>
+          </div>
+          <div style="position:absolute;left:12px;right:12px;top:342px;text-align:center;font-size:11px;color:rgba(244,243,238,0.6);">tap opens the PWA Overview</div>
+        </div>
+      </div>
+
+      <div data-screen-label="P5 — TIER 3 EXPANDED">
+        <div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P5 — ACTION REQUIRED · EXPANDED</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">Revoke = soft pause via service worker; Review deep-links to the receipt.</div></div>
+        <div style="width:375px;height:640px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);background:linear-gradient(180deg,#191917 0%,#100F0E 100%);position:relative;">
+          <div style="position:absolute;inset:0;background:rgba(16,15,14,0.55);"></div>
+          <div style="position:absolute;left:12px;right:12px;top:110px;background:rgba(244,243,238,0.97);border-radius:20px;padding:14px 16px;border:1.5px solid rgba(193,58,64,0.55);">
+            <div style="display:flex;gap:11px;align-items:flex-start;">
+              <div style="width:34px;height:34px;border-radius:9px;background:#C13A40;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:16px;font-weight:700;flex:none;">L</div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:600;color:#1C1B18;">Leash: agent halted — cap reached</span><span style="font-size:10.5px;color:#5F5D55;">14:23</span></div>
+                <div style="font-size:12.5px;color:#33312C;margin-top:2px;">Spending cap hit. Agent stopped. Tap to act.</div>
+              </div>
+            </div>
+            <div style="margin-top:12px;border-top:1px solid rgba(28,27,24,0.1);padding-top:11px;display:flex;flex-direction:column;gap:7px;font-size:12px;color:#33312C;">
+              <div style="display:flex;justify-content:space-between;"><span style="color:#5F5D55;">Blocked amount</span><span style="font-weight:600;font-variant-numeric:tabular-nums;">$0.45</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:#5F5D55;">Resource</span><span style="font-family:'Geist Mono',monospace;font-size:11px;">api.searchgrid.io/v1/search</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:#5F5D55;">Current vs cap</span><span style="font-weight:600;font-variant-numeric:tabular-nums;">$10.00 / $10.00</span></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:13px;">
+              <div style="flex:1;text-align:center;padding:10px 0;border-radius:11px;background:rgba(28,27,24,0.08);font-size:12.5px;font-weight:600;color:#1C1B18;">Review</div>
+              <div style="flex:1;text-align:center;padding:10px 0;border-radius:11px;background:#C13A40;font-size:12.5px;font-weight:600;color:#FFFFFF;">Revoke</div>
+            </div>
+          </div>
+          <div style="position:absolute;left:12px;right:12px;top:392px;text-align:center;font-size:11px;color:rgba(244,243,238,0.6);">“Revoke” soft-pauses the agent without unlocking the phone</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- P6 -->
+  <section id="P6" style="margin-top:72px;">
+    <div style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">P6 · REVOKE SHEET</div>
+    <h2 style="margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">Revoke Sheet</h2>
+    <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#5F5D55;max-width:640px;">Bottom sheet with all four levels condensed. Levels 1–2 toggle (Pause/Resume, Freeze/Unfreeze); Level 4 combines type-to-confirm with hold-to-delete. Offline disables everything.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:24px;align-items:flex-start;">
+      <div data-screen-label="P6 — DEFAULT (ACTIVE)"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P6 — DEFAULT (ACTIVE)</span></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Revoke" state="default" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P6 — PAUSED"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P6 — PAUSED</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">L1 toggles to Resume.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Revoke" state="paused" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P6 — FROZEN"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P6 — FROZEN</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">L2 toggles to Unfreeze.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Revoke" state="frozen" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P6 — CANCELLED"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P6 — CANCELLED</span></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Revoke" state="cancelled" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P6 — NOT PROVISIONED"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P6 — NOT PROVISIONED</span></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Revoke" state="not_provisioned" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P6 — OFFLINE"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P6 — OFFLINE</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">“No connection. Connect to network to revoke.”</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Revoke" state="offline" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P6 — IN-FLIGHT"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P6 — IN-FLIGHT</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">One spinner; every other control disabled.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Revoke" state="inflight" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P6 — LEVEL 4 CONFIRM"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P6 — LEVEL 4 CONFIRM</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">Type the name + hold 3s — weight without dark patterns.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Revoke" state="confirm_l4" hint-size="375px,812px"></dc-import></div></div>
+      <div data-screen-label="P6 — CONFIRMED / SUCCESS"><div style="margin-bottom:8px;max-width:375px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;">P6 — CONFIRMED / SUCCESS</span><div style="font-size:11px;color:#8C8A80;margin-top:2px;">Sheet closes; Overview chip updates; toast confirms.</div></div><div style="width:375px;border-radius:18px;border:1px solid #D9D6CB;overflow:hidden;box-shadow:0 1px 3px rgba(28,27,24,0.06);"><dc-import name="_PWA Revoke" state="success" hint-size="375px,812px"></dc-import></div></div>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+</body>
+</html>

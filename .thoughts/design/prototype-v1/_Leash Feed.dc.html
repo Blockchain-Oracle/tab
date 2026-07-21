@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes lf-pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+@keyframes lf-spin{to{transform:rotate(360deg);}}
+@keyframes lf-shimmer{0%{background-position:-200px 0;}100%{background-position:200px 0;}}
+</style>
+</helmet>
+<div style="position:relative;display:flex;width:100%;height:900px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="width:224px;flex:none;background:#F4F3EE;border-right:1px solid #E8E6DF;display:flex;flex-direction:column;padding:16px 12px 14px;">
+    <div style="display:flex;align-items:center;gap:9px;padding:4px 6px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#206B4E;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:13px;font-weight:700;">L</div>
+      <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em;">Leash</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-top:22px;">
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Overview</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:#1C1B18;background:#E9E7E0;">Payments</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Notifications <span style="min-width:17px;height:17px;border-radius:9px;background:#206B4E;color:#FFFFFF;font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;">2</span></div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Cap &amp; limits</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Connect agent</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Revocation</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Setup &amp; funds</div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px;border-top:1px solid #E8E6DF;padding-top:12px;">
+      <div style="width:26px;height:26px;border-radius:50%;background:#E7F3EF;border:1px solid #BEE0D6;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#17503A;">AB</div>
+      <div style="min-width:0;"><div style="font-size:12px;font-weight:600;line-height:1.2;">Abu</div><div style="font-size:10.5px;color:#8C8A80;white-space:nowrap;">abu@example.dev</div></div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 32px 0;">
+      <div style="display:flex;align-items:center;gap:11px;">
+        <div style="font-size:19px;font-weight:600;letter-spacing:-0.01em;">Payments</div>
+        <sc-if value="{{ liveChip }}" hint-placeholder-val="{{ true }}">
+          <span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#17503A;background:#E7F3EF;border-radius:999px;padding:3px 9px;"><span style="width:5px;height:5px;border-radius:50%;background:#206B4E;animation:lf-pulse 1.6s ease-in-out infinite;"></span>Live · ~3s polling</span>
+        </sc-if>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:12px;color:#5F5D55;font-variant-numeric:tabular-nums;">{{ spend }} / $10.00 <span style="font-weight:600;color:{{ pctColor }};">({{ pct }})</span></span>
+        <div style="width:180px;height:8px;border-radius:4px;background:#F1EFE9;overflow:hidden;"><div style="width:{{ barW }};height:100%;border-radius:4px;background:{{ barColor }};"></div></div>
+      </div>
+    </div>
+
+    <div style="padding:16px 32px 24px;flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;">
+
+      <sc-if value="{{ bannerText }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:11px;background:{{ bannerBg }};border:1px solid {{ bannerBorder }};border-radius:11px;padding:11px 15px;">
+          <span style="font-size:10.5px;font-weight:700;letter-spacing:0.05em;color:{{ bannerTagColor }};background:#FFFFFF;border-radius:6px;padding:3px 8px;flex:none;">{{ bannerTag }}</span>
+          <span style="flex:1;font-size:12.5px;font-weight:500;color:{{ bannerTextColor }};">{{ bannerText }}</span>
+          <sc-if value="{{ bannerCta }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:600;color:{{ bannerTextColor }};text-decoration:underline;cursor:pointer;flex:none;">{{ bannerCta }}</span></sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:80px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#F5F4F0;display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 12h4l2.5-6 3 12 2.5-6h4" stroke="#B4B2A8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+          <div style="font-size:14px;font-weight:600;margin-top:14px;">Your agent hasn’t made any payments yet</div>
+          <div style="font-size:12.5px;color:#5F5D55;margin-top:4px;">x402 receipts stream in here the moment the agent pays for a resource.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+          <div style="height:16px;border-radius:6px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lf-shimmer 1.2s linear infinite;"></div>
+          <div style="height:40px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lf-shimmer 1.2s linear infinite;"></div>
+          <div style="height:40px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lf-shimmer 1.2s linear infinite;"></div>
+          <div style="height:40px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lf-shimmer 1.2s linear infinite;"></div>
+          <div style="height:40px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:lf-shimmer 1.2s linear infinite;"></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:11px;background:#FAECEC;border:1px solid #F0D5D6;border-radius:11px;padding:11px 15px;">
+          <span style="flex:1;font-size:12.5px;font-weight:500;color:#8E2F34;">Couldn’t refresh the feed. Showing the last loaded receipts.</span>
+          <span style="font-size:12px;font-weight:600;color:#8E2F34;text-decoration:underline;cursor:pointer;">Retry</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showTable }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:90px 1.5fr 105px 90px 150px 100px;gap:12px;padding:10px 18px;border-bottom:1px solid #F0EEE8;font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">
+            <div>AMOUNT</div><div>RESOURCE</div><div>STATUS</div><div>NETWORK</div><div>TXHASH</div><div style="text-align:right;">TIME</div>
+          </div>
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:90px 1.5fr 105px 90px 150px 100px;gap:12px;padding:11px 18px;border-bottom:1px solid #F5F4F0;align-items:center;cursor:pointer;background:{{ r.bg }};" style-hover="background:#FBFAF7;">
+              <div style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;">{{ r.usd }}</div>
+              <div style="font-family:'Geist Mono',monospace;font-size:11.5px;color:#5F5D55;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.url }}</div>
+              <div><span style="display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ r.stBg }};color:{{ r.stColor }};">{{ r.status }}</span></div>
+              <div style="font-size:11.5px;color:#5F5D55;">{{ r.net }}</div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-family:'Geist Mono',monospace;font-size:11px;color:{{ r.txColor }};">{{ r.tx }}</span>
+                <sc-if value="{{ r.hasTx }}" hint-placeholder-val="{{ true }}"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" style="flex:none;cursor:pointer;"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5" stroke="#B4B2A8" stroke-width="1.4"></rect><path d="M9.5 4.5v-1a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1" stroke="#B4B2A8" stroke-width="1.4"></path></svg></sc-if>
+              </div>
+              <div style="font-size:11px;color:#8C8A80;text-align:right;" title="{{ r.iso }}">{{ r.when }}</div>
+            </div>
+          </sc-for>
+          <div style="padding:10px 18px;font-size:11.5px;color:#8C8A80;">New receipts prepend at the top with a slide-in (~3s polling). txHash links resolve per network — Basescan, Arbiscan, or Polygonscan.</div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <sc-if value="{{ showPanel }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(28,27,24,0.18);"></div>
+    <div style="position:absolute;top:0;right:0;bottom:0;width:440px;background:#FFFFFF;border-left:1px solid #E8E6DF;box-shadow:-16px 0 48px rgba(28,27,24,0.14);display:flex;flex-direction:column;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #F0EEE8;">
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <span style="font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;">{{ pAmount }}</span>
+          <span style="display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ pStBg }};color:{{ pStColor }};">{{ pStatus }}</span>
+        </div>
+        <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8C8A80;" style-hover="background:#F5F4F0;color:#1C1B18;">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg>
+        </div>
+      </div>
+
+      <sc-if value="{{ pLoading }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+          <div style="height:14px;border-radius:6px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:400px 100%;animation:lf-shimmer 1.2s linear infinite;"></div>
+          <div style="height:44px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:400px 100%;animation:lf-shimmer 1.2s linear infinite;"></div>
+          <div style="height:44px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:400px 100%;animation:lf-shimmer 1.2s linear infinite;"></div>
+          <div style="height:44px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:400px 100%;animation:lf-shimmer 1.2s linear infinite;"></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ pBody }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;overflow:hidden;padding:18px 20px;display:flex;flex-direction:column;gap:15px;">
+
+          <sc-if value="{{ pContext }}" hint-placeholder-val="{{ false }}">
+            <div style="border-radius:10px;padding:11px 13px;font-size:12px;line-height:1.55;background:{{ pContextBg }};color:{{ pContextColor }};border:1px solid {{ pContextBorder }};">{{ pContext }}</div>
+          </sc-if>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;">
+            <div><div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">AMOUNT</div><div style="font-size:12.5px;margin-top:4px;font-variant-numeric:tabular-nums;">{{ pAmount }} USD</div></div>
+            <div><div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">RAW (6 DECIMALS)</div><div style="font-family:'Geist Mono',monospace;font-size:11.5px;margin-top:4px;color:#5F5D55;">{{ pRaw }}</div></div>
+            <div><div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">ASSET</div><div style="font-size:12.5px;margin-top:4px;">USDC</div></div>
+            <div><div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">NETWORK</div><div style="font-size:12.5px;margin-top:4px;">{{ pNetName }} <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#8C8A80;">({{ pNetId }})</span></div></div>
+          </div>
+
+          <div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">RESOURCE URL (PAYTO)</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:5px;">
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:#1C1B18;word-break:break-all;">https://api.searchgrid.io/v1/search</span>
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style="flex:none;cursor:pointer;"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5" stroke="#8C8A80" stroke-width="1.4"></rect><path d="M9.5 4.5v-1a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1" stroke="#8C8A80" stroke-width="1.4"></path></svg>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">TIMESTAMP</div>
+            <div style="font-family:'Geist Mono',monospace;font-size:11.5px;margin-top:5px;color:#5F5D55;">2026-07-02T14:23:01Z</div>
+          </div>
+
+          <div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">TXHASH</div>
+            <sc-if value="{{ pHasHash }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;gap:8px;margin-top:5px;">
+                <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#1C1B18;word-break:break-all;">0x8f2e6c1a94d7b3e5f2a8c0d6e4b9a1f7c3d5e8b2a6f4c9d1e7b3a5f8c2d61b7d</span>
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style="flex:none;cursor:pointer;"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5" stroke="#8C8A80" stroke-width="1.4"></rect><path d="M9.5 4.5v-1a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1" stroke="#8C8A80" stroke-width="1.4"></path></svg>
+              </div>
+              <sc-if value="{{ pExplorerOk }}" hint-placeholder-val="{{ true }}">
+                <div style="margin-top:7px;"><span style="font-size:12px;font-weight:500;color:#206B4E;cursor:pointer;">{{ pExplorerLabel }} ↗</span></div>
+              </sc-if>
+              <sc-if value="{{ pExplorerDown }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:7px;display:flex;align-items:center;gap:8px;"><span style="font-size:12px;font-weight:500;color:#B4B2A8;cursor:not-allowed;">{{ pExplorerLabel }} ↗</span><span style="font-size:11px;color:#96650F;">Explorer unreachable — hash still copyable</span></div>
+              </sc-if>
+            </sc-if>
+            <sc-if value="{{ pNoHash }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:5px;font-size:12px;color:#5F5D55;">{{ pNoHashText }}</div>
+            </sc-if>
+          </div>
+
+          <div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">TRIGGER URL</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:5px;">
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:#5F5D55;word-break:break-all;">https://research.lab/tasks/lit-review-142</span>
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style="flex:none;cursor:pointer;"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5" stroke="#8C8A80" stroke-width="1.4"></rect><path d="M9.5 4.5v-1a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1" stroke="#8C8A80" stroke-width="1.4"></path></svg>
+            </div>
+          </div>
+
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;active&quot;,&quot;options&quot;:[&quot;active&quot;,&quot;empty&quot;,&quot;loading&quot;,&quot;error&quot;,&quot;mixed&quot;,&quot;near&quot;,&quot;at_limit&quot;,&quot;cap_reset&quot;,&quot;receipt_loaded&quot;,&quot;receipt_loading&quot;,&quot;receipt_blocked&quot;,&quot;receipt_failed&quot;,&quot;receipt_no_explorer&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Feed&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'active';
+
+    const ST = {
+      settled: { status: 'Settled', stBg: '#E8F3EC', stColor: '#257A46' },
+      failed: { status: 'Failed', stBg: '#FAECEC', stColor: '#B4383D' },
+      blocked: { status: 'Blocked', stBg: '#2A2925', stColor: '#F4F3EE' },
+      pending: { status: 'Pending', stBg: '#FBF1DC', stColor: '#96650F' }
+    };
+    const row = (usd, url, kind, tx, net, when, iso, bg) => Object.assign({
+      usd, url, tx: tx || 'no hash', txColor: tx ? '#3B5BD9' : '#B4B2A8', hasTx: !!tx, net, when, iso, bg: bg || '#FFFFFF'
+    }, ST[kind]);
+
+    const base = [
+      row('$0.42', 'api.searchgrid.io/v1/search', 'settled', '0x8f2e…1b7d', 'Base', '2 min ago', '2026-07-02T14:23:01Z', '#F4FAF7'),
+      row('$0.08', 'data.arxival.net/v2/papers/fetch', 'settled', '0x3c9a…e42f', 'Arbitrum', '6 min ago', '2026-07-02T14:18:44Z'),
+      row('$0.15', 'api.mapgrid.dev/v1/tiles/batch', 'pending', '0x6c8e…2b4a', 'Base', '8 min ago', '2026-07-02T14:16:02Z'),
+      row('$1.20', 'api.mapgrid.dev/v1/tiles/batch', 'settled', '0x7d1b…a93c', 'Base', '11 min ago', '2026-07-02T14:13:37Z'),
+      row('$0.35', 'translate.lexiconapi.com/v3/run', 'settled', '0x5e4f…c810', 'Polygon', '19 min ago', '2026-07-02T14:05:19Z'),
+      row('$0.02', 'feeds.newswire.dev/v1/query', 'failed', null, 'Polygon', '24 min ago', '2026-07-02T13:59:51Z'),
+      row('$0.85', 'api.searchgrid.io/v1/search', 'settled', '0x2a6c…9d5e', 'Base', '31 min ago', '2026-07-02T13:52:28Z'),
+      row('$0.28', 'data.arxival.net/v2/papers/fetch', 'settled', '0x9b3d…f7a1', 'Arbitrum', '44 min ago', '2026-07-02T13:39:06Z')
+    ];
+
+    const atLimitRows = [
+      row('$0.45', 'api.searchgrid.io/v1/search', 'blocked', null, '—', 'just now', '2026-07-02T14:24:12Z', '#FBF4F4'),
+      row('$0.12', 'feeds.newswire.dev/v1/query', 'blocked', null, '—', '1 min ago', '2026-07-02T14:23:40Z')
+    ].concat(base.slice(0, 5));
+
+    let rows = base;
+    if (s === 'at_limit') rows = atLimitRows;
+    if (s === 'cap_reset') rows = [row('$0.31', 'api.searchgrid.io/v1/search', 'settled', '0x1f7c…d34e', 'Base', 'just now', '2026-07-03T00:02:11Z', '#F4FAF7')];
+
+    const spendMap = {
+      near: { spend: '$7.60', pct: '76%', w: '76%', color: '#E0A33E', pctColor: '#96650F' },
+      at_limit: { spend: '$10.00', pct: '100%', w: '100%', color: '#C13A40', pctColor: '#B4383D' },
+      cap_reset: { spend: '$0.31', pct: '3%', w: '3%', color: '#206B4E', pctColor: '#17503A' },
+      empty: { spend: '$0.00', pct: '0%', w: '0%', color: '#206B4E', pctColor: '#8C8A80' }
+    };
+    const sm = spendMap[s] || { spend: '$4.20', pct: '42%', w: '42%', color: '#206B4E', pctColor: '#17503A' };
+
+    let bannerText = false, bannerTag = 'ALERT', bannerBg = '#FBF1DC', bannerBorder = '#F2E3C2', bannerTagColor = '#96650F', bannerTextColor = '#7A5410', bannerCta = false;
+    if (s === 'near') { bannerText = 'Your agent is approaching its cap — 76% used.'; bannerCta = 'Adjust cap'; }
+    if (s === 'at_limit') { bannerText = 'Payments halted — cap reached. Blocked attempts appear below; none were sent.'; bannerTag = 'ACTION REQUIRED'; bannerBg = '#FAECEC'; bannerBorder = '#F0D5D6'; bannerTagColor = '#B4383D'; bannerTextColor = '#8E2F34'; bannerCta = 'Raise cap'; }
+    if (s === 'cap_reset') { bannerText = 'Cycle reset at 00:00 UTC — cumulative spend is back to $0.00. The agent resumed automatically.'; bannerTag = 'CYCLE RESET'; bannerBg = '#E7F3EF'; bannerBorder = '#BEE0D6'; bannerTagColor = '#17503A'; bannerTextColor = '#17503A'; }
+
+    // Receipt panel
+    const receiptStates = ['receipt_loaded', 'receipt_loading', 'receipt_blocked', 'receipt_failed', 'receipt_no_explorer'];
+    const showPanel = receiptStates.includes(s);
+    let pStatus = 'Settled', pStBg = '#E8F3EC', pStColor = '#257A46', pAmount = '$0.42', pRaw = '420000';
+    let pContext = false, pContextBg = '#E7F3EF', pContextColor = '#17503A', pContextBorder = '#BEE0D6';
+    let pHasHash = true, pNoHash = false, pNoHashText = '', pExplorerOk = true, pExplorerDown = false;
+    let pNetName = 'Base', pNetId = 'eip155:8453', pExplorerLabel = 'View on Basescan';
+    if (s === 'receipt_loaded' || s === 'receipt_no_explorer') {
+      pContext = 'Cumulative spend after this payment: $4.20 / $10.00 cap.';
+      if (s === 'receipt_no_explorer') {
+        pExplorerOk = false; pExplorerDown = true;
+        pNetName = 'Arbitrum One'; pNetId = 'eip155:42161'; pExplorerLabel = 'View on Arbiscan';
+      }
+    }
+    if (s === 'receipt_blocked') {
+      pStatus = 'Blocked'; pStBg = '#2A2925'; pStColor = '#F4F3EE'; pAmount = '$0.45'; pRaw = '450000';
+      pContext = 'Payment blocked — it would push spend to $10.45, exceeding the $10.00 cap. The x402 call was never made.';
+      pContextBg = '#F5F4F0'; pContextColor = '#33312C'; pContextBorder = '#E8E6DF';
+      pHasHash = false; pNoHash = true; pNoHashText = 'No transaction hash — this payment was never submitted. This is expected for blocked payments, not an error.';
+    }
+    if (s === 'receipt_failed') {
+      pStatus = 'Failed'; pStBg = '#FAECEC'; pStColor = '#B4383D'; pAmount = '$0.02'; pRaw = '20000';
+      pContext = 'Settlement failed — the x402 call was made but the payment was rejected. Failed payments don’t count toward spend.';
+      pContextBg = '#FAECEC'; pContextColor = '#8E2F34'; pContextBorder = '#F0D5D6';
+      pHasHash = false; pNoHash = true; pNoHashText = 'No transaction hash returned for this attempt.';
+      pNetName = 'Polygon'; pNetId = 'eip155:137'; pExplorerLabel = 'View on Polygonscan';
+    }
+
+    return {
+      rows,
+      liveChip: ['active', 'mixed', 'cap_reset'].includes(s) || showPanel,
+      spend: sm.spend, pct: sm.pct, barW: sm.w, barColor: sm.color, pctColor: sm.pctColor,
+      bannerText, bannerTag, bannerBg, bannerBorder, bannerTagColor, bannerTextColor, bannerCta,
+      isEmpty: s === 'empty',
+      isLoading: s === 'loading',
+      isError: s === 'error',
+      showTable: !['empty', 'loading'].includes(s),
+      showPanel,
+      pLoading: s === 'receipt_loading',
+      pBody: s !== 'receipt_loading',
+      pStatus, pStBg, pStColor, pAmount, pRaw,
+      pContext, pContextBg, pContextColor, pContextBorder,
+      pHasHash, pNoHash, pNoHashText, pExplorerOk, pExplorerDown,
+      pNetName, pNetId, pExplorerLabel
+    };
+  }
+}
+</script>
+</body>
+</html>

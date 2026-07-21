@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}</style>
+</helmet>
+<div style="position:relative;width:100%;height:812px;overflow:hidden;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;">
+
+  <dc-import name="_PWA Feed" state="populated" hint-size="100%,812px"></dc-import>
+  <div style="position:absolute;inset:0;background:rgba(28,27,24,0.44);"></div>
+
+  <div style="position:absolute;left:0;right:0;bottom:0;background:#FFFFFF;border-radius:20px 20px 0 0;box-shadow:0 -16px 48px rgba(28,27,24,0.24);padding:10px 20px 26px;">
+    <div style="width:38px;height:4px;border-radius:2px;background:#DBD9D0;margin:0 auto;"></div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;">
+      <div style="display:flex;align-items:baseline;gap:9px;">
+        <span style="font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;">{{ amount }}</span>
+        <span style="display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ stBg }};color:{{ stColor }};">{{ status }}</span>
+      </div>
+      <div style="width:28px;height:28px;border-radius:9px;background:#F5F4F0;display:flex;align-items:center;justify-content:center;">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="#8C8A80" stroke-width="1.7" stroke-linecap="round"></path></svg>
+      </div>
+    </div>
+
+    <sc-if value="{{ context }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:12px;border-radius:10px;padding:10px 12px;font-size:11.5px;line-height:1.55;background:{{ ctxBg }};color:{{ ctxColor }};">{{ context }}</div>
+    </sc-if>
+
+    <div style="margin-top:14px;display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;color:#8C8A80;">RESOURCE (PAYTO)</div>
+        <div style="display:flex;align-items:center;gap:7px;margin-top:4px;">
+          <span style="font-family:'Geist Mono',monospace;font-size:11.5px;word-break:break-all;">{{ url }}</span>
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none" style="flex:none;"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5" stroke="#8C8A80" stroke-width="1.4"></rect><path d="M9.5 4.5v-1a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1" stroke="#8C8A80" stroke-width="1.4"></path></svg>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">
+        <div><div style="font-size:10px;font-weight:700;letter-spacing:0.06em;color:#8C8A80;">TIME</div><div style="font-size:11.5px;margin-top:4px;">2 min ago</div><div style="font-family:'Geist Mono',monospace;font-size:10px;color:#8C8A80;margin-top:1px;">2026-07-02T14:23:01Z</div></div>
+        <div><div style="font-size:10px;font-weight:700;letter-spacing:0.06em;color:#8C8A80;">NETWORK</div><div style="font-size:11.5px;margin-top:4px;">{{ netName }}</div><div style="font-family:'Geist Mono',monospace;font-size:10px;color:#8C8A80;margin-top:1px;">USDC · {{ netId }}</div></div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;color:#8C8A80;">TXHASH</div>
+        <sc-if value="{{ hasTx }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:7px;margin-top:4px;">
+            <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:#3B5BD9;">0x8f2e6c…c2d61b7d</span>
+            <span style="font-size:10.5px;color:#8C8A80;">tap to open {{ explorer }} ↗</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ noTx }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:11.5px;color:#5F5D55;margin-top:4px;line-height:1.5;">{{ noTxText }}</div>
+        </sc-if>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;color:#8C8A80;">TRIGGER</div>
+        <div style="font-family:'Geist Mono',monospace;font-size:11px;color:#5F5D55;margin-top:4px;word-break:break-all;">https://research.lab/tasks/lit-review-142</div>
+      </div>
+      <div style="border-top:1px solid #F0EEE8;padding-top:10px;font-size:11px;color:#8C8A80;">{{ cycleLine }}</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:375,&quot;height&quot;:812},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;settled&quot;,&quot;options&quot;:[&quot;settled&quot;,&quot;failed&quot;,&quot;blocked&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Receipt&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'settled';
+    if (s === 'blocked') return {
+      amount: '$0.45', status: 'Blocked', stBg: '#2A2925', stColor: '#F4F3EE',
+      url: 'https://api.searchgrid.io/v1/search',
+      context: 'This payment was not submitted — the spending cap was reached before the x402 call was made.',
+      ctxBg: '#F5F4F0', ctxColor: '#33312C',
+      hasTx: false, noTx: true, noTxText: 'No transaction hash — nothing was sent. Expected for blocked payments.',
+      netName: 'Base (target)', netId: 'eip155:8453', explorer: 'Basescan',
+      cycleLine: 'Blocked attempt · does not count toward the $10.00 cap'
+    };
+    if (s === 'failed') return {
+      amount: '$0.02', status: 'Failed', stBg: '#FAECEC', stColor: '#B4383D',
+      url: 'https://feeds.newswire.dev/v1/query',
+      context: 'Settlement failed — the x402 call was made but the payment was rejected. It does not count toward spend.',
+      ctxBg: '#FAECEC', ctxColor: '#8E2F34',
+      hasTx: false, noTx: true, noTxText: 'No transaction hash returned for this attempt.',
+      netName: 'Polygon', netId: 'eip155:137', explorer: 'Polygonscan',
+      cycleLine: 'Failed attempt · does not count toward the $10.00 cap'
+    };
+    return {
+      amount: '$0.42', status: 'Settled', stBg: '#E8F3EC', stColor: '#257A46',
+      url: 'https://api.searchgrid.io/v1/search',
+      context: false, ctxBg: '#F5F4F0', ctxColor: '#33312C',
+      hasTx: true, noTx: false, noTxText: '',
+      netName: 'Base', netId: 'eip155:8453', explorer: 'Basescan',
+      cycleLine: 'Payment 12 of 23 in the current cap cycle · cumulative $4.20 / $10.00'
+    };
+  }
+}
+</script>
+</body>
+</html>

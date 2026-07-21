@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes lx-pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+</style>
+</helmet>
+<div style="display:flex;width:100%;height:900px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="width:224px;flex:none;background:#F4F3EE;border-right:1px solid #E8E6DF;display:flex;flex-direction:column;padding:16px 12px 14px;">
+    <div style="display:flex;align-items:center;gap:9px;padding:4px 6px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#206B4E;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:13px;font-weight:700;">L</div>
+      <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em;">Leash</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-top:22px;">
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Overview</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Payments</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Notifications <span style="min-width:17px;height:17px;border-radius:9px;background:#206B4E;color:#FFFFFF;font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;">2</span></div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Cap &amp; limits</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:#1C1B18;background:#E9E7E0;">Connect agent</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Revocation</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Setup &amp; funds</div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px;border-top:1px solid #E8E6DF;padding-top:12px;">
+      <div style="width:26px;height:26px;border-radius:50%;background:#E7F3EF;border:1px solid #BEE0D6;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#17503A;">AB</div>
+      <div style="min-width:0;"><div style="font-size:12px;font-weight:600;line-height:1.2;">Abu</div><div style="font-size:10.5px;color:#8C8A80;white-space:nowrap;">abu@example.dev</div></div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 32px 0;">
+      <div>
+        <div style="font-size:19px;font-weight:600;letter-spacing:-0.01em;">Connect your agent</div>
+        <div style="font-size:12.5px;color:#5F5D55;margin-top:3px;">Point your own agent — Claude Code, Cursor, or any script — at Leash. When it hits an x402 paywall, Leash pays it automatically, within your cap.</div>
+      </div>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:999px;background:{{ chipBg }};color:{{ chipColor }};border:1px solid {{ chipBorder }};"><span style="width:6px;height:6px;border-radius:50%;background:{{ chipDot }};{{ chipDotAnim }}"></span>{{ chipLabel }}</span>
+    </div>
+
+    <div style="padding:16px 32px 24px;max-width:768px;display:flex;flex-direction:column;gap:14px;">
+
+      <sc-if value="{{ errorBanner }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:11px;background:#FAECEC;border:1px solid #F0D5D6;border-radius:11px;padding:11px 15px;">
+          <span style="font-size:10.5px;font-weight:700;letter-spacing:0.05em;color:#B4383D;background:#FFFFFF;border-radius:6px;padding:3px 8px;flex:none;">CONNECTION ERROR</span>
+          <span style="flex:1;font-size:12.5px;font-weight:500;color:#8E2F34;">The last request was rejected — <span style="font-family:'Geist Mono',monospace;font-size:11.5px;">401 invalid key</span> at 14:31. Rotate the key or re-copy it into your agent’s environment.</span>
+        </div>
+      </sc-if>
+
+      <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:16px 20px;">
+        <div style="display:flex;align-items:center;gap:0;">
+          <sc-for list="{{ steps }}" as="st" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:9px;flex:1;">
+              <sc-if value="{{ st.done }}" hint-placeholder-val="{{ false }}">
+                <div style="width:22px;height:22px;border-radius:50%;background:#E8F3EC;display:flex;align-items:center;justify-content:center;flex:none;">
+                  <svg width="11" height="11" viewBox="0 0 24 24"><path d="M5 12.5l4.4 4.4L19 7.6" fill="none" stroke="#257A46" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </div>
+              </sc-if>
+              <sc-if value="{{ st.waiting }}" hint-placeholder-val="{{ false }}">
+                <div style="width:22px;height:22px;border-radius:50%;background:#FBF1DC;display:flex;align-items:center;justify-content:center;flex:none;"><span style="width:7px;height:7px;border-radius:50%;background:#E0A33E;animation:lx-pulse 1.4s ease-in-out infinite;"></span></div>
+              </sc-if>
+              <sc-if value="{{ st.pending }}" hint-placeholder-val="{{ true }}">
+                <div style="width:22px;height:22px;border-radius:50%;border:1.5px solid #DBD9D0;color:#8C8A80;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex:none;">{{ st.n }}</div>
+              </sc-if>
+              <sc-if value="{{ st.error }}" hint-placeholder-val="{{ false }}">
+                <div style="width:22px;height:22px;border-radius:50%;background:#FAECEC;color:#B4383D;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;">!</div>
+              </sc-if>
+              <span style="font-size:12px;font-weight:500;color:{{ st.color }};">{{ st.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:20px 22px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:13px;font-weight:600;">1 · Your Leash key</div>
+          <sc-if value="{{ keyMasked }}" hint-placeholder-val="{{ false }}">
+            <button style="height:30px;padding:0 12px;border:1px solid #DBD9D0;border-radius:8px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#F8F7F4;">Rotate</button>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ keyNone }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12.5px;color:#5F5D55;margin-top:8px;">The key is the only credential your agent needs. It authorizes payments against this leash — nothing else.</div>
+          <button style="height:36px;padding:0 16px;margin-top:12px;border:none;border-radius:9px;background:#206B4E;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#17503A;">Generate Leash key</button>
+        </sc-if>
+
+        <sc-if value="{{ keyReveal }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px;border-radius:9px;padding:10px 13px;font-size:12.5px;line-height:1.5;background:#FBF1DC;color:#7A5410;border:1px solid #F2E3C2;">For security reasons, you can only view this key once. Save it to your agent’s environment before closing.</div>
+          <div style="margin-top:12px;background:#26251F;border-radius:9px;padding:14px;display:flex;align-items:center;gap:12px;">
+            <div style="flex:1;font-family:'Geist Mono',monospace;font-size:12.5px;line-height:1.6;color:#E4E2D8;word-break:break-all;">leash_sk_9wKpQ2vR8xL3nT7jD4hF1gS5aE0cV7bN2uq4d8</div>
+            <div style="flex:none;font-size:11.5px;font-weight:500;color:#E4E2D8;background:rgba(255,255,255,0.1);border-radius:7px;padding:5px 10px;cursor:pointer;" style-hover="background:rgba(255,255,255,0.18);">Copy</div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+            <button style="height:34px;padding:0 15px;border:none;border-radius:9px;background:#1C1B18;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#33312C;">I’ve saved my key</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ keyMasked }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:9px;margin-top:10px;">
+            <span style="font-family:'Geist Mono',monospace;font-size:12.5px;color:#5F5D55;">leash_sk_••••••••q4d8</span>
+            <sc-if value="{{ keyBad }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;letter-spacing:0.04em;color:#B4383D;background:#FAECEC;border-radius:5px;padding:2px 7px;">REJECTED</span></sc-if>
+          </div>
+          <div style="font-size:11.5px;color:#8C8A80;margin-top:6px;">Held in your agent’s environment. It is never shown again — rotate to replace it.</div>
+        </sc-if>
+      </div>
+
+      <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:20px 22px;">
+        <div style="font-size:13px;font-weight:600;">2 · Point your agent at Leash</div>
+
+        <sc-if value="{{ showSetup }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <span style="font-size:11.5px;font-weight:600;color:#FFFFFF;background:#1C1B18;border-radius:999px;padding:5px 12px;">Leash MCP server · recommended</span>
+            <span style="font-size:11.5px;font-weight:500;color:#5F5D55;background:#FFFFFF;border:1px solid #DBD9D0;border-radius:999px;padding:5px 12px;cursor:pointer;" style-hover="background:#F8F7F4;">HTTP wrapper</span>
+          </div>
+          <div style="position:relative;margin-top:12px;background:#26251F;border-radius:9px;padding:12px 14px;">
+            <div style="font-family:'Geist Mono',monospace;font-size:11.5px;line-height:1.65;color:#E4E2D8;white-space:pre;overflow-x:auto;">{{ mcpSnippet }}</div>
+            <div style="position:absolute;top:8px;right:8px;font-size:10.5px;font-weight:500;color:#B4B2A8;background:rgba(255,255,255,0.08);border-radius:6px;padding:3px 8px;cursor:pointer;" style-hover="background:rgba(255,255,255,0.16);color:#FFFFFF;">Copy</div>
+          </div>
+          <div style="font-size:11.5px;color:#8C8A80;margin-top:9px;">Works with Claude Code, Cursor, and any MCP-capable agent. The HTTP wrapper covers plain scripts — wrap <span style="font-family:'Geist Mono',monospace;">fetch</span> and every 402 is handled for you.</div>
+        </sc-if>
+
+        <sc-if value="{{ showSummary }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px;border:1px solid #EFEDE7;border-radius:10px;overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;padding:9px 13px;border-bottom:1px solid #F5F4F0;font-size:12.5px;"><span style="color:#8C8A80;">Client</span><span style="font-weight:600;">Claude Code</span></div>
+            <div style="display:flex;justify-content:space-between;padding:9px 13px;border-bottom:1px solid #F5F4F0;font-size:12.5px;"><span style="color:#8C8A80;">Transport</span><span>Leash MCP server</span></div>
+            <div style="display:flex;justify-content:space-between;padding:9px 13px;border-bottom:1px solid #F5F4F0;font-size:12.5px;"><span style="color:#8C8A80;">First seen</span><span>Jul 2, 2026 · 14:02 UTC</span></div>
+            <div style="display:flex;justify-content:space-between;padding:9px 13px;font-size:12.5px;"><span style="color:#8C8A80;">x402 payments</span><span style="font-variant-numeric:tabular-nums;">{{ payCount }}</span></div>
+          </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ awaitingCard }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:11px;background:#FBF1DC;border:1px solid #F2E3C2;border-radius:11px;padding:11px 15px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:#E0A33E;animation:lx-pulse 1.4s ease-in-out infinite;flex:none;"></span>
+          <span style="flex:1;font-size:12.5px;font-weight:500;color:#7A5410;">Listening — run your agent into any x402 paywall and the first payment will appear here and in the feed.</span>
+        </div>
+      </sc-if>
+
+      <div style="font-size:12px;line-height:1.55;color:#5F5D55;background:#F8F7F4;border:1px solid #EFEDE7;border-radius:9px;padding:9px 12px;">Leash has no model and makes no LLM calls. It only pays x402 requests your agent makes — and only within your cap.</div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;active&quot;,&quot;options&quot;:[&quot;not_connected&quot;,&quot;key_reveal&quot;,&quot;awaiting&quot;,&quot;active&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Connect&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'active';
+
+    const chips = {
+      not_connected: { chipLabel: 'Not connected', chipBg: '#FFFFFF', chipColor: '#8C8A80', chipBorder: '#DBD9D0', chipDot: '#B4B2A8', anim: false },
+      key_reveal: { chipLabel: 'Not connected', chipBg: '#FFFFFF', chipColor: '#8C8A80', chipBorder: '#DBD9D0', chipDot: '#B4B2A8', anim: false },
+      awaiting: { chipLabel: 'Awaiting first payment', chipBg: '#FBF1DC', chipColor: '#96650F', chipBorder: '#F2E3C2', chipDot: '#E0A33E', anim: true },
+      active: { chipLabel: 'Active · last x402 2 min ago', chipBg: '#E7F3EF', chipColor: '#17503A', chipBorder: '#BEE0D6', chipDot: '#206B4E', anim: true },
+      error: { chipLabel: 'Connection error', chipBg: '#FAECEC', chipColor: '#8E2F34', chipBorder: '#F0D5D6', chipDot: '#C13A40', anim: false }
+    };
+    const c = chips[s] || chips.active;
+
+    const mk = (n, label, kind) => ({
+      n: String(n), label,
+      done: kind === 'done', waiting: kind === 'waiting', pending: kind === 'pending', error: kind === 'error',
+      color: kind === 'done' ? '#17503A' : (kind === 'waiting' ? '#96650F' : (kind === 'error' ? '#B4383D' : '#8C8A80'))
+    });
+    const stepKinds = {
+      not_connected: ['pending', 'pending', 'pending'],
+      key_reveal: ['done', 'pending', 'pending'],
+      awaiting: ['done', 'done', 'waiting'],
+      active: ['done', 'done', 'done'],
+      error: ['done', 'error', 'pending']
+    }[s] || ['done', 'done', 'done'];
+    const steps = [
+      mk(1, 'Key created', stepKinds[0]),
+      mk(2, 'Agent configured', stepKinds[1]),
+      mk(3, 'First x402 received', stepKinds[2])
+    ];
+
+    return {
+      chipLabel: c.chipLabel, chipBg: c.chipBg, chipColor: c.chipColor, chipBorder: c.chipBorder, chipDot: c.chipDot,
+      chipDotAnim: c.anim ? 'animation:lx-pulse 1.6s ease-in-out infinite;' : '',
+      steps,
+      errorBanner: s === 'error',
+      keyNone: s === 'not_connected',
+      keyReveal: s === 'key_reveal',
+      keyMasked: s === 'awaiting' || s === 'active' || s === 'error',
+      keyBad: s === 'error',
+      showSetup: s !== 'active',
+      showSummary: s === 'active',
+      awaitingCard: s === 'awaiting',
+      payCount: '23 this cycle',
+      mcpSnippet: '// .mcp.json\n{\n  "mcpServers": {\n    "leash": {\n      "command": "npx",\n      "args": ["-y", "@leash/mcp"],\n      "env": { "LEASH_KEY": "<YOUR_LEASH_KEY>" }\n    }\n  }\n}'
+    };
+  }
+}
+</script>
+</body>
+</html>

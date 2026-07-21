@@ -27,8 +27,8 @@ existing code.
 | Package | Contents | Key deps |
 |---|---|---|
 | `packages/sdk` | `<PayButton>` React component + TypeScript types; embeds as a drop-in `npm install` for merchants | react, viem, `@particle-network/universal-account-sdk`, `magic-sdk` |
-| `apps/web` | Next.js 14 app (App Router): (a) checkout demo/modal for buyers, (b) merchant demo page, (c) Tab payment-intent API route + webhook handler, (d) Leash spend dashboard | `@particle-network/universal-account-sdk`, `magic-sdk`, `@magic-sdk/admin`, viem, `@x402/fetch`, `@x402/evm` |
-| `apps/agent` | MCP stdio proxy (primary interception path for Claude Code/Desktop/Cursor) + hosted signer integration (Magic Server Wallet TEE); routes x402 payments per CAIP-2 network to pre-positioned USDC floats on Base/Arbitrum/Polygon; cap enforced server-side in the hosted signer (rejects signing on overspend); background UA float watcher issues async `createTransferTransaction` top-ups; per-payment receipt logging; no LLM | `@x402/core`, `@x402/fetch`, `@x402/mcp`, `@modelcontextprotocol/sdk`, viem, `@particle-network/universal-account-sdk`, `@magic-sdk/admin` (Server Wallets TEE) |
+| `apps/web` | Next.js **16.2.6+** app (App Router): (a) checkout demo/modal for buyers, (b) merchant demo page, (c) Tab payment-intent API route + webhook handler (`@x402/next` requires Next ≥16.2.6), (d) Leash spend dashboard, (e) **secret-key API plane** (`GET /api/v1/payments(+/:id)`, sk-auth middleware enforcing permissions, `last_used_at` stamping on every authenticated call) | `@particle-network/universal-account-sdk`, `magic-sdk`, `@magic-sdk/admin`, viem, `@x402/fetch`, `@x402/evm`, `@x402/next` |
+| `apps/agent` | MCP stdio proxy (primary interception path for Claude Code/Desktop/Cursor) + hosted signer integration (Magic Server Wallet TEE); routes x402 payments per CAIP-2 network to pre-positioned USDC floats on Base/Arbitrum; cap enforced server-side in the hosted signer (rejects signing on overspend); background UA float watcher issues async `createTransferTransaction` top-ups; per-payment receipt logging; no LLM | `@x402/core`, `@x402/fetch`, `@x402/mcp`, `@modelcontextprotocol/sdk`, viem, `@particle-network/universal-account-sdk`, `@magic-sdk/admin` (Server Wallets TEE) |
 | `apps/mobile` | Monitor + notify + revoke client (see Open Questions — PWA vs RN) | depends on mobile decision; if PWA: Next.js or Vite; if Expo: `expo`, `expo-notifications` |
 | `packages/contracts` | Foundry project — **only if** a spend-cap or revoke contract is actually needed (see Open Questions) | foundry, `@openzeppelin/contracts` |
 
@@ -43,11 +43,13 @@ three layers: (1) MCP stdio proxy (`@x402/mcp` + `@modelcontextprotocol/sdk`, pr
 Claude Code/Desktop/Cursor with zero agent code changes); (2) HTTP fetch-wrapper (`@x402/fetch`,
 secondary — for direct-HTTP agents); (3) transparent MITM proxy + CA cert (last resort, opt-in
 only). The wallet is a **hosted signer** (Magic Server Wallet TEE), not a raw private key in an
-env var. USDC floats are pre-positioned on Base (primary, ~75% of real x402 traffic), Arbitrum
-One (Tab + ~6% ecosystem), and Polygon (~8% ecosystem). Background float rebalancing uses the
-Particle UA SDK (`createTransferTransaction`) asynchronously — never on the x402 hot path. The
-Particle UA SDK (`@particle-network/universal-account-sdk`) is used only for the background
-treasury→float top-ups; the x402 payment loop uses only `@x402/core` + the hosted signer.
+env var. USDC floats are pre-positioned on **Base (primary, ~81% of covered x402 traffic)** and
+**Arbitrum One** (~6% ecosystem). **Polygon is dropped for v0** — UA SDK 2.0.3 trimmed `CHAIN_ID`
+to 6 chains (Solana/Ethereum/BSC/Base/X Layer/Arbitrum); Polygon is absent and the UA treasury
+cannot rebalance it. Background float rebalancing uses the Particle UA SDK
+(`createTransferTransaction`) asynchronously — never on the x402 hot path. The Particle UA SDK
+(`@particle-network/universal-account-sdk`) is used only for the background treasury→float
+top-ups; the x402 payment loop uses only `@x402/core` + the hosted signer.
 **Dropped from the stack: Vercel AI SDK, `@openrouter/ai-sdk-provider`** — Leash has no LLM.
 
 ---
@@ -189,15 +191,17 @@ surface the following so agents don't contradict verified facts:
    form (not the flat quickstart form) is required to prove 7702 mode to judges.
 
 3. **x402 multi-chain float pattern** (`research/2026-07-02-x402-multichain-strategy.md`, §3):
-   the agent's USDC must be **pre-positioned** at the agent's EOA address on Base (primary,
-   ~75% of real x402 traffic), Arbitrum One (~6%), and Polygon (~8%). Chain-abstracted UA
-   balance is NOT visible to the x402 facilitator — it checks `balanceOf(EOA, network)` at
-   settlement time. Leash routes each payment to the correct float by reading
-   `accepts[].network` (CAIP-2) from the 402 response. The Particle UA SDK is used
-   **asynchronously and separately** to top up floats in a background watcher — never in the
-   x402 hot path (on-demand bridging takes 10–90s and breaks the synchronous payment loop). Do
-   not wire `ua.sendTransaction` or `ua.createTransferTransaction` inside the x402 payment
-   handler. Solana x402 (`@x402/svm`) is out of scope for v0.
+   the agent's USDC must be **pre-positioned** at the agent's EOA address on **Base (primary,
+   ~81% of covered x402 traffic)** and **Arbitrum One** (~6%). **Polygon is dropped for v0** —
+   `CHAIN_ID` in UA SDK 2.0.3 was trimmed to 6 chains (Solana/Ethereum/BSC/Base/X Layer/
+   Arbitrum); Polygon is absent and cannot be UA-rebalanced. Chain-abstracted UA balance is NOT
+   visible to the x402 facilitator — it checks `balanceOf(EOA, network)` at settlement time.
+   Leash routes each payment to the correct float by reading `accepts[].network` (CAIP-2) from
+   the 402 response. The Particle UA SDK is used **asynchronously and separately** to top up
+   floats in a background watcher — never in the x402 hot path (on-demand bridging takes 10–90s
+   and breaks the synchronous payment loop). Do not wire `ua.sendTransaction` or
+   `ua.createTransferTransaction` inside the x402 payment handler. Solana x402 (`@x402/svm`)
+   is out of scope for v0.
 
 4. **No session-key delegation on UA 7702:** Particle's session keys are Biconomy-v2.0.0-only and
    cannot attach to a UA in 7702 mode. Leash spend caps are app-layer policy (agent loop +
@@ -212,6 +216,48 @@ surface the following so agents don't contradict verified facts:
 6. **V2 migration warning** (Particle UA page, gotchas): UA V2 migration is live. Re-verify
    account version before any demo recording. The `UNIVERSAL_ACCOUNT_VERSION` import in the SDK
    init may need updating.
+
+---
+
+## Pinned Package Versions
+
+_Recorded 2026-07-06 from published npm tarballs (ground truth). These are the versions all
+integration code must be written against. Do not drift without a dated DECISIONS entry._
+
+| Package | Pin | Notes |
+|---|---|---|
+| `@particle-network/universal-account-sdk` | **`2.0.3`** | V2 GA; V1 line ended at `1.1.1`. Nested `smartAccountOptions` init only; `universalGas` + top-level `ownerAddress` removed. |
+| `@x402/core` | **`~2.17.0`** | v2 wire protocol (`PAYMENT-REQUIRED` / `PAYMENT-SIGNATURE` / `PAYMENT-RESPONSE` headers). |
+| `@x402/fetch` | **`~2.17.0`** | `wrapFetchWithPayment` API stable. |
+| `@x402/evm` | **`~2.17.0`** | `ExactEvmScheme`; deps: `viem ^2.48`, `zod ^3.24`. |
+| `@x402/mcp` | **`~2.17.0`** | MCP dual-surface detection (`MCP_PAYMENT_REQUIRED_CODE=402` + `JSONRPC_PAYMENT_REQUIRED_CODE=-32042`). |
+| `@x402/next` | **`~2.17.0`** | Peer-requires `next >=16.2.6`; also needs `@x402/paywall ^2.17.0`. |
+| `@modelcontextprotocol/sdk` | **`^1.29.0`** | Stable SDK line; what `@x402/mcp` depends on. **Do not use `@modelcontextprotocol/server@2.0.0-beta.2`** (v2 beta, different package name). |
+| `magic-sdk` | **`33.9.0`** | Embedded wallet; `loginWithEmailOTP` unchanged. |
+| `@magic-sdk/admin` | latest at install time | Express API server wallets (TEE). Use Express API only — Core API v1 EOLs 2026-07-31. |
+| `viem` | **`^2.48`** | Canonical EVM primitive across Particle UA + x402 + Magic recipes. |
+
+---
+
+## Ecosystem Drift Warning
+
+_Added 2026-07-06. Verified facts that contradict what you might find in docs or stale clones._
+
+1. **Particle live docs are stale vs the shipped SDK.** The `Reference/particle-docs-mintlify/`
+   clone HEAD (`360327a`, 2026-06-16) equals `origin/main` as of 2026-07-06 — the docs have not
+   been updated since before UA SDK V2 GA (2026-06-29). The live docs still show the flat `ownerAddress`
+   init, the `universalGas` flag, and the V2 migration warning. **Trust the installed `2.0.3`
+   tarball `.d.ts` for all API shapes.** Do not copy init snippets from the quickstart page.
+
+2. **Re-clone x402 from `x402-foundation/x402`.** Our `Reference/x402-coinbase/` clone (commit
+   `dd927a2`, 2026-04-21) tracks `coinbase/x402`, which is now a **fork** of the foundation repo.
+   Published `@x402/*@2.17.0` packages carry `"repository": "x402-foundation/x402"`. Mine code
+   patterns from the published npm tarballs or a fresh clone of the foundation repo, not the
+   stale Coinbase fork.
+
+3. **Open facilitator is testnet-only.** `https://x402.org/facilitator` serves EVM Base Sepolia
+   only. `https://facilitator.x402.org` does not respond. Mainnet settlement = CDP facilitator
+   at `https://api.cdp.coinbase.com/platform/v2/x402` with CDP API keys.
 
 ---
 

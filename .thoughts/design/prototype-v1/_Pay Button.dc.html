@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes pb-spin{to{transform:rotate(360deg);}}
+@keyframes pb-draw{from{stroke-dashoffset:22;}to{stroke-dashoffset:0;}}
+@keyframes pb-pop{0%{transform:scale(0.6);opacity:0;}60%{transform:scale(1.08);}100%{transform:scale(1);opacity:1;}}
+</style>
+</helmet>
+<div style="display:flex;flex-direction:column;gap:10px;font-family:'Geist',system-ui,sans-serif;">
+
+  <sc-if value="{{ isIdle }}" hint-placeholder-val="{{ true }}">
+    <button style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;background:#1C1B18;color:#FFFFFF;border:none;border-radius:9px;font-family:'Geist',system-ui,sans-serif;font-size:15px;font-weight:500;letter-spacing:0.01em;cursor:pointer;" style-hover="background:#33312C;">
+      <svg width="14" height="15" viewBox="0 0 14 15" fill="none"><rect x="1.5" y="6.2" width="11" height="7.6" rx="2" fill="#FFFFFF"></rect><path d="M4 6V4.6a3 3 0 0 1 6 0V6" stroke="#FFFFFF" stroke-width="1.6" fill="none"></path></svg>
+      <span>Pay {{ amount }}</span>
+    </button>
+  </sc-if>
+
+  <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+    <button disabled="{{ true }}" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;height:48px;background:#33312C;color:rgba(255,255,255,0.85);border:none;border-radius:9px;font-family:'Geist',system-ui,sans-serif;font-size:15px;font-weight:500;cursor:default;">
+      {{ spinnerWhite }}
+    </button>
+  </sc-if>
+
+  <sc-if value="{{ isProcessing }}" hint-placeholder-val="{{ false }}">
+    <button disabled="{{ true }}" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;height:48px;background:#33312C;color:rgba(255,255,255,0.92);border:none;border-radius:9px;font-family:'Geist',system-ui,sans-serif;font-size:15px;font-weight:500;cursor:default;">
+      {{ spinnerWhite }}
+      <span>Processing…</span>
+    </button>
+  </sc-if>
+
+  <sc-if value="{{ isSuccess }}" hint-placeholder-val="{{ false }}">
+    <button disabled="{{ true }}" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;background:#257A46;color:#FFFFFF;border:none;border-radius:9px;font-family:'Geist',system-ui,sans-serif;font-size:15px;font-weight:500;cursor:default;animation:pb-pop 0.35s ease-out;">
+      {{ checkWhite }}
+      <span>Done</span>
+    </button>
+  </sc-if>
+
+  <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;background:#1C1B18;color:#FFFFFF;border:none;border-radius:9px;font-family:'Geist',system-ui,sans-serif;font-size:15px;font-weight:500;cursor:pointer;" style-hover="background:#33312C;">
+        <span>Try again</span>
+      </button>
+      <div style="font-size:12.5px;line-height:1.45;color:#8E2F34;text-align:center;">Payment didn’t go through. You have not been charged.</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isDisabledFunds }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button disabled="{{ true }}" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;background:#EBE9E3;color:#8C8A80;border:none;border-radius:9px;font-family:'Geist',system-ui,sans-serif;font-size:15px;font-weight:500;cursor:not-allowed;">
+        <svg width="14" height="15" viewBox="0 0 14 15" fill="none"><rect x="1.5" y="6.2" width="11" height="7.6" rx="2" fill="#8C8A80"></rect><path d="M4 6V4.6a3 3 0 0 1 6 0V6" stroke="#8C8A80" stroke-width="1.6" fill="none"></path></svg>
+        <span>Pay {{ amount }}</span>
+      </button>
+      <div style="font-size:12.5px;line-height:1.45;color:#5F5D55;text-align:center;">You don’t have enough to complete this payment.</div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:340,&quot;height&quot;:110},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;idle&quot;,&quot;options&quot;:[&quot;idle&quot;,&quot;loading&quot;,&quot;processing&quot;,&quot;success&quot;,&quot;error&quot;,&quot;disabled_funds&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;PayButton&quot;},&quot;amount&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;$12.00&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;PayButton&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'idle';
+    const amount = this.props.amount ?? '$12.00';
+    const R = React;
+    const spinnerWhite = R.createElement('span', {
+      style: { width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#FFFFFF', display: 'inline-block', animation: 'pb-spin 0.8s linear infinite', flex: 'none' }
+    });
+    const checkWhite = R.createElement('svg', { width: 17, height: 17, viewBox: '0 0 24 24' },
+      R.createElement('path', {
+        d: 'M5 12.5l4.4 4.4L19 7.6', fill: 'none', stroke: '#FFFFFF', strokeWidth: 2.8,
+        strokeLinecap: 'round', strokeLinejoin: 'round', strokeDasharray: 22,
+        style: { animation: 'pb-draw 0.45s ease-out 0.1s both' }
+      })
+    );
+    return {
+      amount,
+      spinnerWhite,
+      checkWhite,
+      isIdle: s === 'idle',
+      isLoading: s === 'loading',
+      isProcessing: s === 'processing',
+      isSuccess: s === 'success',
+      isError: s === 'error',
+      isDisabledFunds: s === 'disabled_funds'
+    };
+  }
+}
+</script>
+</body>
+</html>

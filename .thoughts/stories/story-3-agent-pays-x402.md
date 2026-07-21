@@ -12,17 +12,19 @@ so that the agent operates across x402 resources on any supported chain without 
 
 - **[AC-LEASH-1 / R-LEASH-2]** When the agent makes an MCP tool call that returns an x402 challenge, the Leash MCP stdio proxy intercepts the challenge. No CA certificate is required. (Primary path for Claude Code, Claude Desktop, Cursor, OpenClaude.)
 
-- **[AC-LEASH-1 / R-LEASH-2]** When the agent issues an HTTP fetch that returns a 402 response, the Leash HTTP fetch wrapper (`@x402/leash-fetch`) intercepts the 402. (Covers all HTTP-based agents including Vercel-deployed agents.)
+- **[AC-LEASH-1 / R-LEASH-2]** Dual-surface 402 detection:
+  - **MCP surface:** tool-result body containing a payment-required signal **and** JSON-RPC error code `-32042` (SEP-1036) are both detected and handled.
+  - **HTTP surface:** x402 v2 `PAYMENT-REQUIRED` response header **and** x402 v1 HTTP 402 + body are both handled. The Leash `@x402/fetch` wrapper covers all HTTP-based agents including Vercel-deployed ones.
 
-- **[AC-LEASH-1 / R-LEASH-1, R-LEASH-5]** After interception, the Leash server reads the `X-PAYMENT-REQUIRED` header and extracts the CAIP-2 network identifier (e.g., `eip155:8453` for Base, `eip155:42161` for Arbitrum One, `eip155:137` for Polygon). It selects the pre-positioned USDC float on that chain and submits the payment via the Magic Server Wallet TEE hosted signer. The agent host never holds a private key; the signer is entirely server-side (outside the agent process).
+- **[AC-LEASH-1 / R-LEASH-1, R-LEASH-5]** After interception, the Leash server parses the 402 `accepts[]` array and extracts the CAIP-2 network identifier (e.g., `eip155:8453` for Base, `eip155:42161` for Arbitrum One). It selects the pre-positioned USDC float on that chain and routes the EIP-3009 signing request to `POST /api/agent/sign`. The agent host never holds a private key; the signing key lives in the Magic Server Wallet TEE entirely server-side.
 
-- **[AC-LEASH-1 / R-LEASH-5]** Pre-positioned USDC floats exist on Base (primary, ~75% of traffic), Arbitrum One (~8%), and Polygon (~6%). The routing decision is dictated by the CAIP-2 network field in the 402 challenge, not by a user preference. Solana is out of scope for v0.
+- **[AC-LEASH-1 / R-LEASH-5]** Pre-positioned USDC floats exist on Base (primary, ~75% of traffic) and Arbitrum One. Polygon is excluded from v0 — UA SDK V2 removed Polygon rebalance support (see Constraint 14). The routing decision is dictated by the CAIP-2 network field in the 402 `accepts[]` array; Leash prefers the float chain whose CAIP-2 identifier matches. Solana is out of scope for v0.
 
 - **[AC-LEASH-1 / R-LEASH-4]** After every successful x402 settlement, a receipt row is written to the persistent store containing: amount (atomic units + USD display), asset, CAIP-2 network, `payTo` (resource endpoint), `txHash` (from the `X-PAYMENT-RESPONSE` header), timestamp, trigger URL, and status `success`. The receipt appears in the spend dashboard within the dashboard's polling interval.
 
-- **[AC-LEASH-1 / R-LEASH-4]** Failed or bounced payments are also logged with status `failed`. They do not increment the cumulative spend total. The ledger status enum is `success | failed | blocked`.
+- **[AC-LEASH-1 / R-LEASH-4]** Failed or bounced payments are also logged with status `failed`. They do not increment the cumulative spend total. The canonical ledger status enum is `pending | settled | failed | blocked` (`settled` replaces the old `success`; `pending` covers in-flight receipts whose settlement response has not returned).
 
-- **[AC-LEASH-2 / R-LEASH-3, R-LEASH-1]** Before submitting any x402 payment, the Leash hosted signer checks cumulative settled spend against the owner-set cap. If the proposed payment would push cumulative spend over the cap, the signer refuses to sign — no x402 call is submitted. Cap enforcement is server-side (in the hosted signer), not solely in the agent loop.
+- **[AC-LEASH-2 / R-LEASH-3, R-LEASH-1]** Before submitting any x402 payment, the Leash hosted signer checks `SUM(settled + pending)` receipts against the owner-set cap. Pending receipts count toward the gate to prevent race-condition overspend. If the proposed payment would push the committed total over the cap, the signer refuses to sign — no x402 call is submitted. Cap enforcement is server-side (at `POST /api/agent/sign`), not solely in the agent loop.
 
 - **[AC-LEASH-2 / R-LEASH-3]** When a payment is blocked by the cap, the blocked attempt is logged with status `blocked` (distinct from `failed` — a `blocked` attempt never issued an x402 call; a `failed` attempt issued one and was rejected). A Tier 3 (interrupt) notification is emitted to the owner.
 
@@ -44,7 +46,7 @@ Then the Leash MCP stdio proxy intercepts the challenge (no CA cert required)
   And routes the payment to the pre-positioned USDC float on Base
   And submits the x402 payment — the agent host never holds or sees a private key
   And the agent receives the 200 response with the protected resource
-  And a receipt row is written with status "success", txHash, amount, network eip155:8453, payTo, timestamp
+  And a receipt row is written with status "settled", txHash, amount, network eip155:8453, payTo, timestamp
   And the receipt appears in the spend dashboard within the polling interval
 ```
 
@@ -80,7 +82,7 @@ Then the agent logs a receipt row with status "failed"
   And the failed amount does NOT increment the cumulative spend total
   And the agent loop continues (the failed attempt alone does not halt the agent)
 ```
-Note: a "failed" payment is distinct from a "blocked" payment — "failed" means an x402 call was issued and rejected by the facilitator; "blocked" means the Leash hosted signer refused to sign before any x402 call was made. Ledger status enum: `success | failed | blocked`.
+Note: a "failed" payment is distinct from a "blocked" payment — "failed" means an x402 call was issued and rejected by the facilitator; "blocked" means the Leash hosted signer refused to sign before any x402 call was made. Canonical ledger status enum: `pending | settled | failed | blocked`.
 
 ---
 
@@ -89,7 +91,7 @@ Note: a "failed" payment is distinct from a "blocked" payment — "failed" means
 - **No LLM, no model picker.** Leash is purely an x402 auto-payer. The agent is the owner's own external agent; Leash does not embed or route any LLM call.
 - **Three interception methods, one primary.** MCP stdio proxy is primary (Claude Code, Claude Desktop, Cursor, OpenClaude — no CA cert). HTTP fetch wrapper (`@x402/leash-fetch`) covers all HTTP-based agents including Vercel. MITM proxy + CA cert is opt-in last resort for edge cases. The interception method is transparent to the agent loop — the agent makes ordinary MCP tool calls or `fetch()` calls and receives the result.
 - **Custody outside the agent.** The Magic Server Wallet TEE hosted signer holds the signing key. Cap enforcement also lives in the hosted signer. Even if an agent loop is compromised, it cannot overspend or exfiltrate the key — the signer enforces policy server-side regardless.
-- **CAIP-2 network drives float selection.** The resource's 402 challenge specifies the network; Leash does not negotiate or redirect to a cheaper chain. Base handles ~75% of x402 volume (primary float), Arbitrum ~8%, Polygon ~6%. The Particle UA treasury rebalances floats asynchronously in the background (see Story 4).
+- **CAIP-2 network drives float selection.** The resource's 402 `accepts[]` specifies the network; Leash does not negotiate or redirect to a cheaper chain. Base handles ~75% of x402 volume (primary float), Arbitrum One the remainder. Polygon is excluded from v0 (see Constraint 14). Connection telemetry is reported via `POST /api/agent/connect`; signing requests go to `POST /api/agent/sign` (remote signer). The Particle UA treasury rebalances floats asynchronously (see Story 7).
 - **App-layer cap, server-side enforcement.** The spend cap is enforced in the hosted signer before any signature is produced. There is no `SpendCapGuard.sol` or on-chain delegation primitive. (Spec: R-LEASH-3, Non-Goals, Constraint 6.)
 - **EIP-3009 / ecrecover on EVM chains.** Standard USDC v2 requires a raw EOA signature for EIP-3009 transferWithAuthorization. The Magic Server Wallet TEE provides a raw EOA key, satisfying this constraint without exposing it to the agent host.
 - **Receipt field source.** The `txHash`, `network`, and `success` fields in the receipt come from the `X-PAYMENT-RESPONSE` header returned by the x402 facilitator on successful settlement.
@@ -101,5 +103,5 @@ Note: a "failed" payment is distinct from a "blocked" payment — "failed" means
 
 - **OQ-3 (from spec):** Which x402-gated endpoint is the agent demoed against? Options: (a) Tab's own x402 endpoint (Story 9 / R-RAIL-1); (b) a known public x402 test API; (c) a minimal demo x402 server. Decision required before Story 3 can be built or recorded.
 - **Polling interval for dashboard receipt appearance.** AC-LEASH-1 requires the receipt to appear "within the dashboard's polling interval" but the spec does not define the target value in seconds.
-- **Behavior when a specific chain's float is exhausted (not the cap).** If the CAIP-2 network in the 402 challenge is e.g. Polygon but the Polygon float is empty (not yet rebalanced), should this return status `failed` or a distinct `float-empty` state with a Tier 3 notification? Not specified.
+- **Behavior when a specific chain's float is exhausted (not the cap).** If the CAIP-2 network in the 402 challenge is e.g. Base but the Base float is empty pending rebalance, should this return status `failed` or a distinct `float-empty` state with a Tier 2/3 notification? Not specified. (Polygon excluded from v0 — this scenario only applies to Base and Arbitrum One floats.)
 - **Async rebalance timing vs float-dry gap.** Between treasury rebalance cycles, a low-float chain could fail payments. The acceptable gap and minimum float threshold per chain are not specified.

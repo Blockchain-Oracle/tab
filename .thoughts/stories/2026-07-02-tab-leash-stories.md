@@ -11,13 +11,13 @@
 
 2. **[story-2-buyer-pays-by-email.md](story-2-buyer-pays-by-email.md)** — Buyer authenticates with just an email address and a 6-digit Magic OTP, sees a single USD balance, and completes a cross-chain payment without ever encountering the words "chain", "gas", "bridge", or "wallet". (5 scenarios)
 
-3. **[story-3-agent-pays-x402.md](story-3-agent-pays-x402.md)** — The agent's x402-gated MCP tool call or HTTP fetch is intercepted by the Leash MCP stdio proxy (primary) or HTTP fetch wrapper; the Leash hosted signer (Magic Server Wallet TEE) reads the CAIP-2 network from the 402 challenge and pays from the matching pre-positioned USDC float (Base primary, Arbitrum, Polygon); cap is enforced server-side before any signature; receipt appears in dashboard. No private key on the agent host, no LLM. (4 scenarios)
+3. **[story-3-agent-pays-x402.md](story-3-agent-pays-x402.md)** — The agent's x402-gated MCP tool call or HTTP fetch is intercepted by the Leash MCP stdio proxy (dual-surface: tool-result + JSON-RPC -32042 on MCP; PAYMENT-REQUIRED header + 402+body on HTTP); the hosted signer reads the CAIP-2 network from `accepts[]` and pays from the matching pre-positioned USDC float (Base primary, Arbitrum One); cap gate checks `settled + pending` server-side at `POST /api/agent/sign` before any signature; receipt status enum `pending | settled | failed | blocked`. Polygon excluded from v0. (4 scenarios)
 
-4. **[story-4-owner-sets-cap.md](story-4-owner-sets-cap.md)** — Owner sets a spend cap (amount + reset frequency) from the dashboard, adjusts it mid-cycle; cap is enforced server-side by the hosted signer; blocked and failed payments never inflate the total; Particle UA treasury async-rebalances USDC floats across Base/Arbitrum/Polygon in the background as the flagship cross-chain op. (6 scenarios)
+4. **[story-4-owner-sets-cap.md](story-4-owner-sets-cap.md)** — Owner sets a spend cap (amount + reset frequency) from the dashboard, adjusts it mid-cycle; cap gate checks `settled + pending`; blocked and failed payments never inflate the total; Particle UA treasury async-rebalances USDC floats across Base / Arbitrum One in the background as the flagship cross-chain op. BLOCKED (B-04) for the actual rebalance UA op. (6 scenarios)
 
 5. **[story-5-owner-watches-and-notified.md](story-5-owner-watches-and-notified.md)** — Owner watches a reverse-chronological live feed of every x402 receipt (amount, URL, txHash, status) and receives silently tiered alerts: Tier 1 badge-only for routine payments, Tier 2 banner at 75% of cap or an unusual URL, Tier 3 interrupt only when a payment is blocked. (5 scenarios)
 
-6. **[story-6-owner-revokes.md](story-6-owner-revokes.md)** — Owner halts the agent at four escalating revocation levels — soft pause (loop halted, resumable), freeze (cannot transact, key intact), cancel (key rotated, re-provisioning required), nuclear (key deleted, "not provisioned" state) — from web dashboard or mobile PWA, with no on-device signing. (5 scenarios)
+6. **[story-6-owner-revokes.md](story-6-owner-revokes.md)** — Owner halts the agent at four escalating levels via `POST /api/leash/revoke` — L1 pause (loop halt, resumable), L2 freeze (signer gate, resumable), L3 cancel (signer_subject revoked at our OIDC layer; Magic has no wallet-delete; named spike B-03 for new-wallet behavior), L4 nuclear (credential chain destroyed; withdraw-first offer; post-nuke floats not recoverable via Leash) — from web or mobile PWA, no on-device signing. (5 scenarios)
 
 7. **[story-7-owner-picks-model.md](story-7-owner-picks-model.md)** — Owner installs the Leash MCP server (or HTTP fetch wrapper) into their agent host config, pastes the Leash API key as the single credential, and verifies that the agent's x402-gated calls auto-pay via the hosted signer — no private key on the agent host, no CA cert required for the primary path. (4 scenarios) _(File renamed in content from "owner picks model"; model-picker content removed — Leash has no LLM.)_
 
@@ -31,8 +31,8 @@
 
 | # | Story | Traces to (requirement / AC IDs) | Primary user |
 |---|-------|----------------------------------|--------------|
-| 1 | Merchant integrates Tab | R-TAB-1, R-TAB-2, R-TAB-3, AC-TAB-4 | Merchant / Developer |
-| 2 | Buyer pays by email | R-TAB-4, R-TAB-5, R-TAB-6, R-TAB-7, R-TAB-8, R-TAB-9, R-TAB-10; AC-TAB-1, AC-TAB-2, AC-TAB-3, AC-TAB-5, AC-TAB-6 | Buyer |
+| 1 | Merchant integrates Tab | R-TAB-1, R-TAB-2, R-TAB-3, R-TAB-11, R-TAB-13, AC-TAB-4 | Merchant / Developer |
+| 2 | Buyer pays by email | R-TAB-4, R-TAB-5, R-TAB-6, R-TAB-7, R-TAB-8, R-TAB-9, R-TAB-10, R-TAB-11, R-TAB-12; AC-TAB-1, AC-TAB-2, AC-TAB-3, AC-TAB-5, AC-TAB-6 | Buyer |
 | 3 | Agent pays x402 (interception + multi-chain) | R-LEASH-2, R-LEASH-1, R-LEASH-3, R-LEASH-4, R-LEASH-5; AC-LEASH-1, AC-LEASH-2 | Agent owner |
 | 4 | Owner sets cap + async float rebalance | R-DASH-2, R-DASH-5, R-LEASH-3, R-LEASH-1, R-LEASH-6; AC-DASH-2 | Agent owner |
 | 5 | Owner watches spend and is notified | R-DASH-1, R-DASH-3, R-LEASH-4; AC-DASH-1, AC-DASH-3 | Agent owner |
@@ -51,10 +51,13 @@
 Originally resolved by standardizing on Arbitrum One as the single float chain. Superseded by the corrected multi-chain architecture below.
 
 **Architecture correction — Leash is multi-chain with pre-positioned floats (2026-07-02).**
-The single-float-on-Arbitrum assumption has been replaced. Leash now pre-positions USDC floats on Base (primary, ~75% of x402 traffic), Arbitrum One (~8%), and Polygon (~6%). The CAIP-2 network field in the 402 challenge drives float selection — Leash pays from the chain the resource requests. The Particle UA treasury rebalances floats asynchronously in the background. Story 3 and Story 4 have been updated to reflect this. Story 9 (Tab's x402 endpoint on Arbitrum One) is unaffected — the Tab rail remains Arbitrum One and the Leash float on Arbitrum One services it.
+The single-float-on-Arbitrum assumption has been replaced. Leash pre-positions USDC floats on Base (primary, ~75% of x402 traffic) and Arbitrum One. Polygon is **dropped from v0** — UA SDK V2 removed Polygon rebalance support, leaving Polygon as a money-in / no-money-out dead-end (Constraint 14). Story 3, 4, and the index descriptions have been updated. Story 9 (Tab's x402 endpoint on Arbitrum One) is unaffected.
 
-**Contradiction 2 — Status of a cap-blocked attempt (Story 3 vs Story 5). RESOLVED.**
-The authoritative status enum is now `success | failed | blocked`. A `blocked` attempt never issued an x402 call (cap pre-check prevented it); a `failed` attempt did issue an x402 call and was rejected by the facilitator. Story 3 and Story 5 have both been updated to use status `blocked` for cap-blocked attempts. DECISIONS.md records this as a formal decision.
+**Polygon exclusion (2026-07-06).**
+All Polygon float references (`eip155:137`, ~8% traffic) are removed. Any build-time float configuration must not include Polygon. (reintegration I-8, Constraint 14)
+
+**Contradiction 2 — Status of a cap-blocked attempt (Story 3 vs Story 5). RESOLVED (updated 2026-07-06).**
+The canonical ledger status enum is `pending | settled | failed | blocked` (`settled` replaces `success`; `pending` is added for in-flight receipts). A `blocked` attempt never issued an x402 call; a `failed` attempt issued one and was rejected by the facilitator. Cap gate checks `SUM(settled + pending)`. Stories 3 and 5 updated.
 
 ---
 
@@ -82,11 +85,8 @@ Aggregated and deduped from all 9 stories. Prefixed with the originating story n
 **[1, 2, 8] OQ-4 — Which token address on Arbitrum One?**
 The Particle quickstart uses USDT (`0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9`); the product description says USDC. The `token.address` in the merchant intent endpoint, the `TOKEN` constant in `createTransferTransaction`, and the `asset` field in the Tab x402 endpoint must all agree. The wrong address produces a silent zero-liquidity failure. Must be confirmed against live Particle UA liquidity before the Story 8 spike runs.
 
-**[1] Webhook delivery timeout.**
-AC-TAB-4 names "a defined timeout" for webhook delivery but does not specify the value. Merchants need to know how long to keep their webhook endpoint responsive and when to consider a delivery attempt failed.
-
-**[1] Webhook retry policy.**
-Does the Tab server retry webhook delivery on network failure (5xx, timeout)? If so, what are the max-attempts and backoff parameters? Not specified in the spec.
+**[1] Webhook delivery timeout and retry policy — CORRECTED (2026-07-16).**
+R-TAB-3 specifies exactly three total HTTP attempts: attempt 1 inline after verified settlement, attempt 2 after 1 minute, and attempt 3 after 4 minutes. Each attempt has a 10-second response timeout; a third failure immediately records terminal `gave_up`. There is no 16-minute delay or fourth request. The "≤15 s first-attempt" latency target is internal only — not in merchant-facing docs until confirmed.
 
 **[1] SDK install command / npm package name.**
 R-TAB-1 names the monorepo path `packages/sdk` but does not specify the npm registry package name or install command a merchant uses.
@@ -114,8 +114,8 @@ The spec defines cap-exceeded behavior but does not specify what happens if the 
 **[9] Agent float chain for Tab's x402 endpoint — RESOLVED.**
 R-LEASH-1 has been updated: the agent float is now on Arbitrum One (`eip155:42161`), matching R-RAIL-1. No separate float or reconciliation is needed. See Consistency check above.
 
-**[9] Webhook payload normalization across payer types.**
-For human payments, `transactionId` and `tokenChanges` come from `ua.sendTransaction`'s `TransactionResult`. For agent/x402 payments, the CDP facilitator returns `X-PAYMENT-RESPONSE` with `txHash`, `network`, and `success`. How does Tab's server normalize the x402 receipt into the same webhook shape? Is `txHash` mapped to `transactionId`? Are `tokenChanges` derived from amount and `payTo`? Unresolved in the spec.
+**[9] Webhook payload normalization across payer types — RESOLVED (2026-07-06).**
+R-TAB-3 (canonical webhook contract) answers this: `txHash` from `X-PAYMENT-RESPONSE` maps to `transactionId`; `tokenChanges` is derived from payment amount + `payTo`. Both paths produce `{ id, type, livemode, transactionId, tokenChanges[] }`. See reintegration B-4.
 
 **[9] OQ-1 — End-to-end Story 9 unverified (spike required).**
 The combination of Tab as x402 seller on Arbitrum One and the Leash agent as x402 payer has no prior documented proof. A funded live spike must succeed before Story 9 is considered validated.
@@ -174,7 +174,7 @@ What x402-gated URL should the onboarding flow direct the owner to hit as a conn
 The async treasury rebalance triggers when a chain's float falls below a threshold, but the threshold value per chain is not specified. Too high a threshold wastes capital; too low risks payment failures during the rebalance window.
 
 **[3] Float-dry behavior when rebalance hasn't completed.**
-If the CAIP-2 network in the 402 challenge is e.g. Polygon but the Polygon float is empty pending rebalance, should this be status `failed` or a distinct `float-empty` state with a Tier 3 notification? Not specified.
+If the CAIP-2 network in the 402 challenge is e.g. Base but the Base float is empty pending rebalance, should this be status `failed` or a distinct `float-empty` state with a Tier 2/3 notification? Not specified. (Polygon removed from v0 — this question no longer applies to Polygon.)
 
 **[4] Rebalance source and authorization.**
 Does the Particle UA treasury rebalance use `ua.createTransferTransaction` (requiring an owner-authorized UA action) or does the Leash server hold a treasury key and rebalance autonomously? If owner authorization is required, the "async background op" claim needs qualification.

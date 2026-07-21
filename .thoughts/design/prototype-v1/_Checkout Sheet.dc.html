@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;background:#8a887f;}
+@keyframes cs-spin{to{transform:rotate(360deg);}}
+@keyframes cs-draw{from{stroke-dashoffset:34;}to{stroke-dashoffset:0;}}
+@keyframes cs-pop{0%{transform:scale(0.5);opacity:0;}55%{transform:scale(1.06);}100%{transform:scale(1);opacity:1;}}
+@keyframes cs-shimmer{0%{background-position:-140px 0;}100%{background-position:140px 0;}}
+</style>
+</helmet>
+<div style="background:#FFFFFF;border-radius:18px;overflow:hidden;box-shadow:0 24px 64px rgba(28,27,24,0.30);font-family:'Geist',system-ui,sans-serif;color:#1C1B18;">
+
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EEE8;">
+    <sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}">
+      <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#5F5D55;" style-hover="background:#F5F4F0;">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M10.5 3L5.5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </div>
+    </sc-if>
+    <div style="width:28px;height:28px;border-radius:8px;background:#F1EFE9;border:1px solid #E8E6DF;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#1C1B18;flex:none;">A</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:13px;font-weight:600;line-height:1.2;">Atlas Coffee Roasters</div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:#5F5D55;font-variant-numeric:tabular-nums;">{{ amount }}</div>
+    <sc-if value="{{ canClose }}" hint-placeholder-val="{{ true }}">
+      <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8C8A80;" style-hover="background:#F5F4F0;color:#1C1B18;">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="padding:26px 22px 24px;">
+
+    <sc-if value="{{ isEmail }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+        <div style="width:44px;height:44px;border-radius:12px;background:#F5F4F0;display:flex;align-items:center;justify-content:center;margin-bottom:6px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2.5" stroke="#5F5D55" stroke-width="1.5"></rect><path d="M3 6l7 5 7-5" stroke="#5F5D55" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </div>
+        <div style="font-size:17px;font-weight:600;letter-spacing:-0.01em;">Pay with your email</div>
+        <div style="font-size:13px;line-height:1.5;color:#5F5D55;max-width:250px;">We’ll email you a one-time code. No password, no account setup.</div>
+        <div style="width:100%;margin-top:14px;display:flex;flex-direction:column;gap:10px;">
+          <sc-if value="{{ emailEditable }}" hint-placeholder-val="{{ true }}">
+            <div style="height:46px;border:1.5px solid #3B5BD9;border-radius:10px;box-shadow:0 0 0 3px rgba(59,91,217,0.13);display:flex;align-items:center;padding:0 14px;font-size:14px;color:#8C8A80;background:#FFFFFF;text-align:left;">you@email.com</div>
+            <button disabled="{{ true }}" style="height:46px;border:none;border-radius:10px;background:#EBE9E3;color:#8C8A80;font-family:'Geist',system-ui,sans-serif;font-size:14.5px;font-weight:500;cursor:not-allowed;">Continue</button>
+          </sc-if>
+          <sc-if value="{{ emailSubmitting }}" hint-placeholder-val="{{ false }}">
+            <div style="height:46px;border:1px solid #E8E6DF;border-radius:10px;display:flex;align-items:center;padding:0 14px;font-size:14px;color:#8C8A80;background:#F8F7F4;text-align:left;">maya.chen@example.com</div>
+            <button disabled="{{ true }}" style="height:46px;border:none;border-radius:10px;background:#33312C;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:14.5px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:9px;cursor:default;">{{ spinnerWhite }}<span>Sending code…</span></button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isOtp }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+        <div style="width:44px;height:44px;border-radius:12px;background:#F5F4F0;display:flex;align-items:center;justify-content:center;margin-bottom:6px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2.5" stroke="#5F5D55" stroke-width="1.5"></rect><path d="M3 6l7 5 7-5" stroke="#5F5D55" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </div>
+        <div style="font-size:17px;font-weight:600;letter-spacing:-0.01em;">Enter your code</div>
+        <div style="font-size:13px;line-height:1.5;color:#5F5D55;">We sent a 6-digit code to <span style="font-weight:600;color:#1C1B18;">ma•••@example.com</span></div>
+
+        <sc-if value="{{ otpBannerText }}" hint-placeholder-val="{{ false }}">
+          <div style="width:100%;margin-top:10px;border-radius:10px;padding:9px 12px;font-size:12.5px;line-height:1.45;text-align:left;background:{{ otpBannerBg }};color:{{ otpBannerColor }};">{{ otpBannerText }}</div>
+        </sc-if>
+
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+          <sc-for list="{{ boxes }}" as="b" hint-placeholder-count="6">
+            <sc-if value="{{ b.filled }}" hint-placeholder-val="{{ false }}">
+              <div style="width:42px;height:52px;border:1px solid #DBD9D0;border-radius:10px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;">{{ b.char }}</div>
+            </sc-if>
+            <sc-if value="{{ b.active }}" hint-placeholder-val="{{ false }}">
+              <div style="width:42px;height:52px;border:1.5px solid #3B5BD9;border-radius:10px;background:#FFFFFF;box-shadow:0 0 0 3px rgba(59,91,217,0.13);display:flex;align-items:center;justify-content:center;">
+                <div style="width:1.5px;height:22px;background:#3B5BD9;"></div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ b.empty }}" hint-placeholder-val="{{ true }}">
+              <div style="width:42px;height:52px;border:1px solid #E8E6DF;border-radius:10px;background:#FBFAF8;"></div>
+            </sc-if>
+            <sc-if value="{{ b.error }}" hint-placeholder-val="{{ false }}">
+              <div style="width:42px;height:52px;border:1.5px solid #C13A40;border-radius:10px;background:#FDF4F4;"></div>
+            </sc-if>
+            <sc-if value="{{ b.disabled }}" hint-placeholder-val="{{ false }}">
+              <div style="width:42px;height:52px;border:1px solid #E8E6DF;border-radius:10px;background:#F5F4F0;"></div>
+            </sc-if>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ otpVerifying }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12.5px;color:#5F5D55;">{{ spinnerInk }}<span>Verifying…</span></div>
+        </sc-if>
+        <sc-if value="{{ showResend }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:12px;font-size:12.5px;color:#8C8A80;">Didn’t get it? <span style="color:#3B5BD9;font-weight:500;cursor:pointer;">Resend code</span></div>
+        </sc-if>
+        <sc-if value="{{ showResendCooldown }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px;font-size:12.5px;color:#8C8A80;">New code sent · resend again in 26s</div>
+        </sc-if>
+        <div style="margin-top:4px;font-size:11px;color:#B4B2A8;">Codes auto-submit on the 6th digit</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCheckout }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;">
+        <div style="font-size:36px;font-weight:600;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1;">{{ amount }}</div>
+        <div style="font-size:13px;color:#5F5D55;margin-top:8px;">to Atlas Coffee Roasters</div>
+        <div style="width:100%;margin-top:20px;background:#F8F7F4;border:1px solid #EFEDE7;border-radius:12px;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:13px;color:#5F5D55;">Your balance</div>
+          <sc-if value="{{ balLoading }}" hint-placeholder-val="{{ false }}">
+            <div style="width:110px;height:14px;border-radius:6px;background:linear-gradient(90deg,#EBE9E3 25%,#F5F4F0 50%,#EBE9E3 75%);background-size:280px 100%;animation:cs-shimmer 1.2s linear infinite;"></div>
+          </sc-if>
+          <sc-if value="{{ balReady }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;">{{ balance }} available</div>
+          </sc-if>
+        </div>
+        <sc-if value="{{ isInsufficient }}" hint-placeholder-val="{{ false }}">
+          <div style="width:100%;margin-top:10px;border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.5;text-align:left;background:#FBF1DC;color:#7A5410;">You’re <span style="font-weight:600;">$3.50 short</span> for this payment. Nothing has been charged.</div>
+        </sc-if>
+        <div style="width:100%;margin-top:16px;display:flex;flex-direction:column;gap:10px;">
+          <sc-if value="{{ ctaReady }}" hint-placeholder-val="{{ true }}">
+            <button style="height:48px;border:none;border-radius:10px;background:#1C1B18;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:15px;font-weight:500;cursor:pointer;" style-hover="background:#33312C;">Pay {{ amount }}</button>
+          </sc-if>
+          <sc-if value="{{ ctaDisabled }}" hint-placeholder-val="{{ false }}">
+            <button disabled="{{ true }}" style="height:48px;border:none;border-radius:10px;background:#EBE9E3;color:#8C8A80;font-family:'Geist',system-ui,sans-serif;font-size:15px;font-weight:500;cursor:not-allowed;">Pay {{ amount }}</button>
+          </sc-if>
+          <sc-if value="{{ ctaConfirming }}" hint-placeholder-val="{{ false }}">
+            <button disabled="{{ true }}" style="height:48px;border:none;border-radius:10px;background:#33312C;color:rgba(255,255,255,0.92);font-family:'Geist',system-ui,sans-serif;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:9px;cursor:default;">{{ spinnerWhite }}<span>Processing your payment…</span></button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSuccess }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;">
+        {{ successCheck }}
+        <div style="font-size:20px;font-weight:600;letter-spacing:-0.01em;margin-top:16px;">Payment complete</div>
+        <div style="font-size:13px;color:#5F5D55;margin-top:5px;font-variant-numeric:tabular-nums;">{{ amount }} to Atlas Coffee Roasters</div>
+        <div style="display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:#F8F7F4;border:1px solid #EFEDE7;border-radius:8px;padding:7px 12px;">
+          <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#5F5D55;">Reference&nbsp;#TAB-7B4A2</span>
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style="cursor:pointer;"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5" stroke="#8C8A80" stroke-width="1.4"></rect><path d="M9.5 4.5v-1a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1" stroke="#8C8A80" stroke-width="1.4"></path></svg>
+        </div>
+        <div style="font-size:12px;color:#8C8A80;margin-top:12px;">A confirmation has been sent to maya.chen@example.com</div>
+        <button style="width:100%;height:44px;margin-top:16px;border:1px solid #DBD9D0;border-radius:10px;background:#FFFFFF;color:#1C1B18;font-family:'Geist',system-ui,sans-serif;font-size:14px;font-weight:500;cursor:pointer;" style-hover="background:#F8F7F4;">Done</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isErrorView }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;">
+        <div style="width:52px;height:52px;border-radius:50%;background:{{ errGlyphBg }};display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:{{ errGlyphColor }};">!</div>
+        <div style="font-size:17px;font-weight:600;letter-spacing:-0.01em;margin-top:14px;max-width:260px;line-height:1.3;">{{ errTitle }}</div>
+        <div style="font-size:13px;line-height:1.55;color:#5F5D55;margin-top:7px;max-width:270px;">{{ errBody }}</div>
+        <div style="width:100%;margin-top:18px;display:flex;flex-direction:column;gap:9px;">
+          <sc-if value="{{ errHasRetry }}" hint-placeholder-val="{{ true }}">
+            <button style="height:46px;border:none;border-radius:10px;background:#1C1B18;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:14.5px;font-weight:500;cursor:pointer;" style-hover="background:#33312C;">{{ errCta }}</button>
+          </sc-if>
+          <div style="font-size:12.5px;color:#8C8A80;cursor:pointer;padding:4px;" style-hover="color:#1C1B18;">Cancel</div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-top:1px solid #F0EEE8;background:#FCFBF9;">
+    <svg width="10" height="11" viewBox="0 0 14 15" fill="none"><rect x="1.5" y="6.2" width="11" height="7.6" rx="2" fill="#B4B2A8"></rect><path d="M4 6V4.6a3 3 0 0 1 6 0V6" stroke="#B4B2A8" stroke-width="1.6" fill="none"></path></svg>
+    <span style="font-size:11px;color:#8C8A80;letter-spacing:0.01em;">Secured by <span style="font-weight:600;color:#5F5D55;">Tab</span></span>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:375,&quot;height&quot;:480},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;bal_ready&quot;,&quot;options&quot;:[&quot;email_entry&quot;,&quot;email_submitting&quot;,&quot;otp_awaiting&quot;,&quot;otp_submitting&quot;,&quot;otp_wrong&quot;,&quot;otp_expired&quot;,&quot;otp_limited&quot;,&quot;otp_not_received&quot;,&quot;bal_loading&quot;,&quot;bal_ready&quot;,&quot;insufficient&quot;,&quot;confirming&quot;,&quot;success&quot;,&quot;err_insufficient&quot;,&quot;err_failed&quot;,&quot;err_network&quot;,&quot;err_auth&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Checkout&quot;},&quot;amount&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;$12.00&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Checkout&quot;},&quot;balance&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;$847.32&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Checkout&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const v = this.props.view ?? 'bal_ready';
+    const amount = this.props.amount ?? '$12.00';
+    const R = React;
+
+    const spinner = (border, top) => R.createElement('span', {
+      style: { width: 15, height: 15, borderRadius: '50%', border: '2px solid ' + border, borderTopColor: top, display: 'inline-block', animation: 'cs-spin 0.8s linear infinite', flex: 'none' }
+    });
+    const spinnerWhite = spinner('rgba(255,255,255,0.3)', '#FFFFFF');
+    const spinnerInk = spinner('rgba(28,27,24,0.15)', '#5F5D55');
+
+    const successCheck = R.createElement('div', {
+      style: { width: 66, height: 66, borderRadius: '50%', background: '#E8F3EC', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'cs-pop 0.4s ease-out' }
+    }, R.createElement('svg', { width: 30, height: 30, viewBox: '0 0 24 24' },
+      R.createElement('path', {
+        d: 'M5 12.5l4.4 4.4L19 7.6', fill: 'none', stroke: '#257A46', strokeWidth: 2.6,
+        strokeLinecap: 'round', strokeLinejoin: 'round', strokeDasharray: 34,
+        style: { animation: 'cs-draw 0.5s ease-out 0.15s both' }
+      })
+    ));
+
+    // OTP boxes
+    const code = ['4', '8', '2', '9', '1', '3'];
+    const mkBoxes = (mode) => code.map((c, i) => {
+      if (mode === 'full') return { char: c, filled: true };
+      if (mode === 'error') return { error: true };
+      if (mode === 'disabled') return { disabled: true };
+      // awaiting: none filled, first active
+      if (i === 0) return { active: true };
+      return { empty: true };
+    });
+
+    const otpViews = ['otp_awaiting', 'otp_submitting', 'otp_wrong', 'otp_expired', 'otp_limited', 'otp_not_received'];
+    const checkoutViews = ['bal_loading', 'bal_ready', 'insufficient', 'confirming'];
+    const errViews = ['err_insufficient', 'err_failed', 'err_network', 'err_auth'];
+
+    const isEmail = v === 'email_entry' || v === 'email_submitting';
+    const isOtp = otpViews.includes(v);
+    const isCheckout = checkoutViews.includes(v);
+    const isSuccess = v === 'success';
+    const isErrorView = errViews.includes(v);
+
+    let boxes = mkBoxes('awaiting');
+    if (v === 'otp_submitting') boxes = mkBoxes('full');
+    if (v === 'otp_wrong') boxes = mkBoxes('error');
+    if (v === 'otp_limited') boxes = mkBoxes('disabled');
+
+    let otpBannerText = false, otpBannerBg = '#FAECEC', otpBannerColor = '#8E2F34';
+    if (v === 'otp_wrong') otpBannerText = 'That code didn’t match. Try again.';
+    if (v === 'otp_expired') { otpBannerText = 'This code has expired. We’ve sent a new one.'; otpBannerBg = '#FBF1DC'; otpBannerColor = '#7A5410'; }
+    if (v === 'otp_limited') otpBannerText = 'Too many attempts. Please wait 5 minutes.';
+
+    const errMap = {
+      err_insufficient: { t: 'Not enough to complete this payment', b: 'Your balance is $8.50 and this payment is $12.00 — you’re $3.50 short. You have not been charged.', cta: false, glyph: 'warm' },
+      err_failed: { t: 'Payment didn’t go through', b: 'You have not been charged. Your details are saved — just try again.', cta: 'Try again', glyph: 'red' },
+      err_network: { t: 'Couldn’t connect', b: 'Check your connection and try again. You have not been charged.', cta: 'Try again', glyph: 'red' },
+      err_auth: { t: 'We couldn’t verify your code', b: 'For your security, please start again from your email address.', cta: 'Start over', glyph: 'red' }
+    };
+    const em = errMap[v] || errMap.err_failed;
+
+    return {
+      amount,
+      balance: this.props.balance ?? '$847.32',
+      spinnerWhite, spinnerInk, successCheck,
+      showBack: isEmail || isOtp,
+      canClose: v !== 'confirming',
+      isEmail,
+      emailEditable: v === 'email_entry',
+      emailSubmitting: v === 'email_submitting',
+      isOtp,
+      boxes,
+      otpBannerText, otpBannerBg, otpBannerColor,
+      otpVerifying: v === 'otp_submitting',
+      showResend: v === 'otp_awaiting' || v === 'otp_wrong' || v === 'otp_expired',
+      showResendCooldown: v === 'otp_not_received',
+      isCheckout,
+      balLoading: v === 'bal_loading',
+      balReady: v !== 'bal_loading' && isCheckout,
+      isInsufficient: v === 'insufficient',
+      ctaReady: v === 'bal_ready',
+      ctaDisabled: v === 'bal_loading' || v === 'insufficient',
+      ctaConfirming: v === 'confirming',
+      isSuccess,
+      isErrorView,
+      errTitle: em.t,
+      errBody: em.b,
+      errCta: em.cta || 'Try again',
+      errHasRetry: !!em.cta,
+      errGlyphBg: em.glyph === 'red' ? '#FAECEC' : '#FBF1DC',
+      errGlyphColor: em.glyph === 'red' ? '#B4383D' : '#96650F'
+    };
+  }
+}
+</script>
+</body>
+</html>

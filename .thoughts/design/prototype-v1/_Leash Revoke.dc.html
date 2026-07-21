@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes lr-spin{to{transform:rotate(360deg);}}
+</style>
+</helmet>
+<div style="position:relative;display:flex;width:100%;height:900px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="width:224px;flex:none;background:#F4F3EE;border-right:1px solid #E8E6DF;display:flex;flex-direction:column;padding:16px 12px 14px;">
+    <div style="display:flex;align-items:center;gap:9px;padding:4px 6px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#206B4E;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:13px;font-weight:700;">L</div>
+      <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em;">Leash</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-top:22px;">
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Overview</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Payments</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Notifications <span style="min-width:17px;height:17px;border-radius:9px;background:#206B4E;color:#FFFFFF;font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;">2</span></div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Cap &amp; limits</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Connect agent</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:#1C1B18;background:#E9E7E0;">Revocation</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Setup &amp; funds</div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px;border-top:1px solid #E8E6DF;padding-top:12px;">
+      <div style="width:26px;height:26px;border-radius:50%;background:#E7F3EF;border:1px solid #BEE0D6;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#17503A;">AB</div>
+      <div style="min-width:0;"><div style="font-size:12px;font-weight:600;line-height:1.2;">Abu</div><div style="font-size:10.5px;color:#8C8A80;white-space:nowrap;">abu@example.dev</div></div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 32px 0;">
+      <div>
+        <div style="font-size:19px;font-weight:600;letter-spacing:-0.01em;">Revocation</div>
+        <div style="font-size:12.5px;color:#5F5D55;margin-top:3px;">Four levels, escalating severity. Every action is an HTTP call to your backend — no signing, nothing on-chain.</div>
+      </div>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:999px;background:{{ chipBg }};color:{{ chipColor }};border:1px solid {{ chipBorder }};"><span style="width:6px;height:6px;border-radius:50%;background:{{ chipDot }};"></span>{{ chipLabel }}</span>
+    </div>
+
+    <div style="padding:16px 32px 24px;max-width:768px;display:flex;flex-direction:column;gap:10px;">
+
+      <sc-if value="{{ toastText }}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius:9px;padding:10px 13px;font-size:12.5px;background:{{ toastBg }};color:{{ toastColor }};">{{ toastText }}</div>
+      </sc-if>
+
+      <sc-if value="{{ reproNotice }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:11px;background:#F5F4F0;border:1px solid #E8E6DF;border-radius:11px;padding:11px 15px;">
+          <span style="flex:1;font-size:12.5px;font-weight:500;color:#5F5D55;">{{ reproText }}</span>
+          <sc-if value="{{ reproCta }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:600;color:#206B4E;text-decoration:underline;cursor:pointer;flex:none;">Provision new key</span></sc-if>
+        </div>
+      </sc-if>
+
+      <sc-for list="{{ levels }}" as="l" hint-placeholder-count="4">
+        <div style="background:{{ l.bg }};border:1px solid {{ l.border }};border-radius:12px;padding:16px 18px;{{ l.dim }}">
+          <div style="display:flex;align-items:flex-start;gap:14px;">
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:9px;">
+                <span style="font-size:10px;font-weight:700;letter-spacing:0.06em;color:{{ l.lvlColor }};background:{{ l.lvlBg }};border-radius:5px;padding:2px 7px;">LEVEL {{ l.n }}</span>
+                <span style="font-size:14px;font-weight:600;">{{ l.name }}</span>
+                <sc-if value="{{ l.stateChip }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:600;color:#5F5D55;background:#EFEDE7;border-radius:999px;padding:2px 9px;">{{ l.stateChip }}</span></sc-if>
+              </div>
+              <div style="font-size:12.5px;line-height:1.5;color:#5F5D55;margin-top:6px;">{{ l.consequence }}</div>
+              <div style="display:flex;gap:14px;margin-top:8px;font-size:11px;color:#8C8A80;">
+                <span>Key: <span style="font-weight:600;color:{{ l.keyColor }};">{{ l.keyFate }}</span></span>
+                <span>·</span>
+                <span>{{ l.reversibility }}</span>
+                <sc-if value="{{ l.disabledReason }}" hint-placeholder-val="{{ false }}"><span>·</span><span style="color:#B4B2A8;">{{ l.disabledReason }}</span></sc-if>
+              </div>
+            </div>
+            <sc-if value="{{ l.btnNeutral }}" hint-placeholder-val="{{ true }}">
+              <button style="height:34px;padding:0 14px;border:1px solid #DBD9D0;border-radius:9px;background:#FFFFFF;color:#1C1B18;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;flex:none;" style-hover="background:#F8F7F4;">{{ l.btnLabel }}</button>
+            </sc-if>
+            <sc-if value="{{ l.btnPrimary }}" hint-placeholder-val="{{ false }}">
+              <button style="height:34px;padding:0 14px;border:none;border-radius:9px;background:#206B4E;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;flex:none;" style-hover="background:#17503A;">{{ l.btnLabel }}</button>
+            </sc-if>
+            <sc-if value="{{ l.btnDangerOutline }}" hint-placeholder-val="{{ false }}">
+              <button style="height:34px;padding:0 14px;border:1px solid #F0D5D6;border-radius:9px;background:#FFFFFF;color:#B4383D;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;flex:none;" style-hover="background:#FAECEC;">{{ l.btnLabel }}</button>
+            </sc-if>
+            <sc-if value="{{ l.btnDangerFill }}" hint-placeholder-val="{{ false }}">
+              <button style="height:34px;padding:0 14px;border:none;border-radius:9px;background:#C13A40;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;flex:none;" style-hover="background:#A82F35;">{{ l.btnLabel }}</button>
+            </sc-if>
+            <sc-if value="{{ l.btnDisabled }}" hint-placeholder-val="{{ false }}">
+              <button disabled="{{ true }}" style="height:34px;padding:0 14px;border:1px solid #E8E6DF;border-radius:9px;background:#F5F4F0;color:#B4B2A8;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:not-allowed;flex:none;">{{ l.btnLabel }}</button>
+            </sc-if>
+          </div>
+        </div>
+      </sc-for>
+
+      <div style="font-size:11.5px;color:#8C8A80;padding:4px 2px;">Levels 1–2 confirm with a dialog. Level 3 requires typing <span style="font-family:'Geist Mono',monospace;">CANCEL</span>. Level 4 requires typing the agent’s name.</div>
+    </div>
+  </div>
+
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(28,27,24,0.42);"></div>
+    <div style="position:absolute;left:50%;top:190px;transform:translateX(-50%);width:460px;background:#FFFFFF;border-radius:14px;box-shadow:0 24px 64px rgba(28,27,24,0.3);padding:24px;">
+
+      <sc-if value="{{ mL1 }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:16px;font-weight:600;letter-spacing:-0.01em;">Pause your agent?</div>
+        <div style="font-size:12.5px;line-height:1.55;color:#5F5D55;margin-top:8px;">Payments will stop. Your server key stays intact and you can resume at any time.</div>
+        <sc-if value="{{ mError }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px;border-radius:9px;padding:9px 12px;font-size:12.5px;background:#FAECEC;color:#8E2F34;">Couldn’t reach the control service. Your agent is unchanged. Try again.</div>
+        </sc-if>
+        <div style="display:flex;justify-content:flex-end;gap:9px;margin-top:20px;">
+          <button style="height:36px;padding:0 14px;border:1px solid #DBD9D0;border-radius:9px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#F8F7F4;">Cancel</button>
+          <sc-if value="{{ mExecuting }}" hint-placeholder-val="{{ false }}">
+            <button disabled="{{ true }}" style="height:36px;padding:0 14px;border:none;border-radius:9px;background:#1C1B18;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:8px;opacity:0.85;cursor:default;">{{ spinnerWhite }}<span>Pausing…</span></button>
+          </sc-if>
+          <sc-if value="{{ mIdle }}" hint-placeholder-val="{{ true }}">
+            <button style="height:36px;padding:0 16px;border:none;border-radius:9px;background:#1C1B18;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#33312C;">Pause agent</button>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ mL2 }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:16px;font-weight:600;letter-spacing:-0.01em;">Freeze your agent?</div>
+        <div style="margin-top:12px;border:1px solid #EFEDE7;border-radius:10px;overflow:hidden;">
+          <div style="padding:9px 13px;border-bottom:1px solid #F5F4F0;font-size:12.5px;color:#5F5D55;">The agent loop keeps running, but every transaction is blocked.</div>
+          <div style="padding:9px 13px;border-bottom:1px solid #F5F4F0;font-size:12.5px;color:#5F5D55;">Your server key stays intact.</div>
+          <div style="padding:9px 13px;font-size:12.5px;color:#5F5D55;">You can unfreeze at any time.</div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:9px;margin-top:20px;">
+          <button style="height:36px;padding:0 14px;border:1px solid #DBD9D0;border-radius:9px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#F8F7F4;">Cancel</button>
+          <button style="height:36px;padding:0 16px;border:none;border-radius:9px;background:#1C1B18;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#33312C;">Freeze agent</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ mL3 }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:16px;font-weight:600;letter-spacing:-0.01em;">Cancel this agent?</div>
+        <div style="font-size:12.5px;line-height:1.55;color:#5F5D55;margin-top:8px;">This rotates your server key. The agent cannot pay until you provision a new key. Payment history is kept.</div>
+        <div style="margin-top:14px;">
+          <div style="font-size:12px;font-weight:500;color:#5F5D55;margin-bottom:6px;">Type <span style="font-family:'Geist Mono',monospace;font-weight:600;color:#1C1B18;">CANCEL</span> to continue</div>
+          <div style="height:40px;border:1.5px solid #C13A40;border-radius:9px;display:flex;align-items:center;padding:0 12px;font-family:'Geist Mono',monospace;font-size:13px;background:#FFFFFF;">CANCEL</div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:9px;margin-top:18px;">
+          <button style="height:36px;padding:0 14px;border:1px solid #DBD9D0;border-radius:9px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#F8F7F4;">Keep agent</button>
+          <button style="height:36px;padding:0 16px;border:1px solid #C13A40;border-radius:9px;background:#FFFFFF;color:#B4383D;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;" style-hover="background:#FAECEC;">Cancel agent — rotate key</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ mL4 }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:9px;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:0.06em;color:#FFFFFF;background:#C13A40;border-radius:5px;padding:3px 8px;">LEVEL 4 · NUCLEAR</span>
+          <span style="font-size:16px;font-weight:600;letter-spacing:-0.01em;">Delete the server key?</span>
+        </div>
+        <div style="margin-top:12px;border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.6;background:#FAECEC;color:#8E2F34;border:1px solid #F0D5D6;">This permanently deletes your server key. <span style="font-weight:700;">There is no recovery.</span> The agent stops immediately and re-provisioning requires operator action on the server.</div>
+        <div style="margin-top:14px;">
+          <div style="font-size:12px;font-weight:500;color:#5F5D55;margin-bottom:6px;">Type the agent’s name — <span style="font-family:'Geist Mono',monospace;font-weight:600;color:#1C1B18;">Research Agent v2</span> — to continue</div>
+          <div style="height:40px;border:1.5px solid #C13A40;border-radius:9px;box-shadow:0 0 0 3px rgba(193,58,64,0.12);display:flex;align-items:center;padding:0 12px;font-family:'Geist Mono',monospace;font-size:13px;background:#FFFFFF;">Research Agent v2</div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:9px;margin-top:18px;">
+          <button style="height:36px;padding:0 14px;border:1px solid #DBD9D0;border-radius:9px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#F8F7F4;">Keep agent</button>
+          <button style="height:36px;padding:0 16px;border:none;border-radius:9px;background:#C13A40;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;" style-hover="background:#A82F35;">Delete key — no recovery</button>
+        </div>
+      </sc-if>
+
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;active&quot;,&quot;options&quot;:[&quot;active&quot;,&quot;paused&quot;,&quot;frozen&quot;,&quot;cancelled&quot;,&quot;not_provisioned&quot;,&quot;confirm_l1&quot;,&quot;confirm_l2&quot;,&quot;confirm_l3&quot;,&quot;confirm_l4&quot;,&quot;executing&quot;,&quot;success&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Revocation&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'active';
+    const R = React;
+    const spinnerWhite = R.createElement('span', { style: { width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.35)', borderTopColor: '#FFFFFF', display: 'inline-block', animation: 'lr-spin 0.8s linear infinite', flex: 'none' } });
+
+    const chips = {
+      active: { chipLabel: 'Active', chipBg: '#E7F3EF', chipColor: '#17503A', chipBorder: '#BEE0D6', chipDot: '#206B4E' },
+      paused: { chipLabel: 'Paused', chipBg: '#EFEDE7', chipColor: '#5F5D55', chipBorder: '#DBD9D0', chipDot: '#8C8A80' },
+      frozen: { chipLabel: 'Frozen', chipBg: '#EAF1F9', chipColor: '#2C5580', chipBorder: '#C9DCEF', chipDot: '#3A6EA5' },
+      cancelled: { chipLabel: 'Cancelled', chipBg: '#FAECEC', chipColor: '#8E2F34', chipBorder: '#F0D5D6', chipDot: '#C13A40' },
+      not_provisioned: { chipLabel: 'Not provisioned', chipBg: '#FFFFFF', chipColor: '#8C8A80', chipBorder: '#DBD9D0', chipDot: '#B4B2A8' }
+    };
+    const pageState = (s === 'success') ? 'paused' : (['confirm_l1', 'confirm_l2', 'confirm_l3', 'confirm_l4', 'executing', 'error'].includes(s) ? 'active' : s);
+    const c = chips[pageState] || chips.active;
+
+    const allDisabled = pageState === 'not_provisioned';
+    const dimOthers = ['executing'].includes(s);
+
+    const mkLevel = (n, name, consequence, keyFate, keyColor, reversibility, btn) => ({
+      n, name, consequence, keyFate, keyColor, reversibility,
+      lvlColor: n <= 2 ? '#5F5D55' : (n === 3 ? '#96650F' : '#FFFFFF'),
+      lvlBg: n <= 2 ? '#EFEDE7' : (n === 3 ? '#FBF1DC' : '#C13A40'),
+      bg: n === 4 ? '#FDF7F7' : '#FFFFFF',
+      border: n === 4 ? '#E8B6B9' : (n === 3 ? '#F0D5D6' : '#E8E6DF'),
+      stateChip: false, disabledReason: false, dim: '',
+      btnLabel: btn.label,
+      btnNeutral: btn.kind === 'neutral', btnPrimary: btn.kind === 'primary',
+      btnDangerOutline: btn.kind === 'dangerOutline', btnDangerFill: btn.kind === 'dangerFill',
+      btnDisabled: btn.kind === 'disabled'
+    });
+
+    const levels = [
+      mkLevel(1, 'Soft pause', 'Stops the agent loop. Payments stop while everything else stays warm.', 'intact', '#17503A', 'Resumable',
+        allDisabled ? { label: 'Pause agent', kind: 'disabled' } :
+        pageState === 'paused' ? { label: 'Resume agent', kind: 'primary' } :
+        pageState === 'frozen' || pageState === 'cancelled' ? { label: 'Pause agent', kind: 'disabled' } :
+        { label: 'Pause agent', kind: 'neutral' }),
+      mkLevel(2, 'Freeze', 'The loop keeps running, but every transaction is blocked at the control layer.', 'intact', '#17503A', 'Resumable',
+        allDisabled ? { label: 'Freeze agent', kind: 'disabled' } :
+        pageState === 'frozen' ? { label: 'Unfreeze agent', kind: 'primary' } :
+        pageState === 'cancelled' ? { label: 'Freeze agent', kind: 'disabled' } :
+        { label: 'Freeze agent', kind: 'neutral' }),
+      mkLevel(3, 'Cancel', 'Rotates your server key. The agent cannot pay until you provision a new key.', 'rotated', '#96650F', 'New key required',
+        allDisabled ? { label: 'Cancel agent', kind: 'disabled' } :
+        pageState === 'cancelled' ? { label: 'Cancelled', kind: 'disabled' } :
+        { label: 'Cancel agent', kind: 'dangerOutline' }),
+      mkLevel(4, 'Nuclear', 'Permanently deletes your server key. There is no recovery.', 'deleted', '#B4383D', 'Re-provisioning required',
+        allDisabled ? { label: 'Nuclear — delete key', kind: 'disabled' } :
+        { label: 'Nuclear — delete key', kind: 'dangerFill' })
+    ];
+
+    if (pageState === 'paused') levels[0].stateChip = 'Current: Paused';
+    if (pageState === 'frozen') { levels[1].stateChip = 'Current: Frozen'; levels[0].disabledReason = 'Not applicable while frozen'; }
+    if (pageState === 'cancelled') { levels[2].stateChip = 'Current: Cancelled'; levels[0].disabledReason = 'Key rotated — no loop to control'; levels[1].disabledReason = 'Key rotated'; }
+    if (allDisabled) levels.forEach(l => { l.disabledReason = 'No key to revoke'; });
+    if (dimOthers) levels.forEach((l, i) => { if (i > 0) l.dim = 'opacity:0.55;pointer-events:none;'; });
+
+    let toastText = false, toastBg = '#E8F3EC', toastColor = '#1D6237';
+    if (s === 'success') toastText = 'Agent paused. Payments have stopped — resume at any time.';
+
+    return {
+      spinnerWhite,
+      chipLabel: c.chipLabel, chipBg: c.chipBg, chipColor: c.chipColor, chipBorder: c.chipBorder, chipDot: c.chipDot,
+      levels,
+      toastText, toastBg, toastColor,
+      reproNotice: pageState === 'cancelled' || allDisabled,
+      reproText: allDisabled
+        ? 'Not provisioned — no key to revoke. Re-provisioning requires operator action on the server.'
+        : 'Key rotated. Provision a new key from Setup & funds to bring this agent back.',
+      reproCta: pageState === 'cancelled',
+      modalOpen: ['confirm_l1', 'confirm_l2', 'confirm_l3', 'confirm_l4', 'executing', 'error'].includes(s),
+      mL1: s === 'confirm_l1' || s === 'executing' || s === 'error',
+      mL2: s === 'confirm_l2',
+      mL3: s === 'confirm_l3',
+      mL4: s === 'confirm_l4',
+      mExecuting: s === 'executing',
+      mIdle: s !== 'executing',
+      mError: s === 'error'
+    };
+  }
+}
+</script>
+</body>
+</html>

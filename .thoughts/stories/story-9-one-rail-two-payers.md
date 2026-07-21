@@ -13,7 +13,7 @@ so that my order-fulfillment logic handles both payer types without branching or
 
 - **[AC-RAIL-1 / R-RAIL-1]** When a Leash agent calls `fetchWithPay(tabCheckoutEndpoint)`, the x402 middleware intercepts the 402 response, completes payment autonomously using the agent's server-held EOA key and USDC float, and the agent receives a 200 response with a settlement receipt. No modal appears. No human input is required. No popup is triggered.
 
-- **[AC-RAIL-1 / R-RAIL-2]** After agent payment settles, the merchant's configured webhook URL receives a POST containing `transactionId` and proof that the merchant's token landed at the merchant's address on Arbitrum One — the same payload structure as a successful human payment.
+- **[AC-RAIL-1 / R-RAIL-2]** After agent payment settles, the merchant's webhook receives the canonical merged payload: `{ id, type: "payment.settled", livemode, transactionId, tokenChanges[] }`, HMAC-signed (`X-Tab-Signature` header) — structurally identical to a human payment. The Tab server normalizes both the human path (`TransactionResult` from `ua.sendTransaction`) and the x402 agent path (`X-PAYMENT-RESPONSE` facilitator receipt) into this single shape before firing. Source: R-TAB-3, reintegration B-4.
 
 - **[R-RAIL-2]** The merchant's webhook handler does not need to inspect payer type. The payload structure is consistent whether the payer was a human (Tab modal + UA-7702 `sendTransaction`) or an agent (x402 `fetchWithPay`). The merchant's order-fulfillment trigger works identically in both cases.
 
@@ -48,7 +48,7 @@ Given the Tab x402 endpoint requires payment on eip155:42161 (Arbitrum One)
 When the agent calls fetchWithPay(tabCheckoutEndpoint) and the x402 middleware attempts to settle
 Then the CDP hosted facilitator's on-chain balanceOf(from) check on Arbitrum One fails
   And the facilitator rejects the payment
-  And the agent logs a receipt row with success: false
+  And the agent logs a receipt row with status: "failed"
   And the merchant's webhook does NOT fire
   And no USDC leaves the agent's account
 ```
@@ -68,7 +68,7 @@ Then the payment is NOT submitted — no 402 request is made to the Tab endpoint
 
 ## Notes
 
-- **This is a stretch requirement, decided core-but-sequenced-last with a required early spike.** R-RAIL-1 and R-RAIL-2 appear under the "Shared Rail / Tab-as-x402-Resource (stretch)" heading in the spec. This is the only end-to-end unverified flow in the submission — the novel combination of Tab as x402 seller and Leash as x402 payer has no prior documented precedent. A funded spike is required before this story can be validated or demoed. (Spec: OQ-1, Background §payment rail mechanics, research/x402-tab-leash-mechanics.md §3 marked ⚠️ unverified end-to-end.)
+- **This story is BLOCKED (B-09 + B-04 + B-10).** The agent mainnet x402 path requires: CDP account + API keys (B-09), the funded live spike confirming the buyer-settle path (B-04), and a named x402 demo target (B-10). No plan row for this story may be marked "done" until all three Phase-0 blockers are resolved. The Tab x402 endpoint is buildable now (hand-rolled `POST /api/pay/x402` on Next.js 14 App Router), but a real paid settlement cannot be demoed until the blockers clear. (Spec: R-RAIL-1, reintegration B-8, E-10)
 
 - **The differentiator.** The human checkout path (Tab modal + Magic OTP + UA-7702 `sendTransaction`) and the agent path (x402 `fetchWithPay` with no modal) both settle the same token to the same merchant address on Arbitrum One, and both trigger the same webhook. This is the "one rail, two payer types" claim. The value to the merchant is that their integration is unaffected by who (or what) paid.
 
@@ -86,7 +86,7 @@ Then the payment is NOT submitted — no 402 request is made to the Tab endpoint
 
 ## Open Questions
 
-- **Webhook payload normalization across payer types.** R-RAIL-2 requires the merchant webhook to receive a "consistent payload: `transactionId` and proof that the merchant's token landed on Arbitrum." For the human path, `transactionId` and `tokenChanges` come directly from `ua.sendTransaction`'s `TransactionResult`. For the agent/x402 path, the CDP facilitator returns settlement proof in the `X-PAYMENT-RESPONSE` header (fields: `txHash`, `network`, `success`), not a `TransactionResult`. The spec does not specify how Tab's server normalizes the x402 facilitator receipt into the same webhook shape as the human flow. Is `txHash` mapped to `transactionId`? Are `tokenChanges` derived from the payment amount and `payTo`? Unresolved.
+- **Webhook payload normalization across payer types — RESOLVED.** The canonical merged webhook contract (R-TAB-3) answers this. The Tab server normalizes both paths into `{ id, type: "payment.settled", livemode, transactionId, tokenChanges[] }` before firing: for the human path, `transactionId` and `tokenChanges` come from `TransactionResult`; for the x402 agent path, `txHash` from `X-PAYMENT-RESPONSE` maps to `transactionId` and `tokenChanges` is derived from the payment amount + `payTo`. HMAC-signed identically in both cases. Source: reintegration B-4.
 
 - **Agent float chain — RESOLVED.** R-LEASH-1 has been updated: the agent's USDC float is now on Arbitrum One (`eip155:42161`), not Base. This aligns Story 3's general x402 agent path and this story's Tab-as-x402-resource path on a single rail and single float — the agent's Arbitrum USDC covers both. The contradiction between Story-3 (previously Base) and Story-9 (Arbitrum) is closed. (Verify during the Story-9 spike: USDC on Arbitrum One supports EIP-3009 transferWithAuthorization AND the CDP facilitator settles x402 on Arbitrum end-to-end.)
 

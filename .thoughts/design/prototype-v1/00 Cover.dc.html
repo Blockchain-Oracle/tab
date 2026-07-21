@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#EDEBE4;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}</style>
+</helmet>
+<div style="padding:64px 64px 120px;color:#1C1B18;display:flex;flex-direction:column;align-items:center;">
+<div style="width:100%;max-width:960px;">
+
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div style="width:28px;height:28px;border-radius:8px;background:#3B5BD9;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:14px;font-weight:700;">T</div>
+    <div style="width:28px;height:28px;border-radius:8px;background:#206B4E;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:14px;font-weight:700;">L</div>
+    <span style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;color:#8C8A80;">HIGH-FIDELITY PROTOTYPE · PREPARED JUL 2, 2026 · EVERY SURFACE-MAP STATE FRAMED</span>
+  </div>
+
+  <h1 style="margin:22px 0 0;font-family:'Newsreader',serif;font-size:64px;font-weight:500;letter-spacing:-0.015em;line-height:1.02;">Tab + Leash</h1>
+  <p style="margin:16px 0 0;font-size:15px;line-height:1.65;color:#5F5D55;max-width:680px;">Two products, one rail. <strong style="color:#1C1B18;font-weight:600;">Tab</strong> makes crypto checkout feel like Stripe Link — an email, a 6-digit code, one button. <strong style="color:#1C1B18;font-weight:600;">Leash</strong> auto-pays x402 paywalls for your own agent — Claude Code, Cursor, any script — from a capped, watched, instantly revocable treasury. It has no LLM of its own. One balance powers both sides of the x402 economy: humans pay via Tab, agents auto-pay via Leash. The same design that wins the demo is the product.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:32px;">
+    <a href="01 Buyer Checkout.dc.html" style="text-decoration:none;color:inherit;background:#FFFFFF;border:1px solid #D9D6CB;border-radius:14px;padding:20px 22px;display:block;" style-hover="border-color:#3B5BD9;">
+      <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#3B5BD9;">SURFACE 1 · B1–B6 · 25 FRAMES · 375PX</div>
+      <div style="font-size:17px;font-weight:600;margin-top:6px;">Buyer checkout →</div>
+      <div style="font-size:12.5px;line-height:1.55;color:#5F5D55;margin-top:4px;">PayButton state machine, Magic email + OTP (mocked), confirmation, optimistic success, calm errors. Zero crypto vocabulary.</div>
+    </a>
+    <a href="02 Merchant Dashboard.dc.html" style="text-decoration:none;color:inherit;background:#FFFFFF;border:1px solid #D9D6CB;border-radius:14px;padding:20px 22px;display:block;" style-hover="border-color:#3B5BD9;">
+      <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#3B5BD9;">SURFACE 2 · MA1–MA3, M1–M7 · 81 FRAMES · 1440PX</div>
+      <div style="font-size:17px;font-weight:600;margin-top:6px;">Merchant dashboard →</div>
+      <div style="font-size:12.5px;line-height:1.55;color:#5F5D55;margin-top:4px;">Sign up / log in, quickstart, one-time key reveal, transactions with payer type, webhooks + delivery log, test/live control.</div>
+    </a>
+    <a href="03 Leash Dashboard.dc.html" style="text-decoration:none;color:inherit;background:#FFFFFF;border:1px solid #D9D6CB;border-radius:14px;padding:20px 22px;display:block;" style-hover="border-color:#206B4E;">
+      <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#206B4E;">SURFACE 3 · W1–W8 · 65 FRAMES · 1440PX</div>
+      <div style="font-size:17px;font-weight:600;margin-top:6px;">Leash web dashboard →</div>
+      <div style="font-size:12.5px;line-height:1.55;color:#5F5D55;margin-top:4px;">Command bridge, live multi-chain feed, receipt audit, cap configuration with overage, notifications, connect-your-agent (MCP / HTTP wrapper), four-level revocation, treasury across Base · Arbitrum · Polygon. + float.</div>
+    </a>
+    <a href="04 Leash Mobile.dc.html" style="text-decoration:none;color:inherit;background:#FFFFFF;border:1px solid #D9D6CB;border-radius:14px;padding:20px 22px;display:block;" style-hover="border-color:#206B4E;">
+      <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#206B4E;">SURFACE 4 · P1–P6 · 34 FRAMES · 375PX</div>
+      <div style="font-size:17px;font-weight:600;margin-top:6px;">Leash mobile PWA →</div>
+      <div style="font-size:12.5px;line-height:1.55;color:#5F5D55;margin-top:4px;">Monitor / notify / revoke: overview, feed, receipt sheet, lock-screen pushes, revoke sheet with hold-to-delete.</div>
+    </a>
+  </div>
+
+  <div style="font-size:11.5px;color:#8C8A80;margin-top:14px;">Tip: every screen is also a live component — open any <span style="font-family:'Geist Mono',monospace;">_*.dc.html</span> file and flip its states from the Tweaks panel.</div>
+
+  <!-- Design system -->
+  <section style="margin-top:64px;">
+    <h2 style="margin:0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">The system</h2>
+    <p style="margin:8px 0 0;font-size:13px;line-height:1.6;color:#5F5D55;max-width:680px;">The product’s honest character — crypto made invisible for buyers, clear trustworthy control for operators — drives the aesthetic: warm paper neutrals, light mode, hairline borders, no glow, no gradient-crypto anywhere. Mercury / Ramp / Stripe register throughout.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:20px;">
+      <div style="background:#FFFFFF;border:1px solid #D9D6CB;border-radius:14px;padding:18px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#8C8A80;">TYPE</div>
+        <div style="margin-top:12px;font-size:20px;font-weight:600;">Geist</div>
+        <div style="font-size:12px;color:#5F5D55;margin-top:2px;">UI, all weights 400–700, tabular numerals for money</div>
+        <div style="margin-top:10px;font-family:'Geist Mono',monospace;font-size:14px;">Geist Mono</div>
+        <div style="font-size:12px;color:#5F5D55;margin-top:2px;">keys, hashes, URLs, code, model IDs</div>
+        <div style="margin-top:10px;font-family:'Newsreader',serif;font-size:19px;font-weight:500;">Newsreader</div>
+        <div style="font-size:12px;color:#5F5D55;margin-top:2px;">demo-merchant brand + cover only — never in product UI</div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #D9D6CB;border-radius:14px;padding:18px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#8C8A80;">COLOR</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
+          <div style="display:flex;align-items:center;gap:9px;"><span style="width:22px;height:22px;border-radius:6px;background:#3B5BD9;"></span><span style="font-size:12px;"><strong>Tab blue</strong> · #3B5BD9 — merchant product accent</span></div>
+          <div style="display:flex;align-items:center;gap:9px;"><span style="width:22px;height:22px;border-radius:6px;background:#206B4E;"></span><span style="font-size:12px;"><strong>Leash green</strong> · #206B4E — operator product accent</span></div>
+          <div style="display:flex;align-items:center;gap:9px;"><span style="width:22px;height:22px;border-radius:6px;background:#1C1B18;"></span><span style="font-size:12px;"><strong>Ink</strong> · #1C1B18 on paper #FAF9F6 / canvas #EDEBE4</span></div>
+          <div style="display:flex;align-items:center;gap:9px;"><span style="width:22px;height:22px;border-radius:6px;background:#E0A33E;"></span><span style="font-size:12px;">Warning amber · 75% threshold</span></div>
+          <div style="display:flex;align-items:center;gap:9px;"><span style="width:22px;height:22px;border-radius:6px;background:#C13A40;"></span><span style="font-size:12px;">Danger red · 100% + destructive</span></div>
+          <div style="display:flex;align-items:center;gap:9px;"><span style="width:22px;height:22px;border-radius:6px;background:#2A2925;"></span><span style="font-size:12px;">Blocked slate — policy stop, deliberately not an error red</span></div>
+        </div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #D9D6CB;border-radius:14px;padding:18px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#8C8A80;">STATUS VOCABULARY</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;">
+          <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:#E7F3EF;color:#17503A;border:1px solid #BEE0D6;">Active</span>
+          <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:#EFEDE7;color:#5F5D55;border:1px solid #DBD9D0;">Paused</span>
+          <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:#EAF1F9;color:#2C5580;border:1px solid #C9DCEF;">Frozen</span>
+          <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:#FAECEC;color:#8E2F34;border:1px solid #F0D5D6;">Cancelled</span>
+          <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:#FFFFFF;color:#8C8A80;border:1px solid #DBD9D0;">Not provisioned</span>
+          <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:#FAECEC;color:#8E2F34;border:1px solid #F0D5D6;">Halted — cap reached</span>
+          <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:#EFEDE7;color:#5F5D55;border:1px solid #DBD9D0;">Offline</span>
+        </div>
+        <div style="font-size:11.5px;line-height:1.55;color:#5F5D55;margin-top:12px;">Identical chip labels across web + mobile (canonical seven). Payment badges: <span style="font-weight:600;color:#257A46;">Settled</span> · <span style="font-weight:600;color:#96650F;">Pending</span> · <span style="font-weight:600;color:#B4383D;">Failed</span> · <span style="font-weight:600;">Blocked</span>. Paused = warm gray (resting); Frozen = steel blue (locked) — the OQ-P4 distinction.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Decisions -->
+  <section style="margin-top:64px;">
+    <h2 style="margin:0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">Resolved designer’s-call items</h2>
+    <p style="margin:8px 0 0;font-size:13px;color:#5F5D55;">Per the handback contract these choices are canonical for the prototype.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px;">
+      <div style="background:#FFFFFF;border:1px solid #D9D6CB;border-radius:14px;padding:18px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#3B5BD9;">BUYER</div>
+        <ul style="margin:10px 0 0;padding-left:18px;font-size:12.5px;line-height:1.75;color:#33312C;">
+          <li>Container: <strong>bottom sheet</strong> at 375px, <strong>centered modal</strong> on desktop (M1)</li>
+          <li>Magic OTP + Tab checkout share <strong>one visual container</strong> — sequential views in the same sheet</li>
+          <li>CTA verb: <strong>“Pay $12.00”</strong> (explicit amount everywhere)</li>
+          <li>Success panel: <strong>explicit close</strong>, no auto-dismiss; checkmark = CSS/SVG stroke draw, ~500ms</li>
+          <li>Close from B4 returns the button to <strong>IDLE</strong>, not ERROR; close hidden while processing</li>
+          <li>Returning-user skip lands on B4 with a <strong>balance shimmer</strong> (OQ-B4)</li>
+          <li>Merchant identity: initial tile + name in the sheet header; amount echoed in header and CTA</li>
+        </ul>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #D9D6CB;border-radius:14px;padding:18px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#3B5BD9;">MERCHANT</div>
+        <ul style="margin:10px 0 0;padding-left:18px;font-size:12.5px;line-height:1.75;color:#33312C;">
+          <li>Navigation: <strong>sidebar</strong>; test/live segmented control pinned at its foot on every screen</li>
+          <li>Transaction detail: <strong>Stripe-style side panel</strong></li>
+          <li>Transactions list: <strong>pagination</strong>, not infinite scroll</li>
+          <li>Quickstart: key creation + first test payment <strong>auto-detected</strong>; other steps manual</li>
+          <li><strong>“Send test webhook”</strong> and manual <strong>“Resend delivery”</strong>: included</li>
+          <li>Go Live modal includes a static <strong>pre-flight checklist</strong></li>
+          <li>tokenChanges: structured rows + collapsed raw JSON</li>
+          <li>Payer type column (<strong>stretch R-RAIL-2 / OQ-S1: included, flagged</strong>) — Human/Agent chips; one agent row in mock data</li>
+          <li>Key permissions: “Full access” / “Sending access”</li>
+        </ul>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #D9D6CB;border-radius:14px;padding:18px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#206B4E;">LEASH WEB</div>
+        <ul style="margin:10px 0 0;padding-left:18px;font-size:12.5px;line-height:1.75;color:#33312C;">
+          <li>Sidebar navigation, routed sections; same shell architecture as Tab (one rail, one family)</li>
+          <li>Receipt detail (W3): <strong>side panel</strong> over the feed</li>
+          <li>Spend bar palette: <strong>green #206B4E → amber #E0A33E → red #C13A40</strong>; overage renders a hatched overflow segment</li>
+          <li>Live treatment: pulsing <strong>“Live · ~3s polling” chip</strong> + newest-row tint (slide-in on prepend)</li>
+          <li>Level 3 confirm: type <strong>CANCEL</strong>; Level 4: type <strong>the agent’s name</strong> + filled-red destructive button</li>
+          <li>Connect your agent (replaces the model picker — Leash has no LLM): <strong>Leash MCP server recommended</strong>, HTTP wrapper as the alternative; key is a one-time reveal (same pattern as Tab’s API keys); status ladder <strong>not connected → awaiting first payment → active / error</strong></li>
+          <li>Multi-chain treasury: <strong>one unified total</strong> over per-network floats — <strong>Base primary</strong>, Arbitrum, Polygon; background rebalance shown as a “topping up” row</li>
+          <li>Tier-1 badge: in-app sidebar counter only</li>
+          <li>Feed rows carry the settlement network (Base / Arbitrum / Polygon); explorer links resolve per chain — Basescan, Arbiscan, Polygonscan</li>
+        </ul>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #D9D6CB;border-radius:14px;padding:18px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#206B4E;">LEASH MOBILE</div>
+        <ul style="margin:10px 0 0;padding-left:18px;font-size:12.5px;line-height:1.75;color:#33312C;">
+          <li>Navigation: <strong>3-tab bar</strong> — Overview / Feed / Controls</li>
+          <li>Revoke container: <strong>bottom sheet</strong>; Levels 1–2 are <strong>toggles</strong> with a single confirm</li>
+          <li>Level 3: type CANCEL; Level 4: <strong>type the name + hold-to-delete (3s)</strong></li>
+          <li>Paused vs Frozen (OQ-P4): warm-gray “loop halted” vs steel-blue “transactions blocked” + distinct copy</li>
+          <li>Feed rows: <strong>USD only</strong>; atomic units + network live in the receipt sheet</li>
+          <li>txHash shown short-form in feed rows; tappable</li>
+          <li>Empty states: plain text + small geometric glyph — no illustration</li>
+          <li>P1 shows the unified treasury total plus a compact per-network line (Base · Arb · Pol); receipt sheet carries the CAIP-2 id + per-chain explorer</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="background:#FFFFFF;border:1px solid #D9D6CB;border-radius:14px;padding:18px 20px;margin-top:14px;">
+      <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#8C8A80;">SCOPE NOTES</div>
+      <ul style="margin:10px 0 0;padding-left:18px;font-size:12.5px;line-height:1.75;color:#33312C;">
+        <li><strong>Reframe, Jul 3:</strong> Leash redone as an x402 auto-payer for externally-owned agents — model picker deleted, “Connect your agent” added (W7), floats now multi-chain with Base primary. All Tab surfaces untouched.</li>
+        <li><strong>OQ-B2</strong> (UA V1 migration interstitial): out of scope per the brief’s non-goals — not designed.</li>
+        <li><strong>OQ-P5</strong> (mobile tech route): design-agnostic; deep links assumed to open the PWA at the referenced state.</li>
+        <li><strong>Mock-data reconciliation:</strong> the brief’s $3.50 float sits below the resolved $5.00 low-float threshold, so $3.50 is used only for LOW FLOAT frames; healthy frames use $24.80.</li>
+        <li>Honest-copy audit: revocation copy says “rotates / permanently deletes your server key” — nothing on-chain, nothing cryptographic, anywhere.</li>
+        <li>Buyer-facing frames pass the full vocabulary ban list — no chain, gas, bridge, wallet, sign, token, or USDC in any buyer string.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Mock data -->
+  <section style="margin-top:64px;">
+    <h2 style="margin:0;font-size:22px;font-weight:600;letter-spacing:-0.01em;">Mock-data key</h2>
+    <div style="background:#FFFFFF;border:1px solid #D9D6CB;border-radius:14px;padding:18px 20px;margin-top:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;font-size:12px;line-height:1.8;color:#33312C;">
+      <div>
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#8C8A80;margin-bottom:6px;">BUYER</div>
+        maya.chen@example.com<br>Balance $847.32 · payment $12.00<br>Insufficient variant: $8.50 → “$3.50 short”<br>Reference #TAB-7B4A2
+      </div>
+      <div>
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#8C8A80;margin-bottom:6px;">MERCHANT</div>
+        Atlas Coffee Roasters · dev@atlascoffee.com<br>Receiver 0x1a2b…cd9e · sk_test_••••••••a3f9<br>whsec_••••••••k2f7 · test txns $8–$42.75
+      </div>
+      <div>
+        <div style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#8C8A80;margin-bottom:6px;">AGENT OWNER</div>
+        Research Agent v2 · cap $10.00 / daily<br>Spend $4.20 (42%) · near $7.60 (76%)<br>Treasury $24.80 = Base 14.20 · Arb 6.10 · Pol 4.50<br>Connected: Claude Code via Leash MCP · leash_sk_••••q4d8
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+</x-dc>
+</body>
+</html>

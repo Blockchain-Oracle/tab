@@ -1,5 +1,5 @@
 # Story: Buyer pays by email (invisible crypto)
-> Traces to: R-TAB-4, R-TAB-5, R-TAB-6, R-TAB-7, R-TAB-8, R-TAB-9, R-TAB-10; AC-TAB-1, AC-TAB-2, AC-TAB-3, AC-TAB-5, AC-TAB-6. Spec: .thoughts/specs/2026-07-02-tab-leash.md
+> Traces to: R-TAB-4, R-TAB-5, R-TAB-6, R-TAB-7, R-TAB-8, R-TAB-9, R-TAB-10, R-TAB-11, R-TAB-12; AC-TAB-1, AC-TAB-2, AC-TAB-3, AC-TAB-5, AC-TAB-6. Spec: .thoughts/specs/2026-07-02-tab-leash.md
 
 As a buyer with no crypto knowledge,
 I want to complete a purchase by entering my email address and a 6-digit code,
@@ -17,7 +17,7 @@ so that I can pay a merchant from whatever funds I already hold across any chain
 
 - **[R-TAB-6]** The checkout modal reads `ua.getPrimaryAssets()` and displays a single USD total balance to the buyer. No per-chain breakdown, no individual token amounts, and no network names are shown.
 
-- **[AC-TAB-2 / R-TAB-7]** A buyer whose funds are held entirely on chains other than Arbitrum (e.g., ETH on Base, USDC on Polygon — zero Arbitrum balance) successfully pays the merchant. The merchant's Arbitrum One address shows an increased configured-token balance, as reflected in `tokenChanges` of the `TransactionResult`. The buyer holds nothing on Arbitrum before or after.
+- **[AC-TAB-2 / R-TAB-7]** A buyer whose funds are held entirely outside Arbitrum (for example, ETH or USDC on Base — zero Arbitrum balance) successfully pays the merchant. The merchant's Arbitrum One address shows an increased configured-token balance, as reflected in `tokenChanges` of the `TransactionResult`. The buyer holds nothing on Arbitrum before or after.
 
 - **[AC-TAB-3 / R-TAB-8]** The checkout modal transitions to an animated success state the instant `ua.sendTransaction` returns a `transactionId`. No polling interval, no block-confirmation wait, and no additional delay is introduced between the call resolving and the success state appearing.
 
@@ -62,7 +62,8 @@ Given the buyer previously completed OTP auth and their Magic session is still v
   And they click "Pay $8.50" on a different merchant page
 
 When the button is clicked
-Then the AUTH / OTP step is skipped (session reused)
+Then checkout confirms `isLoggedIn()` and restores `getIdToken()` + `getInfo().wallets.ethereum.publicAddress`
+  And the AUTH / OTP step is skipped (session reused)
   And the button moves directly from LOADING to PROCESSING
   And the same invisible-crypto success flow completes
 ```
@@ -74,7 +75,7 @@ Given the buyer has opened the Magic OTP modal
   And enters an incorrect 6-digit code
 
 When the Magic OTP screen rejects the code
-Then the OTP screen remains open with an error state (per Magic SDK's built-in UI)
+Then Tab's headless OTP screen remains open with an error state
   And the <PayButton> stays in AUTH state (not PROCESSING, not ERROR)
   And the buyer can re-enter the correct code without leaving the merchant page
 ```
@@ -93,16 +94,27 @@ Then the <PayButton> transitions to ERROR state
   And no crypto-vocabulary words appear in the error message shown to the buyer
 ```
 
-### Edge case — buyer's unified balance is below the payment amount
+### Edge case — buyer's unified balance is below the payment amount (INSUFFICIENT_BALANCE → Add funds)
 
 ```gherkin
 Given the buyer's total unified balance across all chains is less than the payment amount
 
 When the checkout modal reads ua.getPrimaryAssets() and displays the single USD balance
 Then the balance shown is below the required amount
-  And the <PayButton> is disabled or shows an "insufficient funds" message
-  And no chain or token breakdown is shown to explain why
+  And the modal enters INSUFFICIENT_BALANCE state
+  And the buyer's real UA deposit address is shown (live read post-auth from the provisioned UA)
+  And a copy-to-clipboard affordance is provided
+  And the copy reads: "Send USDC on a supported network to this address"
+  And an optional link to universalx.app is shown for guided on-ramp
+  And no chain or token breakdown, chain names, or gas vocabulary appear in the UI
+  And Cancel returns the modal to IDLE
+  And a re-check fires on the next click once the buyer has funded externally
 ```
+
+**Demo deviation D23:** Until R-TAB-12 ships, the demo buyer is **pre-funded by the operator**.
+The demo script and deck must state this explicitly. The INSUFFICIENT_BALANCE state must not be
+presented to judges as a dead-end — it has a real exit path (Add-funds surface) once
+R-TAB-12 ships. Blocked on B-04 for the live funded path. (R-TAB-12)
 
 ---
 
@@ -116,13 +128,15 @@ Then the balance shown is below the required amount
 
 - **Button disabled during LOADING and PROCESSING.** Double-submit prevention is part of the button state machine spec. A click in either of these states must be a no-op. (R-TAB-10)
 
-- **The buyer holds nothing on Arbitrum.** The cross-chain abstraction means the buyer's source funds on any supported chain (Base, Polygon, etc.) settle as the configured token on Arbitrum at the merchant's address. The buyer's Arbitrum balance before and after is irrelevant to the happy path. (AC-TAB-2)
+- **The buyer holds nothing on Arbitrum.** The cross-chain abstraction means the buyer's source funds on any supported chain (Base, etc.) settle as the configured token on Arbitrum at the merchant's address. The buyer's Arbitrum balance before and after is irrelevant to the happy path. (AC-TAB-2)
+
+- **Pre-funded demo deviation (D23).** Until R-TAB-12 (add-funds surface) ships, the demo buyer is pre-funded by the operator. The demo script and deck must state this. The INSUFFICIENT_BALANCE path is not a dead-end — R-TAB-12 closes it — but it may not be live-demoed until B-04 (funded live spike) completes.
 
 - **EIP-7702 mode is mandatory; the nested init form is not optional.** The flat quickstart init form does not satisfy the judge requirement for proving 7702 mode. `smartAccountOptions: { useEIP7702: true }` in the nested form is the only valid shape. (R-TAB-5, AC-TAB-5)
 
 - **No on-device signing on mobile.** If a buyer is on a mobile browser, the Magic embedded wallet SDK handles signing; no native wallet app or React Native signing path exists. The mobile surface holds no private key. This story covers the browser (desktop or mobile web) surface only.
 
-- **6-box auto-submit OTP is de facto standard shape.** The Magic SDK renders this UI via `loginWithEmailOTP({ showUI: true })`; the buyer-facing modal is Magic's pre-built component. Tab does not build a custom OTP screen. (R-TAB-4; UX research §B)
+- **6-box auto-submit OTP is de facto standard shape (headless mode).** Magic is invoked headless — `loginWithEmailOTP({ showUI: false, deviceCheckUI: false })` — so **Tab renders the 6-box OTP screen** (auto-advancing on each digit, auto-submitting on the 6th); Magic dispatches the OTP email and validates the code server-side. Tab owns the OTP UI. (R-TAB-4; UX research §B)
 
 ---
 

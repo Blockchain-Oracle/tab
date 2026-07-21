@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes tt-spin{to{transform:rotate(360deg);}}
+@keyframes tt-shimmer{0%{background-position:-200px 0;}100%{background-position:200px 0;}}
+</style>
+</helmet>
+<div style="position:relative;display:flex;width:100%;height:900px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="width:224px;flex:none;background:#F4F3EE;border-right:1px solid #E8E6DF;display:flex;flex-direction:column;padding:16px 12px 14px;">
+    <div style="display:flex;align-items:center;gap:9px;padding:4px 6px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#3B5BD9;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:13px;font-weight:700;">T</div>
+      <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.01em;">Tab</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-top:22px;">
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Quickstart</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:#1C1B18;background:#E9E7E0;">Transactions</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">API keys</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Webhooks</div>
+      <div style="padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#EDEBE4;">Settings</div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:#8C8A80;padding:0 6px;">MODE</div>
+    <sc-if value="{{ isTest }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;background:#E9E7E0;border-radius:8px;padding:2px;margin-top:6px;">
+        <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,24,0.08);font-size:11.5px;font-weight:600;color:#96650F;">TEST</div>
+        <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:11.5px;font-weight:500;color:#8C8A80;cursor:pointer;">LIVE</div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ isLive }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;background:#E9E7E0;border-radius:8px;padding:2px;margin-top:6px;">
+        <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:11.5px;font-weight:500;color:#8C8A80;cursor:pointer;">TEST</div>
+        <div style="flex:1;text-align:center;padding:5px 0;border-radius:6px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,24,0.08);font-size:11.5px;font-weight:600;color:#257A46;">LIVE</div>
+      </div>
+    </sc-if>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:6px;border-top:1px solid #E8E6DF;padding-top:12px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#F1EFE9;border:1px solid #E4E2DA;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">A</div>
+      <div style="min-width:0;">
+        <div style="font-size:12px;font-weight:600;line-height:1.2;white-space:nowrap;">Atlas Coffee Roasters</div>
+        <div style="font-size:10.5px;color:#8C8A80;white-space:nowrap;">dev@atlascoffee.com</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <sc-if value="{{ isTest }}" hint-placeholder-val="{{ true }}">
+      <div style="background:#FBF1DC;color:#7A5410;font-size:12px;padding:7px 28px;border-bottom:1px solid #F2E3C2;flex:none;">Showing test payments only. Test payments are simulated and do not move real funds.</div>
+    </sc-if>
+
+    <div style="padding:24px 32px 0;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:19px;font-weight:600;letter-spacing:-0.01em;">Transactions</div>
+      <div style="display:flex;gap:8px;">
+        <button style="height:34px;padding:0 12px;border:1px solid #DBD9D0;border-radius:8px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#F8F7F4;">Filter</button>
+        <button style="height:34px;padding:0 12px;border:1px solid #DBD9D0;border-radius:8px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#F8F7F4;">Export</button>
+      </div>
+    </div>
+
+    <sc-if value="{{ isFiltered }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;gap:8px;padding:14px 32px 0;">
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;color:#2E48B8;background:#EDF1FC;border:1px solid #C9D5F4;border-radius:999px;padding:4px 10px;">Status: Settled <span style="cursor:pointer;font-weight:600;">×</span></span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;color:#2E48B8;background:#EDF1FC;border:1px solid #C9D5F4;border-radius:999px;padding:4px 10px;">Last 7 days <span style="cursor:pointer;font-weight:600;">×</span></span>
+        <span style="font-size:11.5px;color:#8C8A80;">Showing 5 of 7 payments</span>
+      </div>
+    </sc-if>
+
+    <div style="padding:16px 32px 24px;flex:1;min-height:0;">
+
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:70px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+          <div style="width:52px;height:52px;border-radius:14px;background:#F5F4F0;display:flex;align-items:center;justify-content:center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="3.5" width="16" height="17" rx="2.5" stroke="#B4B2A8" stroke-width="1.6"></rect><path d="M8 8.5h8M8 12h8M8 15.5h4.5" stroke="#B4B2A8" stroke-width="1.6" stroke-linecap="round"></path></svg>
+          </div>
+          <div style="font-size:14.5px;font-weight:600;margin-top:14px;">No payments yet</div>
+          <div style="font-size:12.5px;color:#5F5D55;margin-top:4px;max-width:300px;line-height:1.5;">Complete your integration and make a test payment — it will appear here instantly.</div>
+          <button style="height:34px;padding:0 14px;margin-top:16px;border:none;border-radius:9px;background:#3B5BD9;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#2E48B8;">Open Quickstart</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+          <div style="height:16px;border-radius:6px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tt-shimmer 1.2s linear infinite;"></div>
+          <div style="height:44px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tt-shimmer 1.2s linear infinite;"></div>
+          <div style="height:44px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tt-shimmer 1.2s linear infinite;"></div>
+          <div style="height:44px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tt-shimmer 1.2s linear infinite;"></div>
+          <div style="height:44px;border-radius:8px;background:linear-gradient(90deg,#F1EFE9 25%,#F7F6F2 50%,#F1EFE9 75%);background-size:600px 100%;animation:tt-shimmer 1.2s linear infinite;"></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isFetchError }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:64px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#FAECEC;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;color:#B4383D;">!</div>
+          <div style="font-size:14px;font-weight:600;margin-top:14px;">Unable to load payments</div>
+          <div style="font-size:12.5px;color:#5F5D55;margin-top:4px;">Try refreshing.</div>
+          <button style="height:32px;padding:0 14px;margin-top:14px;border:1px solid #DBD9D0;border-radius:8px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12px;font-weight:500;cursor:pointer;" style-hover="background:#F8F7F4;">Retry</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showTable }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:1.4fr 0.9fr 0.8fr 1.5fr 1.1fr 0.8fr;gap:12px;padding:10px 18px;border-bottom:1px solid #F0EEE8;font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">
+            <div>AMOUNT</div><div>STATUS</div><div>PAYER</div><div>TRANSACTION</div><div>WEBHOOK</div><div style="text-align:right;">DATE</div>
+          </div>
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:1.4fr 0.9fr 0.8fr 1.5fr 1.1fr 0.8fr;gap:12px;padding:12px 18px;border-bottom:1px solid #F5F4F0;align-items:center;cursor:pointer;background:{{ r.bg }};" style-hover="background:#FBFAF7;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div>
+                  <div style="font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums;">{{ r.usd }}</div>
+                  <div style="font-size:11px;color:#8C8A80;font-variant-numeric:tabular-nums;">{{ r.usdc }} USDC · Arbitrum One</div>
+                </div>
+                <sc-if value="{{ r.test }}" hint-placeholder-val="{{ false }}"><span style="font-size:9.5px;font-weight:700;letter-spacing:0.05em;color:#96650F;background:#FBF1DC;border-radius:5px;padding:2px 5px;">TEST</span></sc-if>
+              </div>
+              <div><span style="display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ r.stBg }};color:{{ r.stColor }};">{{ r.status }}</span></div>
+              <div>
+                <sc-if value="{{ r.isAgent }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:#E8F2EC;color:#17503A;"><span style="width:5px;height:5px;border-radius:50%;background:#206B4E;"></span>Agent</span></sc-if>
+                <sc-if value="{{ r.isHuman }}" hint-placeholder-val="{{ true }}"><span style="display:inline-block;font-size:11px;font-weight:500;padding:3px 9px;border-radius:999px;border:1px solid #E8E6DF;color:#5F5D55;">Human</span></sc-if>
+              </div>
+              <div style="display:flex;align-items:center;gap:7px;">
+                <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#3B5BD9;">{{ r.tx }}</span>
+                <sc-if value="{{ r.tx }}" hint-placeholder-val="{{ false }}"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" style="flex:none;"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5" stroke="#B4B2A8" stroke-width="1.4"></rect><path d="M9.5 4.5v-1a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1" stroke="#B4B2A8" stroke-width="1.4"></path></svg></sc-if>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:{{ r.whColor }};">
+                <span style="font-weight:600;">{{ r.whMark }}</span><span>{{ r.wh }}</span>
+              </div>
+              <div style="text-align:right;font-size:11.5px;color:#8C8A80;" title="{{ r.iso }}">{{ r.when }}</div>
+            </div>
+          </sc-for>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 18px;">
+            <span style="font-size:11.5px;color:#8C8A80;">{{ countLabel }}</span>
+            <div style="display:flex;gap:8px;">
+              <button disabled="{{ true }}" style="height:28px;padding:0 11px;border:1px solid #E8E6DF;border-radius:7px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:11.5px;font-weight:500;color:#B4B2A8;cursor:not-allowed;">Previous</button>
+              <button style="height:28px;padding:0 11px;border:1px solid #DBD9D0;border-radius:7px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:11.5px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="background:#F8F7F4;">Next</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <sc-if value="{{ showDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(28,27,24,0.18);"></div>
+    <div style="position:absolute;top:0;right:0;bottom:0;width:430px;background:#FFFFFF;border-left:1px solid #E8E6DF;box-shadow:-16px 0 48px rgba(28,27,24,0.14);display:flex;flex-direction:column;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #F0EEE8;">
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <span style="font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;">$12.00</span>
+          <span style="display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:#E8F3EC;color:#257A46;">Settled</span>
+          <span style="font-size:9.5px;font-weight:700;letter-spacing:0.05em;color:#96650F;background:#FBF1DC;border-radius:5px;padding:2px 5px;">TEST</span>
+        </div>
+        <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8C8A80;" style-hover="background:#F5F4F0;color:#1C1B18;">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg>
+        </div>
+      </div>
+      <div style="flex:1;overflow:hidden;padding:18px 20px;display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">TRANSACTIONID</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:5px;">
+            <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:#1C1B18;word-break:break-all;">0x8f2e6c1a94d7b3e5f2a8c0d6e4b9a1f7c3d5e8b2a6f4c9d1e7b3a5f8c2d61b7d</span>
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style="flex:none;cursor:pointer;"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5" stroke="#8C8A80" stroke-width="1.4"></rect><path d="M9.5 4.5v-1a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1" stroke="#8C8A80" stroke-width="1.4"></path></svg>
+          </div>
+          <div style="margin-top:7px;"><span style="font-size:12px;font-weight:500;color:#3B5BD9;cursor:pointer;">View on Arbiscan ↗</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div><div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">AMOUNT</div><div style="font-size:12.5px;margin-top:4px;font-variant-numeric:tabular-nums;">$12.00 · 12.00 USDC</div></div>
+          <div><div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">SETTLEMENT</div><div style="font-size:12.5px;margin-top:4px;">Arbitrum One <span style="color:#8C8A80;">(chainId: 42161)</span></div></div>
+          <div><div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">TIMESTAMP</div><div style="font-family:'Geist Mono',monospace;font-size:11.5px;margin-top:4px;color:#5F5D55;">2026-07-02T14:23:01Z</div></div>
+          <div><div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">PAYER</div><div style="font-size:12.5px;margin-top:4px;">maya.chen@example.com</div></div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">TOKENCHANGES</div>
+          <div style="margin-top:6px;border:1px solid #EFEDE7;border-radius:9px;overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #F5F4F0;font-size:12px;"><span style="color:#8C8A80;">token</span><span style="font-family:'Geist Mono',monospace;font-size:11px;">USDC · 0xaf88…5831</span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #F5F4F0;font-size:12px;"><span style="color:#8C8A80;">chainId</span><span style="font-family:'Geist Mono',monospace;font-size:11px;">42161</span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #F5F4F0;font-size:12px;"><span style="color:#8C8A80;">amount</span><span style="font-family:'Geist Mono',monospace;font-size:11px;">12000000 <span style="color:#8C8A80;">(6 decimals)</span></span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 12px;font-size:12px;"><span style="color:#8C8A80;">receiver</span><span style="font-family:'Geist Mono',monospace;font-size:11px;">0x1a2b…cd9e</span></div>
+          </div>
+          <div style="margin-top:6px;font-size:11.5px;font-weight:500;color:#5F5D55;cursor:pointer;" style-hover="color:#1C1B18;">View raw JSON ▸</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">WEBHOOK DELIVERY</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;border:1px solid #EFEDE7;border-radius:9px;padding:10px 12px;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+              <span style="color:#257A46;font-weight:600;">✓ Delivered</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#8C8A80;">200 · 342ms · attempt 1 of 3</span>
+            </div>
+            <span style="font-size:11.5px;font-weight:500;color:#3B5BD9;cursor:pointer;">View delivery</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.04em;color:#8C8A80;">INTENT ENDPOINT</div>
+          <div style="font-family:'Geist Mono',monospace;font-size:11.5px;margin-top:5px;color:#5F5D55;">https://atlascoffee.com/api/tab/intent</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showGoLive }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(28,27,24,0.42);"></div>
+    <div style="position:absolute;left:50%;top:210px;transform:translateX(-50%);width:460px;background:#FFFFFF;border-radius:14px;box-shadow:0 24px 64px rgba(28,27,24,0.3);padding:24px;">
+
+      <sc-if value="{{ goLiveForm }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size:16px;font-weight:600;letter-spacing:-0.01em;">Switch to Live mode?</div>
+        <div style="font-size:12.5px;line-height:1.55;color:#5F5D55;margin-top:6px;">Live payments move real funds and settle as USDC on Arbitrum One to your receiving address.</div>
+        <sc-if value="{{ goLiveError }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px;border-radius:9px;padding:9px 12px;font-size:12.5px;background:#FAECEC;color:#8E2F34;">Couldn’t switch modes. You’re still in Test mode. Try again.</div>
+        </sc-if>
+        <div style="margin-top:14px;border:1px solid #EFEDE7;border-radius:10px;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:9px;padding:10px 13px;border-bottom:1px solid #F5F4F0;font-size:12.5px;"><svg width="13" height="13" viewBox="0 0 24 24"><path d="M5 12.5l4.4 4.4L19 7.6" fill="none" stroke="#257A46" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>Live API key created</div>
+          <div style="display:flex;align-items:center;gap:9px;padding:10px 13px;border-bottom:1px solid #F5F4F0;font-size:12.5px;"><svg width="13" height="13" viewBox="0 0 24 24"><path d="M5 12.5l4.4 4.4L19 7.6" fill="none" stroke="#257A46" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>Webhook configured and verified</div>
+          <div style="display:flex;align-items:center;gap:9px;padding:10px 13px;font-size:12.5px;"><svg width="13" height="13" viewBox="0 0 24 24"><path d="M5 12.5l4.4 4.4L19 7.6" fill="none" stroke="#257A46" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>Test payment completed</div>
+        </div>
+        <div style="font-size:11.5px;color:#8C8A80;margin-top:10px;">Switching back to Test mode is instant and needs no confirmation.</div>
+        <div style="display:flex;justify-content:flex-end;gap:9px;margin-top:18px;">
+          <button style="height:36px;padding:0 14px;border:1px solid #DBD9D0;border-radius:9px;background:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#F8F7F4;">Cancel</button>
+          <sc-if value="{{ goLiveSwitching }}" hint-placeholder-val="{{ false }}">
+            <button disabled="{{ true }}" style="height:36px;padding:0 14px;border:none;border-radius:9px;background:#257A46;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:8px;opacity:0.85;cursor:default;">{{ spinnerWhite }}<span>Switching…</span></button>
+          </sc-if>
+          <sc-if value="{{ goLiveIdle }}" hint-placeholder-val="{{ true }}">
+            <button style="height:36px;padding:0 14px;border:none;border-radius:9px;background:#257A46;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#1D6237;">Switch to Live</button>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ goLiveSuccess }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:8px 0;">
+          <div style="width:56px;height:56px;border-radius:50%;background:#E8F3EC;display:flex;align-items:center;justify-content:center;">
+            <svg width="26" height="26" viewBox="0 0 24 24"><path d="M5 12.5l4.4 4.4L19 7.6" fill="none" stroke="#257A46" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+          <div style="font-size:17px;font-weight:600;margin-top:14px;">You’re live</div>
+          <div style="font-size:12.5px;line-height:1.55;color:#5F5D55;margin-top:6px;max-width:300px;">Your live keys are active. Real payments will appear in Transactions — test data stays in Test mode.</div>
+          <button style="height:36px;padding:0 18px;margin-top:16px;border:none;border-radius:9px;background:#1C1B18;color:#FFFFFF;font-family:'Geist',system-ui,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="background:#33312C;">Done</button>
+        </div>
+      </sc-if>
+
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;populated&quot;,&quot;options&quot;:[&quot;empty&quot;,&quot;loading&quot;,&quot;populated&quot;,&quot;filtered&quot;,&quot;live&quot;,&quot;fetch_error&quot;,&quot;detail&quot;,&quot;golive_open&quot;,&quot;golive_switching&quot;,&quot;golive_success&quot;,&quot;golive_error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Transactions&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'populated';
+    const R = React;
+    const spinnerWhite = R.createElement('span', { style: { width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.35)', borderTopColor: '#FFFFFF', display: 'inline-block', animation: 'tt-spin 0.8s linear infinite', flex: 'none' } });
+
+    const st = {
+      settled: { status: 'Settled', stBg: '#E8F3EC', stColor: '#257A46' },
+      pending: { status: 'Pending', stBg: '#FBF1DC', stColor: '#96650F' },
+      failed: { status: 'Failed', stBg: '#FAECEC', stColor: '#B4383D' }
+    };
+    const wh = {
+      ok: { whMark: '✓', wh: 'Delivered', whColor: '#257A46' },
+      fail: { whMark: '!', wh: 'Failed · retrying', whColor: '#B4383D' },
+      wait: { whMark: '◷', wh: 'Pending', whColor: '#96650F' },
+      none: { whMark: '—', wh: '', whColor: '#B4B2A8' }
+    };
+    const row = (usd, usdc, kind, payer, tx, whk, when, iso) => Object.assign(
+      { usd, usdc, tx: tx || false, when, iso, test: false, bg: '#FFFFFF', isAgent: payer === 'agent', isHuman: payer === 'human' },
+      st[kind], wh[whk]
+    );
+
+    const isLive = s === 'live';
+    let rows;
+    if (isLive) {
+      rows = [
+        row('$58.00', '58.00', 'settled', 'human', '0x6d2f…b81c', 'ok', '12 min ago', '2026-07-02T14:12:44Z'),
+        row('$12.00', '12.00', 'settled', 'human', '0x9a4e…c73d', 'ok', '1 hr ago', '2026-07-02T13:19:02Z'),
+        row('$86.20', '86.20', 'settled', 'human', '0x2c7b…f94a', 'ok', '4 hr ago', '2026-07-02T10:03:51Z')
+      ];
+    } else {
+      rows = [
+        row('$12.00', '12.00', 'settled', 'human', '0x8f2e…1b7d', 'ok', '2 min ago', '2026-07-02T14:23:01Z'),
+        row('$12.00', '12.00', 'settled', 'agent', '0x4b7c…e29a', 'ok', '38 min ago', '2026-07-02T13:47:19Z'),
+        row('$24.00', '24.00', 'settled', 'human', '0x3c9a…e42f', 'ok', '1 hr ago', '2026-07-02T13:11:56Z'),
+        row('$18.50', '18.50', 'pending', 'human', '0x7d1b…a93c', 'wait', '3 hr ago', '2026-07-02T11:31:20Z'),
+        row('$42.75', '42.75', 'settled', 'human', '0x5e4f…c810', 'fail', '5 hr ago', '2026-07-02T09:14:38Z'),
+        row('$8.00', '8.00', 'failed', 'human', false, 'none', '1 day ago', '2026-07-01T16:42:05Z'),
+        row('$31.25', '31.25', 'settled', 'human', '0x2a6c…9d5e', 'ok', '1 day ago', '2026-07-01T10:08:47Z')
+      ];
+      rows.forEach(r => { r.test = true; });
+    }
+    if (s === 'filtered') rows = rows.filter(r => r.status === 'Settled');
+
+    const goLiveStates = ['golive_open', 'golive_switching', 'golive_success', 'golive_error'];
+    return {
+      spinnerWhite,
+      rows,
+      isTest: !isLive,
+      isLive,
+      isEmpty: s === 'empty',
+      isLoading: s === 'loading',
+      isFetchError: s === 'fetch_error',
+      isFiltered: s === 'filtered',
+      showTable: !['empty', 'loading', 'fetch_error'].includes(s),
+      countLabel: s === 'filtered' ? '5 of 7 payments' : (isLive ? '3 payments' : '7 payments'),
+      showDetail: s === 'detail',
+      showGoLive: goLiveStates.includes(s),
+      goLiveForm: s !== 'golive_success' && goLiveStates.includes(s),
+      goLiveIdle: s === 'golive_open' || s === 'golive_error',
+      goLiveSwitching: s === 'golive_switching',
+      goLiveSuccess: s === 'golive_success',
+      goLiveError: s === 'golive_error'
+    };
+  }
+}
+</script>
+</body>
+</html>

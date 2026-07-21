@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes td-shimmer{0%{background-position:-200px 0;}100%{background-position:200px 0;}}
+</style>
+</helmet>
+<div style="position:relative;width:100%;height:900px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 56px;border-bottom:1px solid #EFEDE7;">
+    <div style="display:flex;align-items:baseline;font-family:'Newsreader',serif;font-size:24px;font-weight:500;letter-spacing:-0.01em;">atlas<span style="color:#206B4E;">.</span></div>
+    <div style="display:flex;align-items:center;gap:28px;font-size:13px;color:#5F5D55;">
+      <span style="cursor:pointer;" style-hover="color:#1C1B18;">Coffee</span>
+      <span style="cursor:pointer;" style-hover="color:#1C1B18;">Subscriptions</span>
+      <span style="cursor:pointer;" style-hover="color:#1C1B18;">Our roastery</span>
+      <svg width="17" height="18" viewBox="0 0 16 17" fill="none"><rect x="2.5" y="5" width="11" height="10" rx="2" stroke="#1C1B18" stroke-width="1.4"></rect><path d="M5.5 5V4a2.5 2.5 0 0 1 5 0v1" stroke="#1C1B18" stroke-width="1.4" fill="none"></path></svg>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:64px;padding:48px 56px;max-width:1180px;margin:0 auto;">
+    <div style="height:560px;border-radius:18px;background:repeating-linear-gradient(-45deg,#F1EFE9 0px,#F1EFE9 12px,#EAE8E0 12px,#EAE8E0 24px);border:1px solid #E8E6DF;display:flex;align-items:center;justify-content:center;">
+      <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#8C8A80;background:#FAF9F6;padding:5px 10px;border-radius:6px;">product photo — yirgacheffe bag</span>
+    </div>
+
+    <div style="padding-top:12px;">
+      <div style="font-size:11.5px;font-weight:600;letter-spacing:0.09em;color:#206B4E;">SINGLE ORIGIN · ETHIOPIA</div>
+      <div style="font-family:'Newsreader',serif;font-size:40px;font-weight:500;letter-spacing:-0.01em;line-height:1.08;margin-top:10px;">Yirgacheffe, washed lot 14</div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-top:14px;">
+        <span style="font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;">$12.00</span>
+        <span style="font-size:13px;color:#8C8A80;">250g · whole bean</span>
+      </div>
+      <div style="margin-top:14px;font-size:14px;line-height:1.65;color:#5F5D55;max-width:400px;">Floral and bright, with apricot sweetness and a clean, tea-like finish. Roasted to order in Oakland and shipped within 48 hours.</div>
+
+      <div style="display:flex;gap:18px;margin-top:18px;font-size:12px;color:#8C8A80;">
+        <span>◦ Light roast</span><span>◦ Ships Thursday</span><span>◦ Free over $30</span>
+      </div>
+
+      <div style="max-width:400px;margin-top:28px;">
+        <sc-if value="{{ isInitializing }}" hint-placeholder-val="{{ false }}">
+          <div style="height:48px;border-radius:9px;background:linear-gradient(90deg,#EDEBE4 25%,#F5F4F0 50%,#EDEBE4 75%);background-size:400px 100%;animation:td-shimmer 1.2s linear infinite;"></div>
+        </sc-if>
+        <sc-if value="{{ isIntentError }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button disabled="{{ true }}" style="display:flex;align-items:center;justify-content:center;width:100%;height:48px;background:#EBE9E3;color:#8C8A80;border:none;border-radius:9px;font-family:'Geist',system-ui,sans-serif;font-size:15px;font-weight:500;cursor:not-allowed;">Pay</button>
+            <div style="font-size:12.5px;color:#5F5D55;text-align:center;">Unable to load payment details. Try refreshing.</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showButton }}" hint-placeholder-val="{{ true }}">
+          <dc-import name="_Pay Button" state="{{ buttonState }}" hint-size="100%,48px"></dc-import>
+        </sc-if>
+
+        <sc-if value="{{ showOrder }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:14px;background:#FFFFFF;border:1px solid #E8E6DF;border-radius:12px;padding:16px 18px;">
+            <div style="font-size:13px;font-weight:600;">Order confirmed — #ATL-2214</div>
+            <div style="font-size:12.5px;line-height:1.55;color:#5F5D55;margin-top:4px;">We’ve emailed your receipt to maya.chen@example.com. Roasting starts tomorrow morning.</div>
+            <div style="font-size:11px;color:#8C8A80;margin-top:8px;font-family:'Geist Mono',monospace;">wired via onSuccess(transactionId, tokenChanges)</div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ showModal }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(28,27,24,0.44);"></div>
+    <div style="position:absolute;left:50%;top:150px;transform:translateX(-50%);width:410px;">
+      <dc-import name="_Checkout Sheet" view="{{ modalView }}" hint-size="410px,430px"></dc-import>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;idle&quot;,&quot;options&quot;:[&quot;initializing&quot;,&quot;idle&quot;,&quot;intent_error&quot;,&quot;auth_open&quot;,&quot;auth_cancelled&quot;,&quot;processing&quot;,&quot;success&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Demo page&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'idle';
+    const buttonMap = { idle: 'idle', auth_cancelled: 'idle', auth_open: 'loading', processing: 'processing', success: 'success', error: 'error' };
+    return {
+      isInitializing: s === 'initializing',
+      isIntentError: s === 'intent_error',
+      showButton: buttonMap[s] !== undefined,
+      buttonState: buttonMap[s] || 'idle',
+      showOrder: s === 'success',
+      showModal: s === 'auth_open',
+      modalView: 'otp_awaiting'
+    };
+  }
+}
+</script>
+</body>
+</html>

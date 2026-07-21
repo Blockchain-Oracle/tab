@@ -24,7 +24,7 @@ so that the agent never spends beyond what I authorize, and I can change my limi
 
 - **AC-7 (from R-LEASH-3, R-LEASH-1):** The cap is enforced server-side by the Leash hosted signer (Magic Server Wallet TEE) before any x402 signature is produced. The signer checks cumulative settled spend against the cap before signing — regardless of which interception method (MCP proxy or HTTP wrapper) the agent is using. No on-chain transaction, smart contract call, or cryptographic session-key delegation is involved in setting or enforcing the cap.
 
-- **AC-8 (from R-LEASH-6):** The Particle UA treasury monitors USDC float levels across the pre-positioned chains (Base, Arbitrum One, Polygon). When a chain's float falls below a threshold, the treasury triggers an async rebalance — routing USDC from the unified treasury balance to the low-float chain — in the background, without interrupting in-flight payments on other chains. The dashboard shows each chain's current float balance and the last-rebalanced timestamp. This background rebalance is the flagship cross-chain move: one UA treasury powering multi-chain x402 settlement.
+- **AC-8 (from R-LEASH-6):** The Particle UA treasury monitors USDC float levels across the pre-positioned chains (Base and Arbitrum One — Polygon excluded from v0, see Constraint 14). When a chain's float falls below a threshold, the treasury triggers an async rebalance — routing USDC from the unified treasury balance to the low-float chain — in the background, without interrupting in-flight payments on other chains. The dashboard shows each chain's current float balance and the last-rebalanced timestamp. This background rebalance is the flagship cross-chain move. **BLOCKED (B-04):** the actual UA rebalance transfer requires the funded live spike.
 
 ---
 
@@ -110,7 +110,7 @@ Then the treasury initiates a USDC transfer from the unified treasury balance to
 
 - **Notification lag caveat.** The spec notes that Tier 2 / Tier 3 notifications can be delayed by "several minutes" per Vercel and Cloudflare delivery behavior. The cap itself is enforced synchronously in the hosted signer; only the push notification delivery is subject to lag. Owners should set the cap below their true maximum tolerated spend to account for this lag. (R-DASH-2)
 
-- **Async float rebalance is a background op, not owner-triggered.** The Particle UA treasury monitors float levels across Base, Arbitrum One, and Polygon and rebalances automatically. The owner does not need to manually top up individual chain floats. The dashboard shows current float levels and rebalance history. This background multi-chain rebalancing is the flagship Particle UA cross-chain capability powering Leash. (R-LEASH-6)
+- **Async float rebalance is a background op, not owner-triggered.** The Particle UA treasury monitors float levels across Base and Arbitrum One (Polygon excluded from v0) and rebalances automatically. The owner does not need to manually top up individual chain floats. The dashboard shows current float levels and rebalance history. This background multi-chain rebalancing is the flagship Particle UA cross-chain capability powering Leash. **BLOCKED (B-04)** for the actual transfer until the live spike completes. (R-LEASH-6)
 
 - **No on-device signing on mobile.** If the owner adjusts the cap from the mobile PWA, the cap update is an HTTP POST to the `apps/web` backend. No private key or EIP-7702 authorization is on the mobile device. (Constraint 7)
 

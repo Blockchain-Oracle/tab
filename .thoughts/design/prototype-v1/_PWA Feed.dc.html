@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+@keyframes pf-shimmer{0%{background-position:-160px 0;}100%{background-position:160px 0;}}
+</style>
+</helmet>
+<div style="position:relative;display:flex;flex-direction:column;width:100%;height:812px;background:#FAF9F6;font-family:'Geist',system-ui,sans-serif;color:#1C1B18;overflow:hidden;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 22px 6px;font-size:13.5px;font-weight:600;flex:none;">
+    <span>9:41</span>
+    <div style="display:flex;align-items:center;gap:5px;">
+      <div style="display:flex;align-items:flex-end;gap:1.5px;height:10px;">
+        <div style="width:2.5px;height:4px;background:#1C1B18;border-radius:1px;"></div>
+        <div style="width:2.5px;height:6px;background:#1C1B18;border-radius:1px;"></div>
+        <div style="width:2.5px;height:8px;background:#1C1B18;border-radius:1px;"></div>
+        <div style="width:2.5px;height:10px;background:#1C1B18;border-radius:1px;"></div>
+      </div>
+      <div style="width:20px;height:10px;border:1px solid #1C1B18;border-radius:3px;padding:1px;"><div style="width:70%;height:100%;background:#1C1B18;border-radius:1.5px;"></div></div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 18px;flex:none;">
+    <div style="font-size:17px;font-weight:600;letter-spacing:-0.01em;">Payments</div>
+    <div style="font-size:11px;color:#8C8A80;font-variant-numeric:tabular-nums;">{{ spendLine }}</div>
+  </div>
+
+  <sc-if value="{{ offlineBar }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#33312C;color:#F4F3EE;font-size:11.5px;padding:8px 18px;flex:none;">Offline — showing last-fetched receipts. Pull to refresh when back online.</div>
+  </sc-if>
+
+  <sc-if value="{{ nearBar }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#FBF1DC;border-bottom:1px solid #F2E3C2;color:#7A5410;font-size:11.5px;font-weight:500;padding:9px 18px;flex:none;">Approaching spending cap — 76% used.</div>
+  </sc-if>
+
+  <sc-if value="{{ overBar }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#C13A40;color:#FFFFFF;font-size:12px;font-weight:500;padding:10px 18px;line-height:1.45;flex:none;">Spending cap reached. Agent halted. No further payments will be made.</div>
+  </sc-if>
+
+  <sc-if value="{{ statusBar }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#EFEDE7;color:#5F5D55;font-size:11.5px;font-weight:500;padding:9px 18px;flex:none;">{{ statusBarText }}</div>
+  </sc-if>
+
+  <div style="flex:1;overflow:hidden;padding:12px 18px 0;display:flex;flex-direction:column;gap:9px;">
+
+    <sc-if value="{{ pullHint }}" hint-placeholder-val="{{ true }}">
+      <div style="text-align:center;font-size:10.5px;color:#B4B2A8;padding:2px 0 3px;">↓ pull to refresh</div>
+    </sc-if>
+
+    <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:110px 20px 0;display:flex;flex-direction:column;align-items:center;text-align:center;">
+        <div style="width:44px;height:44px;border-radius:50%;background:#F1EFE9;display:flex;align-items:center;justify-content:center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 12h4l2.5-6 3 12 2.5-6h4" stroke="#B4B2A8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </div>
+        <div style="font-size:13.5px;font-weight:600;margin-top:14px;">No payments yet</div>
+        <div style="font-size:12px;line-height:1.5;color:#8C8A80;margin-top:4px;">The agent hasn’t made any x402 payments this cycle.</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div style="height:76px;border-radius:14px;background:linear-gradient(90deg,#EFEDE7 25%,#F7F6F2 50%,#EFEDE7 75%);background-size:320px 100%;animation:pf-shimmer 1.2s linear infinite;"></div>
+        <div style="height:76px;border-radius:14px;background:linear-gradient(90deg,#EFEDE7 25%,#F7F6F2 50%,#EFEDE7 75%);background-size:320px 100%;animation:pf-shimmer 1.2s linear infinite;"></div>
+        <div style="height:76px;border-radius:14px;background:linear-gradient(90deg,#EFEDE7 25%,#F7F6F2 50%,#EFEDE7 75%);background-size:320px 100%;animation:pf-shimmer 1.2s linear infinite;"></div>
+        <div style="height:76px;border-radius:14px;background:linear-gradient(90deg,#EFEDE7 25%,#F7F6F2 50%,#EFEDE7 75%);background-size:320px 100%;animation:pf-shimmer 1.2s linear infinite;"></div>
+      </div>
+    </sc-if>
+
+    <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+      <div style="background:#FFFFFF;border:1px solid #E8E6DF;border-radius:14px;padding:12px 15px;display:flex;align-items:center;gap:12px;{{ rowDim }}">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;">{{ r.usd }}</span>
+            <span style="display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;background:{{ r.stBg }};color:{{ r.stColor }};">{{ r.status }}</span>
+          </div>
+          <div style="font-family:'Geist Mono',monospace;font-size:11px;color:#5F5D55;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.url }}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px;font-size:10.5px;color:#8C8A80;">
+            <span>{{ r.when }}</span>
+            <sc-if value="{{ r.hasTx }}" hint-placeholder-val="{{ true }}"><span style="font-family:'Geist Mono',monospace;color:#3B5BD9;">{{ r.tx }}</span></sc-if>
+            <sc-if value="{{ r.net }}" hint-placeholder-val="{{ true }}"><span style="color:#B4B2A8;">· {{ r.net }}</span></sc-if>
+          </div>
+        </div>
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex:none;"><path d="M6 3.5L10.5 8 6 12.5" stroke="#B4B2A8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </div>
+    </sc-for>
+
+  </div>
+
+  <div style="display:flex;border-top:1px solid #E8E6DF;background:#FCFBF9;padding:10px 0 22px;flex:none;">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+      <div style="width:20px;height:20px;border-radius:6px;border:1.5px solid #B4B2A8;"></div>
+      <span style="font-size:10px;font-weight:500;color:#8C8A80;">Overview</span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+      <div style="width:20px;height:20px;border-radius:6px;background:#206B4E;"></div>
+      <span style="font-size:10px;font-weight:600;color:#17503A;">Feed</span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+      <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid #B4B2A8;"></div>
+      <span style="font-size:10px;font-weight:500;color:#8C8A80;">Controls</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:375,&quot;height&quot;:812},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;populated&quot;,&quot;options&quot;:[&quot;populated&quot;,&quot;empty&quot;,&quot;loading&quot;,&quot;offline&quot;,&quot;near_banner&quot;,&quot;over_interrupt&quot;,&quot;halted_readonly&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Feed&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state ?? 'populated';
+
+    const ST = {
+      settled: { status: 'Settled', stBg: '#E8F3EC', stColor: '#257A46' },
+      failed: { status: 'Failed', stBg: '#FAECEC', stColor: '#B4383D' },
+      blocked: { status: 'Blocked', stBg: '#2A2925', stColor: '#F4F3EE' }
+    };
+    const row = (usd, url, kind, tx, net, when) => Object.assign({ usd, url, tx: tx || '', hasTx: !!tx, net: net || false, when }, ST[kind]);
+
+    const base = [
+      row('$0.42', 'api.searchgrid.io/v1/search', 'settled', '0x8f2e…1b7d', 'Base', '2 min ago'),
+      row('$0.08', 'data.arxival.net/v2/papers/fetch', 'settled', '0x3c9a…e42f', 'Arbitrum', '6 min ago'),
+      row('$1.20', 'api.mapgrid.dev/v1/tiles/batch', 'settled', '0x7d1b…a93c', 'Base', '11 min ago'),
+      row('$0.02', 'feeds.newswire.dev/v1/query', 'failed', null, 'Polygon', '24 min ago'),
+      row('$0.35', 'translate.lexiconapi.com/v3/run', 'settled', '0x5e4f…c810', 'Polygon', '19 min ago'),
+      row('$0.85', 'api.searchgrid.io/v1/search', 'settled', '0x2a6c…9d5e', 'Base', '31 min ago')
+    ];
+    const overRows = [
+      row('$0.45', 'api.searchgrid.io/v1/search', 'blocked', null, false, 'just now'),
+      row('$0.12', 'feeds.newswire.dev/v1/query', 'blocked', null, false, '1 min ago')
+    ].concat(base.slice(0, 4));
+
+    let rows = base;
+    if (s === 'over_interrupt') rows = overRows;
+    if (s === 'empty' || s === 'loading') rows = [];
+    if (s === 'halted_readonly') rows = base;
+
+    const statusBarTexts = { halted_readonly: 'Agent paused — historical receipts are read-only. Resume from Overview.' };
+
+    return {
+      rows,
+      spendLine: s === 'over_interrupt' ? '$10.00 / $10.00 (100%)' : (s === 'near_banner' ? '$7.60 / $10.00 (76%)' : '$4.20 / $10.00 (42%)'),
+      offlineBar: s === 'offline',
+      nearBar: s === 'near_banner',
+      overBar: s === 'over_interrupt',
+      statusBar: s === 'halted_readonly',
+      statusBarText: statusBarTexts[s] || '',
+      isEmpty: s === 'empty',
+      isLoading: s === 'loading',
+      pullHint: s !== 'loading' && s !== 'empty',
+      rowDim: s === 'offline' ? 'opacity:0.7;' : ''
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialog } from "@tab/ui";
-import { type FormEvent, type ReactNode, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 
 import type { ApiKeyPermissions } from "../../../../lib/auth/api-key";
 import styles from "./api-key-dialogs.module.css";
@@ -105,6 +105,18 @@ interface SecretRevealDialogProps {
 export function SecretRevealDialog(props: SecretRevealDialogProps) {
   const [copyState, setCopyState] = useState<"copied" | "failed" | "idle">("idle");
 
+  // Test keys are kept in this browser so the Quickstart can show runnable,
+  // copyable code. Live keys are never stored anywhere.
+  useEffect(() => {
+    if (props.secret.startsWith("sk_test_")) {
+      try {
+        localStorage.setItem("tab_sk_test", props.secret);
+      } catch {
+        // Storage unavailable — the one-time reveal still works.
+      }
+    }
+  }, [props.secret]);
+
   async function copySecret() {
     // A rejected clipboard write must never look like success: the key is
     // shown exactly once, so a silent failure here loses it forever.
@@ -120,7 +132,10 @@ export function SecretRevealDialog(props: SecretRevealDialogProps) {
     <DialogFrame onDismiss={() => {}} title="Your new secret key">
       <p className={styles.warning}>
         For security reasons, you can only view this key once. Save it to a secure location before
-        closing this dialog.
+        closing this dialog.{" "}
+        {props.secret.startsWith("sk_test_")
+          ? "This test key is also kept in this browser so the Quickstart shows runnable code."
+          : null}
       </p>
       <div className={styles.secretBox}>
         <code style={{ userSelect: "all" }}>{props.secret}</code>

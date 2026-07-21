@@ -41,11 +41,15 @@ export function WebhookVerificationGuide() {
     <section aria-labelledby="webhook-verification-title" className={styles.guide}>
       <h2 id="webhook-verification-title">Verify every delivery</h2>
       <p>
-        Read the request body as raw bytes. Verify the signature before parsing JSON, using your
-        one-time <code>whsec_</code> signing secret.
+        Anyone can POST to your endpoint — the <code>X-Tab-Signature</code> header is how your
+        server knows a delivery really came from Tab. Check it with your one-time{" "}
+        <code>whsec_</code> signing secret before trusting the payload.
       </p>
-      <code className={styles.contract}>{WEBHOOK_SIGNATURE_HEADER_SHAPE}</code>
-      <CodeBlock code={WEBHOOK_VERIFIER_SNIPPET} lang="ts" />
+      <details className={styles.verifierDetails}>
+        <summary>Node.js verifier — copy into your webhook handler</summary>
+        <code className={styles.contract}>{WEBHOOK_SIGNATURE_HEADER_SHAPE}</code>
+        <CodeBlock code={WEBHOOK_VERIFIER_SNIPPET} lang="ts" />
+      </details>
       <h3>Payload and idempotency</h3>
       <code className={styles.contract}>{WEBHOOK_PAYMENT_PAYLOAD_SHAPE}</code>
       <p>{WEBHOOK_IDEMPOTENCY_GUIDANCE}</p>

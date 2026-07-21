@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import styles from "./code-block.module.css";
+import { CodeCopyButton } from "./code-copy-button";
 
 export type CodeLang = "json" | "ts" | "shell" | "http" | "text";
 
@@ -78,9 +79,12 @@ function tokenize(code: string, lang: CodeLang): ReactNode[] {
  */
 export function CodeBlock({ code, lang = "text" }: { code: string; lang?: CodeLang }) {
   return (
-    // biome-ignore lint/a11y/noNoninteractiveTabindex: horizontally scrollable code region needs keyboard access
-    <pre className={styles.block} tabIndex={0}>
-      <code>{tokenize(code, lang)}</code>
-    </pre>
+    <div className={styles.frame}>
+      <CodeCopyButton code={code} />
+      {/* biome-ignore lint/a11y/noNoninteractiveTabindex: horizontally scrollable code region needs keyboard access */}
+      <pre className={styles.block} tabIndex={0}>
+        <code>{tokenize(code, lang)}</code>
+      </pre>
+    </div>
   );
 }

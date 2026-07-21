@@ -35,7 +35,7 @@ function readState(snapshot: LeashFundsSnapshot) {
   if (complete) return { className: styles.readChip, label: "LIVE READS" };
   return {
     className: styles.blockedChip,
-    label: snapshot.agentAddress ? "PARTIAL READ" : "NOT PROVISIONED",
+    label: snapshot.agentAddress ? "PARTIAL READ" : "NO WALLET YET",
   };
 }
 
@@ -74,15 +74,13 @@ export function FundsPanel({
             <p>The stored address is independent of Particle unified-balance availability.</p>
           </div>
           <span className={styles.blockedChip}>
-            {!snapshot.agentAddress
-              ? "NOT PROVISIONED"
-              : terminal
-                ? "HISTORY ONLY"
-                : "FUNDING ENTRY"}
+            {!snapshot.agentAddress ? "NO WALLET YET" : terminal ? "HISTORY ONLY" : "FUNDING ENTRY"}
           </span>
         </div>
         <article className={styles.unifiedCard}>
-          <strong>{snapshot.agentAddress ?? "Funding entry unavailable"}</strong>
+          <strong>
+            {snapshot.agentAddress ?? "Provision your agent to get its wallet address"}
+          </strong>
           {snapshot.agentAddress ? (
             <EvidenceCopyButton label="Copy agent signing address" value={snapshot.agentAddress} />
           ) : null}
@@ -115,7 +113,7 @@ export function FundsPanel({
       <section aria-labelledby="balances-title">
         <div className={styles.sectionHeading}>
           <div>
-            <h2 id="balances-title">Available liquidity</h2>
+            <h2 id="balances-title">What your agent can spend</h2>
             <p>
               {testFunds
                 ? "Base Sepolia is isolated from the separate Particle mainnet balance."

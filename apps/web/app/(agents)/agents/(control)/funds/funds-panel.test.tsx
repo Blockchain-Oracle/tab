@@ -73,9 +73,9 @@ describe("Agent funds surface", () => {
       />,
     );
 
-    expect(html).toContain("Not provisioned");
-    expect(html).toContain("NOT PROVISIONED");
-    expect(html).toContain("Funding entry unavailable");
+    expect(html).toContain("No agent wallet yet");
+    expect(html).toContain("NO WALLET YET");
+    expect(html).toContain("Provision your agent to get its wallet address");
     expect(html).not.toContain("$0.00");
     expect(html).not.toContain("0x0000");
   });

@@ -4,6 +4,7 @@ import { AppShell, UnreadBadge } from "@tab/ui";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { WorkspaceSwitcher } from "../../../../components/workspace-switcher";
 
 import { ThemeToggle } from "../../../theme-toggle";
 import { LeashAccountMenu } from "./leash-account-menu";
@@ -69,6 +70,7 @@ export function LeashShell({ children, email, unreadCount }: LeashShellProps) {
       linkComponent={Link}
       modeSlot={<p className={styles.productNote}>x402 payments, capped outside your agent.</p>}
       navAriaLabel="Agent control plane"
+      surfaceSlot={<WorkspaceSwitcher current="agents" />}
       surfaceTag="Agents"
     >
       {children}

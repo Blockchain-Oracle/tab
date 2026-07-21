@@ -48,3 +48,19 @@
     padding: 17px;
   }
 }
+
+.verifierDetails {
+  margin: 10px 0 0;
+}
+
+.verifierDetails summary {
+  color: var(--tab-text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 550;
+  padding: 6px 0;
+}
+
+.verifierDetails[open] summary {
+  margin-bottom: 8px;
+}

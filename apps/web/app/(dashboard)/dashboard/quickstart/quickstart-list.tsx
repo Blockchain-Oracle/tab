@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { CodeBlock, type CodeLang } from "../../../../components/code-block";
 import styles from "./quickstart.module.css";
@@ -67,16 +67,25 @@ export function formatWebhookDeliverySummary(
   return "webhook not sent";
 }
 
-export function tabServerSnippet(appUrl: string, maskedSecretKey: string | null) {
+export function tabServerSnippet(
+  appUrl: string,
+  maskedSecretKey: string | null,
+  storedTestKey?: string | null,
+) {
   return `// Server environment: TAB_API_BASE_URL=${appUrl}
 import { Tab } from "@runtab/sdk";
 
 const tab = new Tab(process.env.TAB_SECRET_KEY!);
 await tab.payments.list();
-// Dashboard key: ${maskedSecretKey ?? "not created"}`;
+// ${storedTestKey ? `TAB_SECRET_KEY=${storedTestKey}` : `Dashboard key: ${maskedSecretKey ?? "not created"}`}`;
 }
 
-function stepContent(key: StepKey, state: QuickstartState, appUrl: string) {
+function stepContent(
+  key: StepKey,
+  state: QuickstartState,
+  appUrl: string,
+  storedTestKey: string | null,
+) {
   const values: Record<
     StepKey,
     { code?: string; description: string; href?: string; lang?: CodeLang; note?: string }
@@ -87,7 +96,7 @@ function stepContent(key: StepKey, state: QuickstartState, appUrl: string) {
       lang: "shell",
     },
     create_api_key: {
-      code: tabServerSnippet(appUrl, state.maskedSecretKey),
+      code: tabServerSnippet(appUrl, state.maskedSecretKey, storedTestKey),
       lang: "ts",
       description: "Secret keys stay on your server and are shown only once.",
       href: "/dashboard/keys",
@@ -125,6 +134,19 @@ function stepContent(key: StepKey, state: QuickstartState, appUrl: string) {
 }
 
 export function QuickstartList({ appUrl, state }: { appUrl: string; state: QuickstartState }) {
+  const [storedTestKey, setStoredTestKey] = useState<string | null>(null);
+
+  // The test secret is kept in this browser at reveal time (never live keys),
+  // so the snippets below are runnable as-is.
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("tab_sk_test");
+      if (stored?.startsWith("sk_test_")) setStoredTestKey(stored);
+    } catch {
+      // Storage unavailable — masked snippets still render.
+    }
+  }, []);
+
   const router = useRouter();
   const [busy, setBusy] = useState<StepKey>();
   const [error, setError] = useState<string>();
@@ -181,7 +203,7 @@ export function QuickstartList({ appUrl, state }: { appUrl: string; state: Quick
       {error ? <p className={styles.error}>{error}</p> : null}
       <ol className={styles.steps}>
         {state.steps.map((step, index) => {
-          const content = stepContent(step.key, state, appUrl);
+          const content = stepContent(step.key, state, appUrl, storedTestKey);
           const active = index === activeIndex;
           return (
             <li className={active ? styles.activeStep : styles.step} key={step.key}>

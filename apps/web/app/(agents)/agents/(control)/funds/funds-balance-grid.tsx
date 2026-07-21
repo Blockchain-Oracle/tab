@@ -14,7 +14,7 @@ const usd = new Intl.NumberFormat("en-US", {
 
 function unifiedValue(snapshot: LeashFundsSnapshot) {
   if (snapshot.unified.state === "available") return usd.format(snapshot.unified.balanceUsd);
-  if (snapshot.unified.state === "not_provisioned") return "Not provisioned";
+  if (snapshot.unified.state === "not_provisioned") return "No agent wallet yet";
   if (snapshot.unified.state === "not_applicable_testnet") return "Separate mainnet spike";
   return "Unavailable";
 }
@@ -37,7 +37,7 @@ function unifiedNote(snapshot: LeashFundsSnapshot) {
 function totalLabel(health: FloatHealth) {
   return health.totalAtomic === null
     ? health.state === "not_provisioned"
-      ? "Not provisioned"
+      ? "No agent wallet yet"
       : "Unavailable"
     : formatUsdAtomic(health.totalAtomic.toString());
 }
@@ -69,7 +69,7 @@ export function FundsBalanceGrid({
           {health.state === "unavailable"
             ? "At least one chain read failed, so no total is shown."
             : health.state === "not_provisioned"
-              ? "No signing address exists to read."
+              ? "Provision your agent first — its wallet address is what we read balances from."
               : testFunds
                 ? "Live Circle USDC balanceOf read on Base Sepolia."
                 : "Sum of the live Base and Arbitrum balanceOf reads."}
@@ -105,8 +105,8 @@ export function FundsBalanceGrid({
       ) : (
         <article className={styles.floatCard}>
           <span className={styles.cardLabel}>NATIVE USDC FLOATS</span>
-          <strong>Not provisioned</strong>
-          <p>No signing address exists to read.</p>
+          <strong>No agent wallet yet</strong>
+          <p>Provision your agent first — its wallet address is what we read balances from.</p>
         </article>
       )}
     </div>

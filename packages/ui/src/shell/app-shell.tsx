@@ -13,6 +13,8 @@ export interface AppShellProps {
   linkComponent?: ElementType;
   modeSlot?: ReactNode;
   navAriaLabel: string;
+  /** Interactive replacement for the surface tag (e.g. a workspace switcher). */
+  surfaceSlot?: ReactNode;
   surfaceTag: string;
 }
 
@@ -30,6 +32,7 @@ export function AppShell({
   linkComponent,
   modeSlot,
   navAriaLabel,
+  surfaceSlot,
   surfaceTag,
 }: AppShellProps): ReactElement {
   const LinkComponent = (linkComponent ?? "a") as ElementType;
@@ -40,11 +43,13 @@ export function AppShell({
           Skip to content
         </a>
         <aside data-tab-shell-sidebar="">
-          <LinkComponent aria-label="Tab home" data-tab-shell-brand="" href={brandHref}>
-            <TabMark size={20} />
-            <span data-tab-shell-brand-name="">tab</span>
-            <span data-tab-shell-surface-tag="">{surfaceTag}</span>
-          </LinkComponent>
+          <div data-tab-shell-brand-row="">
+            <LinkComponent aria-label="Tab home" data-tab-shell-brand="" href={brandHref}>
+              <TabMark size={20} />
+              <span data-tab-shell-brand-name="">tab</span>
+            </LinkComponent>
+            {surfaceSlot ?? <span data-tab-shell-surface-tag="">{surfaceTag}</span>}
+          </div>
           <NavList ariaLabel={navAriaLabel} groups={groups} linkComponent={linkComponent} />
           <div data-tab-shell-sidebar-bottom="">
             {modeSlot}

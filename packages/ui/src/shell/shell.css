@@ -48,6 +48,12 @@
   padding: 20px 12px;
 }
 
+[data-tab-shell-brand-row] {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
 [data-tab-shell-brand] {
   align-items: center;
   color: var(--tab-text);
@@ -55,6 +61,24 @@
   gap: 8px;
   padding: 0 10px;
   text-decoration: none;
+}
+
+/* Surface tag as a workspace switcher: same chip, now a button. */
+button[data-tab-shell-surface-tag] {
+  align-items: center;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 5px;
+  transition:
+    border-color var(--tab-motion-duration-fast, 120ms) ease,
+    color var(--tab-motion-duration-fast, 120ms) ease;
+}
+
+button[data-tab-shell-surface-tag]:hover,
+button[data-tab-shell-surface-tag]:focus-visible {
+  border-color: var(--tab-text);
+  color: var(--tab-text);
 }
 
 [data-tab-shell-brand-name] {

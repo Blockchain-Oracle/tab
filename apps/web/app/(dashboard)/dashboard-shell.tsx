@@ -4,6 +4,7 @@ import { AppShell, UnreadBadge } from "@tab/ui";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { WorkspaceSwitcher } from "../../components/workspace-switcher";
 
 import { ThemeToggle } from "../theme-toggle";
 import { DashboardAccountMenu } from "./dashboard-account-menu";
@@ -78,6 +79,7 @@ export function DashboardShell({
       linkComponent={Link}
       modeSlot={<DashboardModeControl liveActivated={liveActivated} mode={mode} />}
       navAriaLabel="Merchant dashboard"
+      surfaceSlot={<WorkspaceSwitcher current="merchant" />}
       surfaceTag="Merchant"
     >
       {children}

@@ -1,5 +1,33 @@
 /* The one code-block treatment. Ink panel in dark mode (canvas = night),
    paper panel in light mode — warm primary text in both. */
+.frame {
+  position: relative;
+}
+
+.frame:hover .copy,
+.frame:focus-within .copy {
+  opacity: 1;
+}
+
+.copy {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 1;
+  padding: 3px 9px;
+  border: 1px solid var(--tab-line);
+  border-radius: 6px;
+  background: var(--tab-surface);
+  color: var(--tab-text-muted);
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.copy:hover {
+  color: var(--tab-text);
+}
+
 .block {
   margin: 0;
   padding: 12px 14px;

@@ -1,3 +1,6 @@
+import { TabApiError } from "./tab-errors";
+import { TabPaymentIntents, TabWebhooks } from "./tab-resources";
+
 type JsonRecord = Record<string, unknown>;
 
 export interface TabPayment {
@@ -24,16 +27,7 @@ export interface TabOptions {
   request?: typeof fetch;
 }
 
-export class TabApiError extends Error {
-  constructor(
-    readonly code: string,
-    message: string,
-    readonly status = 0,
-  ) {
-    super(message);
-    this.name = "TabApiError";
-  }
-}
+export { TabApiError } from "./tab-errors";
 
 function record(value: unknown): JsonRecord | undefined {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -186,6 +180,12 @@ export class Tab {
     retrieve: (paymentId: string) => this.retrievePayment(paymentId),
   };
 
+  /** Webhook endpoint management (secret key with manage permission). */
+  readonly webhooks = new TabWebhooks({ call: (m, p, b) => this.#call(m, p, b) });
+
+  /** Signed payment intents for your checkout's intent endpoint. */
+  readonly paymentIntents = new TabPaymentIntents({ call: (m, p, b) => this.#call(m, p, b) });
+
   readonly #apiBaseUrl: string;
   readonly #request: typeof fetch;
   readonly #secretKey: string;
@@ -196,17 +196,22 @@ export class Tab {
     this.#request = options.request ?? fetch;
   }
 
-  async #get(path: string) {
+  async #call(method: "DELETE" | "GET" | "PATCH" | "POST", path: string, payload?: unknown) {
     let response: Response;
     try {
       response = await this.#request(new URL(path, this.#apiBaseUrl).toString(), {
         cache: "no-store",
-        headers: { authorization: `Bearer ${this.#secretKey}` },
-        method: "GET",
+        headers: {
+          authorization: `Bearer ${this.#secretKey}`,
+          ...(payload === undefined ? {} : { "content-type": "application/json" }),
+        },
+        method,
+        ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
       });
     } catch {
       throw new TabApiError("NETWORK_ERROR", "Tab could not be reached.");
     }
+    if (response.status === 204) return undefined;
 
     let body: unknown;
     try {
@@ -227,7 +232,7 @@ export class Tab {
     if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
       throw new TabApiError("INVALID_OPTIONS", "Payment list limit must be from 1 to 100.");
     }
-    const body = record(await this.#get(`/api/v1/payments?limit=${limit}`));
+    const body = record(await this.#call("GET", `/api/v1/payments?limit=${limit}`));
     if (!Array.isArray(body?.payments)) {
       throw new TabApiError("INVALID_RESPONSE", "Tab returned an invalid response.");
     }
@@ -238,7 +243,7 @@ export class Tab {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(paymentId)) {
       throw new TabApiError("INVALID_PAYMENT_ID", "Payment ID must be a UUID.");
     }
-    const body = record(await this.#get(`/api/v1/payments/${paymentId}`));
+    const body = record(await this.#call("GET", `/api/v1/payments/${paymentId}`));
     return parsePayment(body?.payment);
   }
 }

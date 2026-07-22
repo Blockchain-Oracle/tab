@@ -1,0 +1,13 @@
+{
+  "name": "example-webhook-node",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "setup-webhook": "node setup-webhook.mjs"
+  },
+  "dependencies": {
+    "@runtab/sdk": "workspace:^"
+  }
+}

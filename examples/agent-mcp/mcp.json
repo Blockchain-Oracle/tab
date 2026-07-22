@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "tab": {
+      "command": "tab-mcp",
+      "env": {
+        "TAB_API_BASE_URL": "https://app.runtab.xyz",
+        "TAB_AGENT_KEY": "<YOUR_ONE_TIME_KEY>"
+      }
+    }
+  }
+}

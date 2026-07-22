@@ -1,9 +1,9 @@
 ---
 title: Checkout states
-description: All 17 states the embedded checkout can show, and the real event that drives each transition.
+description: All 16 states the embedded checkout can show, and the real event that drives each transition.
 ---
 
-The checkout is a 17-stage state machine (`checkout-state.ts` in the SDK).
+The checkout is a 16-stage state machine (`checkout-state.ts` in the SDK).
 Transitions fire on real events — API responses, on-chain reads, settlement
 reports — never on timers pretending to be progress.
 
@@ -27,7 +27,11 @@ reports — never on timers pretending to be progress.
 | `stuck` | "Still working" honesty notice | Confirmation exceeded the delay notice window | Resolves like `confirming` |
 | `success` | Receipt: amount, ref code, real tx hash | Server confirmed settlement (verification `rpc`) | Buyer closes → done |
 | `error` | What failed + retry | Any failure event | Retry → `opening` / `intent-loading` |
-| *(cancelled)* | Sheet closes | Buyer dismisses at any point | Payment stays honest: `pending` rows never fake settlement |
+
+**Cancel** is an event, not a stage: dismissing the sheet returns to `idle`
+from anywhere except `confirming` (once money may be moving, the sheet stays
+until the outcome is known). Abandoned payments stay honestly `pending` —
+never fake-settled, never fake-failed.
 
 ## What "settled" means here
 

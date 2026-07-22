@@ -7,7 +7,7 @@
 - [Agents & x402](http://localhost:3002/docs/agents): Let an AI agent pay 402 Payment Required responses by itself — capped, keyless, and fully evidenced.
 - [API reference](http://localhost:3002/docs/api-reference): The v1 HTTP API — authentication, every endpoint's contract, the payment object, and the Testnet/Mainnet boundary.
 - [Architecture](http://localhost:3002/docs/architecture): How the pieces fit — one rail, two payers, and where each secret lives.
-- [Checkout states](http://localhost:3002/docs/checkout-states): All 17 states the embedded checkout can show, and the real event that drives each transition.
+- [Checkout states](http://localhost:3002/docs/checkout-states): All 16 states the embedded checkout can show, and the real event that drives each transition.
 - [Errors](http://localhost:3002/docs/errors): Every stable error code the public APIs return — status, meaning, and how to recover.
 - [Examples](http://localhost:3002/docs/examples): Runnable starter examples — a storefront, a webhook receiver, and an agent that pays its own way.
 - [What is Tab](http://localhost:3002/docs): One payment rail, two kinds of payers — humans pay with an email, AI agents pay x402 under a hard cap.

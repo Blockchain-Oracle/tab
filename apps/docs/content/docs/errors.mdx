@@ -1,0 +1,105 @@
+---
+title: Errors
+description: Every stable error code the public APIs return — status, meaning, and how to recover.
+---
+
+Every error is the same envelope, with `cache-control: no-store`:
+
+```json
+{ "error": { "code": "PAYMENT_NOT_FOUND", "message": "Payment was not found." } }
+```
+
+Codes are stable — branch on `error.code`, never on message text. The SDK
+surfaces them as `TabApiError.code` / `CheckoutApiError.code`.
+
+## Authentication (all endpoints)
+
+| Code | Status | Meaning | Recovery |
+| --- | --- | --- | --- |
+| `INVALID_API_KEY` | 401 | Key missing, malformed, revoked, or wrong type for the route | Check the `Authorization: Bearer` header and key prefix (`pk_`/`sk_`) |
+| `API_KEY_PERMISSION_DENIED` | 403 | Secret key lacks the needed permission (mutations need `full`) | Use a full-access key for `manage` operations |
+| `API_KEY_ENVIRONMENT_DENIED` | 403 | `env` query conflicts with the key's environment | Keys are per-environment; drop the param or switch keys |
+
+## Payment intents — `POST /v1/payment-intents`
+
+| Code | Status | Meaning | Recovery |
+| --- | --- | --- | --- |
+| `INVALID_PAYMENT_INTENT_REQUEST` | 400 | Body must be exactly `{ amount, intentUrl }` with a valid USD amount and HTTPS url | Fix the field noted in the message |
+| `PAYMENT_INTENT_SIGNING_UNAVAILABLE` | 503 | Signing secret not configured server-side | Transient/config — retry or check deployment env |
+
+## Payments — `POST/GET /v1/payments`, `GET/PATCH /v1/payments/:id`
+
+| Code | Status | Meaning | Recovery |
+| --- | --- | --- | --- |
+| `PAYMENT_REQUEST_TOO_LARGE` | 413 | Create body over 10 KB | Send only `{ intentToken }` |
+| `INVALID_PAYMENT_INTENT_TOKEN` | 400 | Token malformed, tampered, or wrong merchant/env | Mint a fresh intent |
+| `PAYMENT_INTENT_STALE` | 409 | Intent expired (5-minute TTL) | Mint a fresh intent |
+| `PAYMENT_INTENT_CONFLICT` | 409 | Intent reused with different payment details | Every checkout needs its own intent |
+| `PAYMENT_CREATION_UNAVAILABLE` | 503 | Database unavailable | Retry with backoff |
+| `INVALID_PAYMENT_ID` | 400 | Path id is not a UUID | — |
+| `PAYMENT_NOT_FOUND` | 404 | Not this key's payment (tenant + env scoped) | — |
+| `INVALID_ENVIRONMENT` / `INVALID_LIMIT` | 400 | Bad list query (`limit` 1–100) | — |
+
+## Settlement reports — `PATCH /v1/payments/:id`
+
+| Code | Status | Meaning | Recovery |
+| --- | --- | --- | --- |
+| `PAYMENT_REPORT_TOO_LARGE` | 413 | Report body over 120 KB | — |
+| `INVALID_PAYMENT_REPORT` | 400 | Body must be exactly `{ buyerDidToken, transactionId, tokenChanges }`; Testnet `transactionId` must be a 0x transaction hash | — |
+| `INVALID_DID_TOKEN` | 401 | Buyer's Magic token failed verification | Re-authenticate the buyer |
+| `MAGIC_NOT_CONFIGURED` | 503 | Magic secret not configured server-side | Deployment config |
+| `MAGIC_UNAVAILABLE` | 502 | Magic verification transiently failed | Retry |
+| `PAYMENT_REPORT_CONFLICT` | 409 | Different evidence already reported for this payment | The first report wins; never rewrite evidence |
+| `PAYMENT_VERIFICATION_FAILED` | 422 | The reported Base Sepolia transaction doesn't verify: reverted, or no matching USDC `Transfer` payer → receiver at the intent amount | The transfer must actually exist — nothing was persisted |
+| `TEST_VERIFICATION_UNAVAILABLE` | 503 | Base Sepolia RPC unreachable | Retry — the SDK does this automatically |
+
+A not-yet-indexed transaction is **not an error**: the report returns `202`
+with `verification.code: "TEST_SETTLEMENT_PENDING"` and should be retried.
+
+## Checkout context & test rail
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `CHECKOUT_CONFIGURATION_UNAVAILABLE` | 503 | Client config incomplete server-side |
+| `LIVE_MODE_NO_TEST_BALANCE` / `LIVE_MODE_NO_TEST_FUNDS` | 403 | Test rail is Testnet-only; live keys are refused |
+| `INVALID_TEST_BALANCE_REQUEST` / `INVALID_TEST_FUNDS_REQUEST` | 400 | Bad address / missing `buyerDidToken` |
+| `TEST_BALANCE_UNAVAILABLE` / `TEST_FUNDS_UNAVAILABLE` | 503 | RPC or faucet funder unavailable |
+| `TEST_FUNDS_RATE_LIMITED` | 429 | Faucet limits hit (3/recipient/day, 25/merchant/day, 20/IP/hour). Honors `Retry-After` |
+
+## Webhook management — `/v1/webhook-endpoint`
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `INVALID_WEBHOOK_URL` | 400 | Must be public HTTPS ≤2048 chars — loopback, private IPs, and raw IPs are rejected |
+| `WEBHOOK_ENDPOINT_EXISTS` | 409 | One endpoint per environment; PATCH to change the URL |
+| `WEBHOOK_ENDPOINT_NOT_FOUND` | 404 | No active endpoint in this environment |
+| `WEBHOOK_SECRET_UNAVAILABLE` | 503 | Secret encryption key not configured server-side |
+
+## Agent proxy — `/api/agent/*` (Bearer `agent_sk_…`)
+
+The x402 auto-payer's own API. Every blocked or failed attempt still writes
+a receipt.
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `INVALID_AGENT_KEY` | 401 | Key unknown, revoked, or rotated |
+| `AGENT_PAUSED` / `AGENT_FROZEN` / `AGENT_CANCELLED` | 423 | The owner's emergency ladder is engaged — payments refuse |
+| `CAP_EXCEEDED` | 403 | This payment would exceed the per-cycle cap. A `blocked` receipt is written |
+| `CAP_NOT_SET` | 403 | Owner hasn't set a cap yet |
+| `CAP_CYCLE_CHANGED` | 409 | Cap cycle rolled mid-request — retry |
+| `FLOAT_EMPTY` | 402 | No USDC at the signing address on the target network |
+| `FLOAT_CHECK_UNAVAILABLE` | 503 | Balance read failed |
+| `AUTHORIZATION_EXPIRED` | 409 | The x402 authorization window lapsed |
+| `SIGN_RATE_LIMITED` | 429 | Signing rate limit (honors `Retry-After`) |
+| `SIGN_REQUEST_IN_PROGRESS` / `SIGN_REQUEST_RECONCILING` / `SIGN_REQUEST_CONFLICT` | 409 | Durable-envelope concurrency control — retry per `Retry-After` |
+| `SIGNER_NOT_CONFIGURED` | 503 | Wallet-provider (Magic TEE) configuration incomplete |
+| `SIGNER_PROVIDER_REJECTED` / `SIGNER_PROVIDER_INVALID_RESPONSE` / `SIGNER_IDENTITY_MISMATCH` | 502 | The provider refused or answered out of contract — the message includes the provider stage |
+| `SIGNER_PROVIDER_UNAVAILABLE` / `SIGNER_PROVIDER_TIMEOUT` | 503 | Provider transiently down — retry |
+| `RECEIPT_NOT_FOUND` / `RECEIPT_NOT_PENDING` / `SETTLEMENT_RESULT_CONFLICT` | 404/409 | Result reporting against a missing or already-final receipt |
+
+## Everything else
+
+Dashboard, auth, faucet, and internal cron routes use the same envelope with
+their own codes (`SESSION_REQUIRED`, `ORIGIN_NOT_ALLOWED`,
+`FAUCET_RATE_LIMITED`, …). They are session-authenticated and not part of
+the public API surface.

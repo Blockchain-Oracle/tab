@@ -105,10 +105,10 @@ surface at all.
 
 # API reference
 URL: http://localhost:3002/docs/api-reference
-The v1 HTTP API — authentication, endpoints, error schema, and the test/live boundary.
+The v1 HTTP API — authentication, every endpoint's contract, the payment object, and the Testnet/Mainnet boundary.
 
-Base URL: your Tab deployment origin. All responses are JSON with
-`cache-control: no-store`.
+Base URL: your Tab deployment origin (hosted: `https://app.runtab.xyz`).
+All responses are JSON with `cache-control: no-store`.
 
 ## Authentication
 
@@ -122,9 +122,8 @@ Authorization: Bearer sk_test_…
 ```
 
 Created in **Dashboard → API keys**, shown once, stays on your server.
-This is the key you use to call the API yourself: minting payment intents
-and listing payments. Full-access keys can create; read-only keys can only
-list. Rotating a key revokes the old one immediately — no grace window.
+Full-access keys can mutate (`manage`); read-only keys can only read.
+Rotating a key revokes the old one immediately — no grace window.
 
 ### Publishable key — the buyer's browser
 
@@ -132,11 +131,9 @@ list. Rotating a key revokes the old one immediately — no grace window.
 Authorization: Bearer pk_test_…
 ```
 
-Passed to `<PayButton publishableKey=…>` and safe to expose. You never
-send it yourself — **the SDK does**, for the checkout-scoped endpoints
-(context, opening a payment, reporting settlement, test funds). It can
-only act inside a checkout for your merchant account, and settlement
-reporting additionally requires the buyer's own identity token.
+Passed to `<PayButton publishableKey=…>` and safe to expose. It can only
+act inside a checkout for your merchant account; settlement reporting
+additionally requires the buyer's own identity token.
 
 ### Agent key — the MCP proxy
 
@@ -144,31 +141,47 @@ reporting additionally requires the buyer's own identity token.
 TAB_AGENT_KEY=agent_sk_…
 ```
 
-Issued once when you provision an agent, and lives only in the
-`tab-mcp` proxy's environment — never in the agent's context. It
-authorizes the x402 payment flow for that one agent, inside its cap.
+Issued once at agent provisioning; lives only in the `tab-mcp` proxy's
+environment. Authorizes the x402 payment flow for one agent, inside its cap.
 
-### Modes
+### Environments
 
-Every key is bound to **test** or **live**. A test key cannot read or move
-live data, a live key cannot touch test data, and `livemode` on every
-payment object always matches the key that created it.
+Every key is bound to **test** (Testnet, Base Sepolia) or **live** (Mainnet,
+Arbitrum One). A test key cannot read or move live data and vice versa;
+`livemode` on every object always matches the key that created it.
 
-## Errors
-
-Every error has the same shape:
+## The payment object
 
 ```json
 {
-  "error": {
-    "code": "INVALID_PAYMENT_INTENT_REQUEST",
-    "message": "The payment intent request is invalid."
-  }
+  "id": "1d15cc1f-30a7-4f28-9d33-b93f4fd806aa",
+  "amount": "1.00",
+  "currency": "USD",
+  "env": "test",
+  "livemode": false,
+  "status": "settled",
+  "refCode": "TAB-2J7VNW4Q",
+  "intentUrl": "https://your-store.example/api/payment-intent",
+  "createdAt": "2026-07-22T09:00:00.000Z",
+  "payerType": "human",
+  "payerAddress": "0x9999…",
+  "reportedAt": "2026-07-22T09:00:08.000Z",
+  "reportedTransactionId": "0x7cc3…7136",
+  "settledAt": "2026-07-22T09:00:09.000Z",
+  "failureReason": null,
+  "token": { "address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e", "chainId": 84532 }
 }
 ```
 
-`code` is stable and machine-readable; `message` is human-readable. Rate
-limits answer `429` with a `retry-after` header in seconds.
+Invariants the API upholds (and the SDK re-validates):
+
+- `status` ∈ `pending | settled | failed`. `settled` always carries
+  `settledAt`, `reportedAt`, `reportedTransactionId`, `payerAddress`;
+  `pending` never carries `settledAt` or `failureReason`.
+- `token` is the settlement identity for the env: Testnet → Base Sepolia
+  USDC (`84532`), Mainnet → Arbitrum One USDC (`42161`).
+- On Testnet, `reportedTransactionId` is the **real** Base Sepolia
+  transaction hash, verified via RPC before settling.
 
 ## Endpoints
 
@@ -176,17 +189,19 @@ limits answer `429` with a `retry-after` header in seconds.
 
 ```http
 POST /api/v1/payment-intents
-Authorization: Bearer sk_test_…
+Authorization: Bearer sk_test_…   (manage permission)
 ```
 
-```json
-{ "amount": "1.00", "intentUrl": "https://your-store.example/api/payment-intent" }
-```
+Body — exactly these two fields:
 
-Returns `201` with `{ intent, intentToken }`. The `intentToken` is a signed,
-short-lived commitment to the amount — the checkout presents it back to Tab,
-so the browser can never change the price. Requires the `manage` permission
-(read-only keys get `403`).
+| Field | Type | Constraints |
+| --- | --- | --- |
+| `amount` | string | USD, up to 14 integer + 6 decimal digits, > 0 (e.g. `"1.00"`) |
+| `intentUrl` | string | ≤ 2048 chars, HTTPS (localhost HTTP allowed in dev), no credentials or fragment |
+
+`201` → `{ intent: { amount, currency, mode, receiver, token }, intentToken }`.
+The `intentToken` is a signed, 5-minute commitment to the amount — the
+checkout presents it back to Tab, so the browser can never change the price.
 
 ### List payments
 
@@ -195,31 +210,92 @@ GET /api/v1/payments?limit=20
 Authorization: Bearer sk_test_…
 ```
 
-Returns payments for your merchant account in the key's mode only.
+| Query | Type | Constraints |
+| --- | --- | --- |
+| `limit` | integer | 1–100, default 20 |
+| `env` | string | optional; must equal the key's environment |
+
+`200` → `{ payments: [PaymentObject…] }`, newest first, scoped to your
+merchant + the key's environment.
+
+### Retrieve a payment
+
+```http
+GET /api/v1/payments/{id}
+Authorization: Bearer sk_test_…
+```
+
+`200` → `{ payment: PaymentObject }`. The id must be a UUID; payments from
+other tenants or environments answer `404`.
+
+### Manage the webhook endpoint
+
+One active endpoint per environment. `manage` permission for mutations.
+
+```http
+GET    /api/v1/webhook-endpoint          → { endpoint: EndpointView | null }
+POST   /api/v1/webhook-endpoint  { url } → 201 { endpoint, secret: "whsec_…" }
+PATCH  /api/v1/webhook-endpoint  { url } → { endpoint }   (resets verifiedAt)
+DELETE /api/v1/webhook-endpoint          → 204
+POST   /api/v1/webhook-endpoint/test     → { delivery, endpoint }
+```
+
+The `whsec_` signing secret is returned **only** on creation. URLs must be
+public HTTPS — loopback, private ranges, and raw IPs are rejected.
+`EndpointView`: `{ id, url, env, health, listening, secretLast4,
+lastDeliveredAt, verifiedAt, createdAt, updatedAt }`. See
+[Webhooks](/docs/webhooks) for events and verification.
 
 ### Checkout endpoints (called by the SDK)
 
-You don't call these directly — the `<PayButton>` does — but they define the
+You don't call these directly — `<PayButton>` does — but they define the
 trust boundary:
 
-- `GET /api/v1/checkout-context` — merchant display info + client config for
-  the publishable key's mode.
-- `POST /api/v1/payments` — opens a pending payment from an `intentToken`.
-- `PATCH /api/v1/payments/{id}` — reports settlement. Requires the buyer's
-  identity token in addition to the publishable key; the server verifies the
-  reported settlement matches the opened intent (amount, mode, token, chain)
-  before committing.
-- `GET /api/v1/checkout/test-balance` · `POST /api/v1/checkout/test-funds` —
-  test-mode only; see [Test funds](/docs/test-funds).
+- `GET /api/v1/checkout-context` — merchant display info + client config
+  for the publishable key's environment.
+- `POST /api/v1/payments` — opens a pending payment from an `intentToken`
+  (body is exactly `{ intentToken }`; replays are idempotent).
+- `PATCH /api/v1/payments/{id}` — reports settlement. Body is exactly
+  `{ buyerDidToken, transactionId, tokenChanges }`. On Testnet the
+  `transactionId` must be a real transaction hash; the server verifies the
+  Base Sepolia `Transfer` on-chain before settling (`200`), answers `202`
+  with `TEST_SETTLEMENT_PENDING` while unindexed, and `422` if the transfer
+  doesn't match.
+- `GET /api/v1/checkout/test-balance?address=0x…` — real on-chain USDC +
+  gas balances (`{ balance: { usdcAtomic, gasWei } }`). Testnet keys only.
+- `POST /api/v1/checkout/test-funds` — real faucet grant to the verified
+  buyer. Testnet keys only; see [Test funds](/docs/test-funds).
 
-## The test/live boundary
+## Rate limits
 
-- Test keys operate on Base Sepolia with REAL sandbox settlement against your
-  test tenant. Live keys operate on mainnet rails.
-- `livemode` is explicit on payment objects and always consistent with the
-  key that created them.
-- Test funds endpoints refuse live keys outright (`403`,
-  `LIVE_MODE_NO_TEST_FUNDS`).
+`429` responses carry a `retry-after` header (seconds). Current limits:
+faucet grants 3/recipient/day, 25/merchant/day, 20/IP/hour; agent signing
+and manual webhook sends have their own windows.
+
+## Idempotency
+
+- **Opening payments** is idempotent by design: the payment id is the
+  intent's `jti`, so replaying the same `intentToken` returns the same
+  payment (`200` instead of `201`).
+- **Settlement reports** are first-write-wins: identical evidence replays
+  cleanly; different evidence answers `409 PAYMENT_REPORT_CONFLICT`.
+- **Webhook deliveries** carry a stable delivery UUID across retries —
+  idempotency key `${event.type}:${event.id}`.
+- Mutation endpoints do not accept an `Idempotency-Key` header today.
+
+## Errors
+
+Stable machine-readable codes in a uniform envelope — the full catalog
+lives in the [errors reference](/docs/errors).
+
+## The Testnet/Mainnet boundary
+
+- Testnet keys operate on Base Sepolia with **real sandbox settlement** —
+  real faucet funding, real balance reads, RPC-verified transfers.
+- Mainnet execution is gated until live money-mover verification lands;
+  reported live payments stay honestly `pending`.
+- Test-rail endpoints refuse live keys outright
+  (`403 LIVE_MODE_NO_TEST_FUNDS`).
 
 ---
 
@@ -390,6 +466,113 @@ live payment stays honestly `pending`, never fake-settled.
   happen before broadcast. After broadcast, it says what it knows and keeps
   reconciling — an honest "in flight" beats a comforting lie.
 </Callout>
+
+---
+
+# Errors
+URL: http://localhost:3002/docs/errors
+Every stable error code the public APIs return — status, meaning, and how to recover.
+
+Every error is the same envelope, with `cache-control: no-store`:
+
+```json
+{ "error": { "code": "PAYMENT_NOT_FOUND", "message": "Payment was not found." } }
+```
+
+Codes are stable — branch on `error.code`, never on message text. The SDK
+surfaces them as `TabApiError.code` / `CheckoutApiError.code`.
+
+## Authentication (all endpoints)
+
+| Code | Status | Meaning | Recovery |
+| --- | --- | --- | --- |
+| `INVALID_API_KEY` | 401 | Key missing, malformed, revoked, or wrong type for the route | Check the `Authorization: Bearer` header and key prefix (`pk_`/`sk_`) |
+| `API_KEY_PERMISSION_DENIED` | 403 | Secret key lacks the needed permission (mutations need `full`) | Use a full-access key for `manage` operations |
+| `API_KEY_ENVIRONMENT_DENIED` | 403 | `env` query conflicts with the key's environment | Keys are per-environment; drop the param or switch keys |
+
+## Payment intents — `POST /v1/payment-intents`
+
+| Code | Status | Meaning | Recovery |
+| --- | --- | --- | --- |
+| `INVALID_PAYMENT_INTENT_REQUEST` | 400 | Body must be exactly `{ amount, intentUrl }` with a valid USD amount and HTTPS url | Fix the field noted in the message |
+| `PAYMENT_INTENT_SIGNING_UNAVAILABLE` | 503 | Signing secret not configured server-side | Transient/config — retry or check deployment env |
+
+## Payments — `POST/GET /v1/payments`, `GET/PATCH /v1/payments/:id`
+
+| Code | Status | Meaning | Recovery |
+| --- | --- | --- | --- |
+| `PAYMENT_REQUEST_TOO_LARGE` | 413 | Create body over 10 KB | Send only `{ intentToken }` |
+| `INVALID_PAYMENT_INTENT_TOKEN` | 400 | Token malformed, tampered, or wrong merchant/env | Mint a fresh intent |
+| `PAYMENT_INTENT_STALE` | 409 | Intent expired (5-minute TTL) | Mint a fresh intent |
+| `PAYMENT_INTENT_CONFLICT` | 409 | Intent reused with different payment details | Every checkout needs its own intent |
+| `PAYMENT_CREATION_UNAVAILABLE` | 503 | Database unavailable | Retry with backoff |
+| `INVALID_PAYMENT_ID` | 400 | Path id is not a UUID | — |
+| `PAYMENT_NOT_FOUND` | 404 | Not this key's payment (tenant + env scoped) | — |
+| `INVALID_ENVIRONMENT` / `INVALID_LIMIT` | 400 | Bad list query (`limit` 1–100) | — |
+
+## Settlement reports — `PATCH /v1/payments/:id`
+
+| Code | Status | Meaning | Recovery |
+| --- | --- | --- | --- |
+| `PAYMENT_REPORT_TOO_LARGE` | 413 | Report body over 120 KB | — |
+| `INVALID_PAYMENT_REPORT` | 400 | Body must be exactly `{ buyerDidToken, transactionId, tokenChanges }`; Testnet `transactionId` must be a 0x transaction hash | — |
+| `INVALID_DID_TOKEN` | 401 | Buyer's Magic token failed verification | Re-authenticate the buyer |
+| `MAGIC_NOT_CONFIGURED` | 503 | Magic secret not configured server-side | Deployment config |
+| `MAGIC_UNAVAILABLE` | 502 | Magic verification transiently failed | Retry |
+| `PAYMENT_REPORT_CONFLICT` | 409 | Different evidence already reported for this payment | The first report wins; never rewrite evidence |
+| `PAYMENT_VERIFICATION_FAILED` | 422 | The reported Base Sepolia transaction doesn't verify: reverted, or no matching USDC `Transfer` payer → receiver at the intent amount | The transfer must actually exist — nothing was persisted |
+| `TEST_VERIFICATION_UNAVAILABLE` | 503 | Base Sepolia RPC unreachable | Retry — the SDK does this automatically |
+
+A not-yet-indexed transaction is **not an error**: the report returns `202`
+with `verification.code: "TEST_SETTLEMENT_PENDING"` and should be retried.
+
+## Checkout context & test rail
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `CHECKOUT_CONFIGURATION_UNAVAILABLE` | 503 | Client config incomplete server-side |
+| `LIVE_MODE_NO_TEST_BALANCE` / `LIVE_MODE_NO_TEST_FUNDS` | 403 | Test rail is Testnet-only; live keys are refused |
+| `INVALID_TEST_BALANCE_REQUEST` / `INVALID_TEST_FUNDS_REQUEST` | 400 | Bad address / missing `buyerDidToken` |
+| `TEST_BALANCE_UNAVAILABLE` / `TEST_FUNDS_UNAVAILABLE` | 503 | RPC or faucet funder unavailable |
+| `TEST_FUNDS_RATE_LIMITED` | 429 | Faucet limits hit (3/recipient/day, 25/merchant/day, 20/IP/hour). Honors `Retry-After` |
+
+## Webhook management — `/v1/webhook-endpoint`
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `INVALID_WEBHOOK_URL` | 400 | Must be public HTTPS ≤2048 chars — loopback, private IPs, and raw IPs are rejected |
+| `WEBHOOK_ENDPOINT_EXISTS` | 409 | One endpoint per environment; PATCH to change the URL |
+| `WEBHOOK_ENDPOINT_NOT_FOUND` | 404 | No active endpoint in this environment |
+| `WEBHOOK_SECRET_UNAVAILABLE` | 503 | Secret encryption key not configured server-side |
+
+## Agent proxy — `/api/agent/*` (Bearer `agent_sk_…`)
+
+The x402 auto-payer's own API. Every blocked or failed attempt still writes
+a receipt.
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `INVALID_AGENT_KEY` | 401 | Key unknown, revoked, or rotated |
+| `AGENT_PAUSED` / `AGENT_FROZEN` / `AGENT_CANCELLED` | 423 | The owner's emergency ladder is engaged — payments refuse |
+| `CAP_EXCEEDED` | 403 | This payment would exceed the per-cycle cap. A `blocked` receipt is written |
+| `CAP_NOT_SET` | 403 | Owner hasn't set a cap yet |
+| `CAP_CYCLE_CHANGED` | 409 | Cap cycle rolled mid-request — retry |
+| `FLOAT_EMPTY` | 402 | No USDC at the signing address on the target network |
+| `FLOAT_CHECK_UNAVAILABLE` | 503 | Balance read failed |
+| `AUTHORIZATION_EXPIRED` | 409 | The x402 authorization window lapsed |
+| `SIGN_RATE_LIMITED` | 429 | Signing rate limit (honors `Retry-After`) |
+| `SIGN_REQUEST_IN_PROGRESS` / `SIGN_REQUEST_RECONCILING` / `SIGN_REQUEST_CONFLICT` | 409 | Durable-envelope concurrency control — retry per `Retry-After` |
+| `SIGNER_NOT_CONFIGURED` | 503 | Wallet-provider (Magic TEE) configuration incomplete |
+| `SIGNER_PROVIDER_REJECTED` / `SIGNER_PROVIDER_INVALID_RESPONSE` / `SIGNER_IDENTITY_MISMATCH` | 502 | The provider refused or answered out of contract — the message includes the provider stage |
+| `SIGNER_PROVIDER_UNAVAILABLE` / `SIGNER_PROVIDER_TIMEOUT` | 503 | Provider transiently down — retry |
+| `RECEIPT_NOT_FOUND` / `RECEIPT_NOT_PENDING` / `SETTLEMENT_RESULT_CONFLICT` | 404/409 | Result reporting against a missing or already-final receipt |
+
+## Everything else
+
+Dashboard, auth, faucet, and internal cron routes use the same envelope with
+their own codes (`SESSION_REQUIRED`, `ORIGIN_NOT_ALLOWED`,
+`FAUCET_RATE_LIMITED`, …). They are session-authenticated and not part of
+the public API surface.
 
 ---
 

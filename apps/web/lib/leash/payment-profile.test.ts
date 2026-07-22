@@ -7,8 +7,11 @@ import {
 } from "./payment-profile";
 
 describe("server-authoritative Agent payment profiles", () => {
-  it("keeps production on mainnet by default", () => {
-    expect(provisioningPaymentProfile({})).toBe("mainnet");
+  it("defaults provisioning to Testnet until the mainnet spike clears", () => {
+    expect(provisioningPaymentProfile({})).toBe("base_sepolia_integration");
+    expect(provisioningPaymentProfile({ TAB_AGENT_PROVISIONING_PROFILE: "mainnet" })).toBe(
+      "mainnet",
+    );
     expect(networksForPaymentProfile("mainnet")).toEqual([
       {
         asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",

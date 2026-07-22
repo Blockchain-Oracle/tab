@@ -60,12 +60,19 @@ export function FundsPanel({
         <p className={styles.eyebrow}>FLOAT TREASURY</p>
         <h1>Funds</h1>
         <p>Live balances for {agentName}. Reads never move money.</p>
-        {testFunds ? (
-          <p role="status">
-            <strong>{TEST_FUNDS_LABEL}</strong> · This agent lives on Base Sepolia. There is no
-            network toggle — a Mainnet agent is a separate provision.
-          </p>
-        ) : null}
+        <p role="status">
+          {testFunds ? (
+            <>
+              <strong>{TEST_FUNDS_LABEL}</strong> · This agent lives on Base Sepolia. There is no
+              network toggle — a Mainnet agent is a separate provision.
+            </>
+          ) : (
+            <>
+              <strong>Mainnet</strong> · This agent lives on Base + Arbitrum. Mainnet money
+              movement stays blocked until live verification (B-04).
+            </>
+          )}
+        </p>
       </header>
 
       <section aria-labelledby="funding-address-title">

@@ -54,7 +54,12 @@ export function provisioningPaymentProfile(
   environment: Readonly<Record<string, string | undefined>> = process.env,
 ) {
   const configured = environment.TAB_AGENT_PROVISIONING_PROFILE;
-  return configured === undefined ? MAINNET_PAYMENT_PROFILE : parsePaymentProfile(configured);
+  // Testnet is the default until the funded mainnet spike (B-04) clears —
+  // provisioning agents onto a network whose money movement is blocked was
+  // a trap. Mainnet becomes an explicit opt-in.
+  return configured === undefined
+    ? BASE_SEPOLIA_INTEGRATION_PROFILE
+    : parsePaymentProfile(configured);
 }
 
 export function networksForPaymentProfile(profile: PaymentProfile) {

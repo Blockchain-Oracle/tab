@@ -13,6 +13,7 @@ import styles from "./leash-chrome.module.css";
 type LeashShellProps = {
   children: ReactNode;
   email: string;
+  network: "mainnet" | "testnet";
   unreadCount: number | null;
 };
 
@@ -20,7 +21,7 @@ function isActive(pathname: string, href: string) {
   return href === "/agents" ? pathname === href : pathname.startsWith(href);
 }
 
-export function LeashShell({ children, email, unreadCount }: LeashShellProps) {
+export function LeashShell({ children, email, network, unreadCount }: LeashShellProps) {
   const pathname = usePathname();
 
   const groups = [
@@ -68,7 +69,7 @@ export function LeashShell({ children, email, unreadCount }: LeashShellProps) {
       brandHref="/agents"
       groups={groups}
       linkComponent={Link}
-      modeSlot={<AgentNetworkControl />}
+      modeSlot={<AgentNetworkControl network={network} />}
       navAriaLabel="Agent control plane"
       surfaceSlot={<WorkspaceSwitcher current="agents" />}
       surfaceTag="Agents"

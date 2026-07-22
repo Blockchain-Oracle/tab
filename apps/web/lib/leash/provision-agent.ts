@@ -70,7 +70,14 @@ function parseRequest(rawBody: string) {
   }
   if (!record(value)) throw new InvalidAgentProvisionRequestError();
   const keys = Object.keys(value);
-  if (keys.some((key) => key !== "agentId" && key !== "name") || !keys.includes("name")) {
+  if (
+    keys.some((key) => key !== "agentId" && key !== "name" && key !== "network") ||
+    !keys.includes("name")
+  ) {
+    throw new InvalidAgentProvisionRequestError();
+  }
+  const network = value.network ?? "testnet";
+  if (network !== "testnet" && network !== "mainnet") {
     throw new InvalidAgentProvisionRequestError();
   }
   const rawName = typeof value.name === "string" ? value.name : "";
@@ -82,7 +89,11 @@ function parseRequest(rawBody: string) {
   if (agentId !== undefined && (typeof agentId !== "string" || !UUID.test(agentId))) {
     throw new InvalidAgentProvisionRequestError();
   }
-  return { agentId, name } as { agentId?: string; name: string };
+  return { agentId, name, network } as {
+    agentId?: string;
+    name: string;
+    network: "mainnet" | "testnet";
+  };
 }
 
 function opaqueSubject() {
@@ -229,12 +240,16 @@ export async function provisionAgentWallet(options: {
   rawBody: string;
 }) {
   const request = parseRequest(options.rawBody);
+  // The caller's profile is the DEFAULT (testnet); mainnet is a per-agent
+  // opt-in from the provision request.
+  const paymentProfile: PaymentProfile =
+    request.network === "mainnet" ? "mainnet" : options.paymentProfile;
   const reserved = await reserveIdentity(options.database, {
     ...(request.agentId ? { agentId: request.agentId } : {}),
     name: request.name,
     now: options.now ?? new Date(),
     ownerId: options.ownerId,
-    paymentProfile: options.paymentProfile,
+    paymentProfile,
   });
   if (!reserved.signerSubject) throw new AgentProvisionConflictError();
   if (reserved.agentAddress) {

@@ -8,7 +8,7 @@ import { LeashShell } from "./leash-shell";
 describe("agent control-plane shell", () => {
   it("renders the live control destinations and an owner-scoped unread badge", () => {
     const html = renderToStaticMarkup(
-      <LeashShell email="owner@example.test" unreadCount={3}>
+      <LeashShell network="testnet" email="owner@example.test" unreadCount={3}>
         <main>Owner control plane</main>
       </LeashShell>,
     );
@@ -29,7 +29,7 @@ describe("agent control-plane shell", () => {
 
   it("does not invent a zero badge when unread data is unavailable", () => {
     const html = renderToStaticMarkup(
-      <LeashShell email="owner@example.test" unreadCount={null}>
+      <LeashShell network="testnet" email="owner@example.test" unreadCount={null}>
         <main>Owner control plane</main>
       </LeashShell>,
     );
@@ -40,7 +40,7 @@ describe("agent control-plane shell", () => {
 
   it("keeps the owner sign-out control and skip link in the shell", () => {
     const html = renderToStaticMarkup(
-      <LeashShell email="owner@example.test" unreadCount={3}>
+      <LeashShell network="testnet" email="owner@example.test" unreadCount={3}>
         <main>Owner control plane</main>
       </LeashShell>,
     );

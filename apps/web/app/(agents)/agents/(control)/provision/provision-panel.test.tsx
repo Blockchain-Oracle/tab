@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ProvisionPanel } from "./provision-panel";
 
-describe("Magic Express provisioning", () => {
+describe("Hosted signer provisioning", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it("shows naming and selected-agent context without inventing wallet state", () => {
@@ -21,15 +21,15 @@ describe("Magic Express provisioning", () => {
       />,
     );
 
-    expect(html).toContain("MAGIC EXPRESS");
-    expect(html).toContain("Provision agent");
+    expect(html).toContain("HOSTED SIGNER");
+    expect(html).toContain("Provision testnet agent");
     expect(html).not.toContain('disabled=""');
     expect(html).not.toContain("OIDC_ISSUER_NOT_CONFIGURED");
     expect(html).toContain('name="agentName"');
     expect(html).toContain('value="Operations agent"');
     expect(html).toContain("Agent address");
     expect(html).toContain("Not provisioned");
-    expect(html).toContain("No wallet has been returned by Magic yet");
+    expect(html).toContain("No wallet has been created yet");
     expect(html).not.toContain("$0.00");
     expect(html).not.toContain("0x0000");
     expect(html).toContain("<form");
@@ -85,7 +85,7 @@ describe("Magic Express provisioning", () => {
     });
 
     expect(fetchMock).toHaveBeenCalledWith("/api/agents/provision", {
-      body: JSON.stringify({ agentId: "agent-id", name: "Operations agent" }),
+      body: JSON.stringify({ agentId: "agent-id", name: "Operations agent", network: "testnet" }),
       headers: { "content-type": "application/json" },
       method: "POST",
     });

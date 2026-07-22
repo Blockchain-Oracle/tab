@@ -54,6 +54,16 @@ export function FundsPanel({
   const health = classifyFloatHealth(snapshot.floats, snapshot.agentAddress !== null);
   const terminal = agentStatus === "cancelled" || agentStatus === "nuked";
   const testFunds = snapshot.paymentProfile === BASE_SEPOLIA_INTEGRATION_PROFILE;
+  // Hide the grant card once the agent holds at least one grant's worth
+  // ($2) — dust balances still get the faucet.
+  const alreadyFunded =
+    snapshot.floats?.some((float) => {
+      try {
+        return float.balanceAtomic !== null && BigInt(float.balanceAtomic) >= BigInt("2000000");
+      } catch {
+        return false;
+      }
+    }) ?? false;
   return (
     <main className={styles.page}>
       <header className={styles.header}>
@@ -101,7 +111,7 @@ export function FundsPanel({
                   ? "Send Base Sepolia USDC to this address."
                   : "Send native USDC on Base or Arbitrum to this address."}
           </p>
-          {snapshot.agentAddress && !terminal && testFunds ? (
+          {snapshot.agentAddress && !terminal && testFunds && !alreadyFunded ? (
             <p>
               Need sandbox USDC or gas?{" "}
               <a href="https://faucet.circle.com/" rel="noreferrer" target="_blank">
@@ -114,7 +124,7 @@ export function FundsPanel({
         </article>
       </section>
 
-      {testFunds && snapshot.agentAddress && !terminal ? (
+      {testFunds && snapshot.agentAddress && !terminal && !alreadyFunded ? (
         <FaucetClaim agentAddress={snapshot.agentAddress} agentId={agentId} />
       ) : null}
 
@@ -150,8 +160,8 @@ export function FundsPanel({
             <p id="money-blocker">
               Cross-chain treasury moves are Mainnet features. They unlock after Tab's live money
               path passes its one-time real-funds verification — until then these buttons stay
-              honestly dead. Your Testnet agent doesn't need them: it spends its Base Sepolia
-              USDC directly.
+              honestly dead. Your Testnet agent doesn't need them: it spends its Base Sepolia USDC
+              directly.
             </p>
           </div>
           <span className={styles.blockedChip}>LOCKED · MAINNET</span>

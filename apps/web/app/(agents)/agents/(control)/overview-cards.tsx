@@ -1,6 +1,6 @@
 import Link from "next/link";
-
 import type { readOwnerLeashKey } from "../../../../lib/auth/leash-key";
+import { truncateHash } from "../../../../lib/format/truncate-hash";
 import { formatUsdAtomic } from "../../../../lib/leash/leash-format";
 import type { OwnerAgent } from "../../../../lib/leash/owner-agents";
 import { BASE_SEPOLIA_INTEGRATION_PROFILE } from "../../../../lib/leash/payment-profile";
@@ -128,23 +128,25 @@ export function OverviewCards({
       <article>
         <span className={styles.cardLabel}>SERVER SIGNER</span>
         <strong>
-          {terminal ? "Not provisioned" : (agent.agentAddress ?? "OIDC setup blocked")}
+          {terminal
+            ? "Not provisioned"
+            : agent.agentAddress
+              ? truncateHash(agent.agentAddress, 6, 6)
+              : "Not provisioned yet"}
         </strong>
         {agent.agentAddress ? (
-          <>
-            {terminal ? <p className={styles.mono}>{agent.agentAddress}</p> : null}
-            <EvidenceCopyButton label="Copy stored signer address" value={agent.agentAddress} />
-          </>
+          <EvidenceCopyButton label="Copy stored signer address" value={agent.agentAddress} />
         ) : null}
         <p>
           {terminal
             ? "Historical address retained as evidence; do not deposit."
             : agent.agentAddress
-              ? "Stored signer address · credential state shown above"
-              : "Provisioning requires the B-03 Magic Server Wallet (TEE) spike."}
+              ? "Hosted signer address · credential state shown above"
+              : "Provision the agent to create its hosted signing wallet."}
         </p>
         <small>
-          B-03 must pass before Tab can claim the key is held in a secure enclave (TEE).
+          Key held in Tab’s encrypted server custody — never in your agent’s context. Hardware
+          enclave (TEE) custody switches on with the Magic integration.
         </small>
       </article>
     </section>

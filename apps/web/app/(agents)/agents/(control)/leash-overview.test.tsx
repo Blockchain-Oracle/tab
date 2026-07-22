@@ -128,8 +128,8 @@ describe("Agent overview cap evidence", () => {
       'href="/agents/receipts/33333333-3333-4333-8333-333333333333?agentId=11111111-1111-4111-8111-111111111111"',
     );
     expect(html).toContain('href="/agents/payments?agentId=11111111-1111-4111-8111-111111111111"');
-    expect(html).toContain("OIDC setup blocked");
-    expect(html).toContain("B-03 must pass before Tab can claim");
+    expect(html).toContain("Not provisioned yet");
+    expect(html).toContain("Key held in Tab’s encrypted server custody");
     expect(html).toContain("Payments halted at the cap");
     expect(html).toContain("Halted — cap reached");
     expect(html).toContain("Raise cap");

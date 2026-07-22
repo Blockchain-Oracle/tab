@@ -213,3 +213,27 @@
     padding: 30px 20px;
   }
 }
+
+.networkChoice {
+  border: 1px solid var(--tab-line);
+  border-radius: 9px;
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 12px 14px;
+}
+
+.networkChoice legend {
+  color: var(--tab-text-muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 0 4px;
+  text-transform: uppercase;
+}
+
+.networkChoice label {
+  align-items: center;
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+}

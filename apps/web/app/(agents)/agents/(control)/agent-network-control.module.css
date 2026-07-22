@@ -44,3 +44,29 @@
   font-size: 11px;
   line-height: 1.45;
 }
+
+.other {
+  height: 26px;
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--tab-text-muted);
+  font-size: 11.5px;
+  opacity: 0.6;
+}
+
+.selectedLive {
+  height: 26px;
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: var(--tab-surface);
+  box-shadow: 0 1px 2px rgb(28 27 24 / 8%);
+  color: var(--tab-status-success);
+  font-size: 11.5px;
+  font-weight: 600;
+}

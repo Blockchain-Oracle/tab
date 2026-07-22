@@ -1,29 +1,22 @@
 import styles from "./agent-network-control.module.css";
 
 /**
- * Same NETWORK control the merchant sidebar has, agent truth: agents live
- * on one network. TESTNET is where every agent runs today; MAINNET is
- * visibly present and honestly locked until live verification (B-04) —
- * never a silent absence, never a fake switch.
+ * Same NETWORK vocabulary as the merchant sidebar, agent truth: an agent
+ * lives on ONE network, chosen at provisioning. This shows which one —
+ * no silent absence, no fake switch.
  */
-export function AgentNetworkControl() {
+export function AgentNetworkControl({ network }: { network: "mainnet" | "testnet" }) {
   return (
     <section aria-label="Agent network">
       <div className={styles.label}>NETWORK</div>
       <div className={styles.control}>
-        <span aria-pressed="true" className={styles.selected} role="button">
-          TESTNET
-        </span>
-        <span
-          aria-disabled="true"
-          className={styles.locked}
-          title="Mainnet agents unlock after live money-mover verification (B-04)."
-        >
-          MAINNET
-        </span>
+        <span className={network === "testnet" ? styles.selected : styles.other}>TESTNET</span>
+        <span className={network === "mainnet" ? styles.selectedLive : styles.other}>MAINNET</span>
       </div>
       <p className={styles.note}>
-        This agent lives on Base Sepolia. Mainnet unlocks after live verification.
+        {network === "testnet"
+          ? "This agent lives on Base Sepolia. Provision a Mainnet agent to run on real rails."
+          : "This agent lives on Base + Arbitrum with real USDC."}
       </p>
     </section>
   );

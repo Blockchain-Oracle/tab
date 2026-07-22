@@ -14,6 +14,7 @@ type ProvisionAgentContext = {
 
 export function ProvisionPanel({ agent }: { agent: ProvisionAgentContext | null }) {
   const [agentName, setAgentName] = useState(agent?.name ?? "");
+  const [network, setNetwork] = useState<"mainnet" | "testnet">("testnet");
   const [currentAgent, setCurrentAgent] = useState(agent);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
@@ -28,6 +29,7 @@ export function ProvisionPanel({ agent }: { agent: ProvisionAgentContext | null 
         body: JSON.stringify({
           ...(currentAgent ? { agentId: currentAgent.id } : {}),
           name: agentName.trim(),
+          network,
         }),
         headers: { "content-type": "application/json" },
         method: "POST",
@@ -81,7 +83,7 @@ export function ProvisionPanel({ agent }: { agent: ProvisionAgentContext | null 
           <span />
           <span />
         </div>
-        <span className={styles.blockedChip}>MAGIC EXPRESS</span>
+        <span className={styles.blockedChip}>HOSTED SIGNER</span>
         <h1 id="provision-title">Provision an agent wallet</h1>
         <p>
           Tab requests a TEE-backed Express Server Wallet for this agent and stores only the
@@ -99,7 +101,7 @@ export function ProvisionPanel({ agent }: { agent: ProvisionAgentContext | null 
           <small>
             {currentAgent?.agentAddress
               ? "Existing stored address — retained as evidence, not a newly provisioned wallet."
-              : "No wallet has been returned by Magic yet."}
+              : "No wallet has been created yet."}
           </small>
         </div>
         <div className={styles.truthNote} id="provision-status">
@@ -133,8 +135,31 @@ export function ProvisionPanel({ agent }: { agent: ProvisionAgentContext | null 
               value={agentName}
             />
           </label>
+          <fieldset className={styles.networkChoice}>
+            <legend>Network</legend>
+            <label>
+              <input
+                checked={network === "testnet"}
+                name="network"
+                onChange={() => setNetwork("testnet")}
+                type="radio"
+                value="testnet"
+              />
+              Testnet — Base Sepolia, free sandbox funds
+            </label>
+            <label>
+              <input
+                checked={network === "mainnet"}
+                name="network"
+                onChange={() => setNetwork("mainnet")}
+                type="radio"
+                value="mainnet"
+              />
+              Mainnet — Base + Arbitrum, real USDC you deposit yourself
+            </label>
+          </fieldset>
           <button aria-describedby="provision-status" disabled={pending} type="submit">
-            {pending ? "Provisioning…" : "Provision agent"}
+            {pending ? "Provisioning…" : `Provision ${network} agent`}
           </button>
         </form>
         <Link

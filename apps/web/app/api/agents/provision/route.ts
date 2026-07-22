@@ -3,13 +3,14 @@ import { NextResponse } from "next/server";
 
 import type { Database } from "../../../../lib/db/client";
 import { getServerDatabase } from "../../../../lib/db/server";
+import { createAgentSignerClient } from "../../../../lib/leash/agent-signer-backend";
 import {
   LEASH_RESPONSE_HEADERS,
   leashError,
   requireLeashMutationOrigin,
   requireOwnerRequest,
 } from "../../../../lib/leash/leash-http";
-import { createMagicExpressClient, MagicExpressError } from "../../../../lib/leash/magic-express";
+import { MagicExpressError } from "../../../../lib/leash/magic-express";
 import {
   type PaymentProfile,
   provisioningPaymentProfile,
@@ -209,7 +210,7 @@ export async function handleProvisionRequest(
 
 export function POST(request: NextRequest) {
   return handleProvisionRequest(request, {
-    client: createMagicExpressClient(),
+    client: createAgentSignerClient(getServerDatabase().db),
     database: getServerDatabase().db,
     paymentProfile: provisioningPaymentProfile(),
   });

@@ -11,8 +11,11 @@ description: Key custody, session separation, and the guarantees the product ref
   provisioning, and revoked by the emergency ladder.
 - **Buyer wallets** are created by email OTP through an embedded wallet
   provider. There is no seed phrase to lose and no extension to spoof.
-- **Agent signing keys** live in a hosted signer. They never appear in agent
-  context, tool output, environment dumps, or this documentation.
+- **Agent signing keys** live in a Tab-hosted signer — generated
+  server-side, encrypted at rest, and never present in agent context, tool
+  output, environment dumps, or this documentation. A Magic TEE (Server
+  Wallets) backend is implemented and switchable once account enablement
+  lands; the agent-facing guarantees are identical on both.
 
 ## Session separation
 

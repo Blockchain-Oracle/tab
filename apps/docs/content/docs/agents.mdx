@@ -6,8 +6,9 @@ description: Let an AI agent pay 402 Payment Required responses by itself — ca
 An agent on Tab pays [x402](https://x402.org) resources through an MCP proxy.
 The design has one rule: **the model never touches money directly.**
 
-- The agent's signing key lives in a hosted signer — never in the agent's
-  context, environment, or tool output.
+- The agent's signing key lives in a hosted signer (server-side, encrypted
+  at rest; Magic TEE backend switchable) — never in the agent's context,
+  environment, or tool output.
 - The spending cap is enforced in the proxy, outside the model. A
   prompt-injected agent cannot raise its own cap.
 - Every attempt — settled, failed, or blocked — writes a receipt with the

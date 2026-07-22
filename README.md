@@ -215,9 +215,10 @@ Under the hood:
 - **Particle Universal Accounts + EIP-7702** turn an email login into one
   chain-abstracted account — a single balance across chains, no gas or
   bridges surfaced to the user.
-- A **hosted signer** (Magic server wallets) holds the agent key and signs
-  EIP-3009 USDC authorizations; the key never appears in agent context, tool
-  output, or environment dumps.
+- A **hosted signer** holds the agent key and signs EIP-3009 USDC
+  authorizations; the key never appears in agent context, tool output, or
+  environment dumps. (Tab-hosted encrypted custody today; the Magic TEE
+  backend is implemented and flips on with account enablement.)
 - **Pre-positioned USDC floats** (Base primary + Arbitrum) settle in the hot
   path; Particle UA rebalances them asynchronously from the one treasury.
 - Merchant and agent-owner sessions are **separate principals** with separate

@@ -253,6 +253,13 @@
       "when": 1784704547904,
       "tag": "0035_widen_token_identity_testnet_rpc",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1784720169888,
+      "tag": "0036_tab_hosted_agent_signers",
+      "breakpoints": true
     }
   ]
 }

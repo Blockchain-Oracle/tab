@@ -182,3 +182,22 @@ export const capCycles = pgTable(
     ),
   ],
 );
+
+/** Tab-hosted agent signing keys — encrypted at rest, AAD-bound to the
+ * signer subject. Present only for agents provisioned on the tab backend;
+ * Magic TEE agents have no row here. */
+export const agentSigners = pgTable(
+  "agent_signers",
+  {
+    subject: text("subject").primaryKey(),
+    address: text("address").notNull(),
+    keyCiphertext: text("key_ciphertext").notNull(),
+    keyNonce: text("key_nonce").notNull(),
+    keyAuthTag: text("key_auth_tag").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    check("agent_signers_address_check", sql`${table.address} ~ '^0x[0-9a-fA-F]{40}$'`),
+    check("agent_signers_subject_check", sql`${table.subject} ~ '^agent_[A-Za-z0-9_-]{20,}$'`),
+  ],
+);

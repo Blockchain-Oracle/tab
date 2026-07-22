@@ -6,16 +6,16 @@ import { apiError, NO_STORE_HEADERS } from "../../../../lib/auth/api-key-http";
 import { authenticateLeashKey, InvalidLeashKeyError } from "../../../../lib/auth/leash-key";
 import { getServerDatabase } from "../../../../lib/db/server";
 import {
+  createAgentSignerClient,
+  isAgentSignerConfigured,
+} from "../../../../lib/leash/agent-signer-backend";
+import {
   readAuthorizationUsed,
   type readFinalizedAuthorizationUsed,
 } from "../../../../lib/leash/authorization-state";
 import { reconcileExpiredPendingReceipts } from "../../../../lib/leash/expired-payment-reconciliation-store";
 import { readFloatBalance } from "../../../../lib/leash/float-balance";
-import {
-  createMagicExpressClient,
-  isMagicExpressConfigured,
-  MagicExpressError,
-} from "../../../../lib/leash/magic-express";
+import { MagicExpressError } from "../../../../lib/leash/magic-express";
 import type { SignGateCode } from "../../../../lib/leash/sign-gate";
 import { InvalidSignRequestError } from "../../../../lib/leash/sign-request";
 import {
@@ -31,8 +31,8 @@ import {
 } from "../../../../lib/leash/signing-lease";
 import { readSignRequestBody, SignRequestBodyError } from "./sign-request-body";
 
-type MagicSigner = Pick<ReturnType<typeof createMagicExpressClient>, "signTypedData">;
-type SignerTypedData = Parameters<MagicSigner["signTypedData"]>[0]["typedData"];
+type AgentSigner = Pick<ReturnType<typeof createAgentSignerClient>, "signTypedData">;
+type SignerTypedData = Parameters<AgentSigner["signTypedData"]>[0]["typedData"];
 
 interface SignRouteDependencies {
   authorizationUsed?: typeof readAuthorizationUsed;
@@ -40,7 +40,7 @@ interface SignRouteDependencies {
   finalizedAuthorizationUsed?: typeof readFinalizedAuthorizationUsed;
   floatBalance?: typeof readFloatBalance;
   reserveRequest?: typeof reserveSignRequest;
-  signer?: MagicSigner;
+  signer?: AgentSigner;
   signerConfigured?: () => boolean;
 }
 
@@ -90,12 +90,12 @@ export function createSignPost(dependencies: SignRouteDependencies = {}) {
   const floatBalance = dependencies.floatBalance ?? readFloatBalance;
   const authorizationUsed = dependencies.authorizationUsed ?? readAuthorizationUsed;
   const reserveRequest = dependencies.reserveRequest ?? reserveSignRequest;
-  const signer = dependencies.signer ?? createMagicExpressClient();
-  const signerConfigured = dependencies.signerConfigured ?? isMagicExpressConfigured;
+  const signerConfigured = dependencies.signerConfigured ?? isAgentSignerConfigured;
 
   return async function POST(request: NextRequest) {
     try {
       const database = getServerDatabase().db;
+      const signer = dependencies.signer ?? createAgentSignerClient(database);
       const principal = await authenticateLeashKey(database, request.headers.get("authorization"));
       let body: string;
       try {
@@ -214,7 +214,7 @@ export function createSignPost(dependencies: SignRouteDependencies = {}) {
       }
       if (claim.kind === "denied") return signError(claim.code);
 
-      let signed: Awaited<ReturnType<MagicSigner["signTypedData"]>>;
+      let signed: Awaited<ReturnType<AgentSigner["signTypedData"]>>;
       try {
         signed = await signer.signTypedData({
           address: claim.address,

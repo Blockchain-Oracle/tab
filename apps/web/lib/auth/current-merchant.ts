@@ -30,6 +30,9 @@ export async function getCurrentMerchant() {
 
 export async function requireCurrentMerchant() {
   const merchant = await getCurrentMerchant();
-  if (!merchant) redirect("/login");
-  return merchant;
+  if (merchant) return merchant;
+  // A token with the wrong scope means a signed-in user landed on the other
+  // surface — re-scope silently instead of dumping them at a login screen.
+  const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
+  redirect(token ? "/api/workspace/enter?scope=merchant" : "/login");
 }

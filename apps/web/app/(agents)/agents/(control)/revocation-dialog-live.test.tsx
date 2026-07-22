@@ -174,6 +174,6 @@ describe("Agent revocation live evidence", () => {
       await read.promise;
       await Promise.resolve();
     });
-    expect(dialog.textContent).toContain("Sandbox funds — no real value");
+    expect(dialog.textContent).toContain("Testnet");
   });
 });

@@ -48,14 +48,14 @@ describe("receipt email", () => {
   it("labels sandbox payments honestly and never labels live ones", () => {
     const sandbox = receiptEmailHtml(input());
     expect(sandbox).toContain("SANDBOX");
-    expect(sandbox).toContain("no real value");
+    expect(sandbox).toContain("testnet payment");
     expect(sandbox).toContain("no on-chain transaction exists");
     expect(sandbox).toContain("$1.00");
     expect(sandbox).toContain("Museum Shop");
 
     const live = receiptEmailHtml(input({ mode: "live", networkName: "Arbitrum One" }));
     expect(live).not.toContain("SANDBOX");
-    expect(live).not.toContain("no real value");
+    expect(live).not.toContain("testnet payment");
   });
 
   it("links a real on-chain settlement and never invents one", () => {
@@ -79,7 +79,7 @@ describe("receipt email", () => {
     const text = receiptEmailText(input());
     expect(text).toContain("$1.00 paid to Museum Shop");
     expect(text).toContain("no on-chain transaction exists");
-    expect(text).toContain("sandbox");
+    expect(text).toContain("testnet");
   });
 
   it("formats amounts as currency without trusting bad input", () => {

@@ -58,11 +58,11 @@ describe("shared state primitives", () => {
     expect(within(network).getByText("Arbitrum One")).toBeTruthy();
     expect(within(network).getByText("eip155:42161")).toBeTruthy();
     expect(within(network).queryByText(/^Arbitrum$/)).toBeNull();
-    expect(within(network).queryByText("Sandbox funds — no real value")).toBeNull();
+    expect(within(network).queryByText("Testnet")).toBeNull();
 
     const testnet = screen.getByRole("group", { name: "Network: Base Sepolia" });
     expect(within(testnet).getByText("eip155:84532")).toBeTruthy();
-    expect(within(testnet).getByText("Sandbox funds — no real value")).toBeTruthy();
+    expect(within(testnet).getByText("Testnet")).toBeTruthy();
   });
 
   it("fails closed for an unknown network profile", () => {

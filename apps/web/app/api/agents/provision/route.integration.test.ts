@@ -87,7 +87,7 @@ describe("POST /api/agents/provision", () => {
         name: "Sepolia payer",
         paymentProfile: "base_sepolia_integration",
       },
-      label: "Sandbox funds — no real value",
+      label: "Testnet",
       testFunds: true,
     });
   });

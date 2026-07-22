@@ -48,7 +48,7 @@ export function CheckoutStory() {
             <div className="sheet-chip">
               <BaseMark size={16} />
               <span>Base Sepolia</span>
-              <span className="sheet-chip-note">Sandbox funds — no real value</span>
+              <span className="sheet-chip-note">Testnet</span>
             </div>
             <span aria-hidden="true" className="btn btn-primary sheet-pay">
               Pay $12.00

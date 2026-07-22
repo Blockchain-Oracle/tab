@@ -32,7 +32,7 @@ function receipt(status: ReceiptItem["status"], minute: number, idSuffix: number
       label: "Base Sepolia",
       target: false,
       testFunds: true,
-      testFundsLabel: "Sandbox funds — no real value",
+      testFundsLabel: "Testnet",
     },
     origin: null,
     payTo: "0x1111111111111111111111111111111111111111",
@@ -119,7 +119,7 @@ describe("mobile receipt feed view", () => {
     expect(html).toContain("Failed");
     expect(html).toContain("Pending");
     expect(html).toContain("Settled");
-    expect(html).toContain("Sandbox funds — no real value");
+    expect(html).toContain("Testnet");
     expect(html).toContain(`/mobile/receipts/${receipts[1]?.id}?agentId=${agentId}`);
     expect(html.indexOf("resource-4.example.test")).toBeLessThan(
       html.indexOf("resource-1.example.test"),

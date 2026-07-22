@@ -99,7 +99,7 @@ describe("receipt API view", () => {
         label: "Base Sepolia",
         target: false,
         testFunds: true,
-        testFundsLabel: "Sandbox funds — no real value",
+        testFundsLabel: "Testnet",
       },
     });
   });

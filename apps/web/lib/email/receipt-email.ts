@@ -71,7 +71,7 @@ export function receiptEmailHtml(input: ReceiptEmailInput) {
       : "";
   const sandboxNote =
     input.mode === "sandbox"
-      ? `<tr><td style="color:#8f6205;font-family:${SANS};font-size:12px;padding-top:14px">Processed on the ${input.networkName ?? "test"} network — sandbox payments carry no real value.</td></tr>`
+      ? `<tr><td style="color:#8f6205;font-family:${SANS};font-size:12px;padding-top:14px">Processed on the ${input.networkName ?? "test"} network — this is a testnet payment.</td></tr>`
       : "";
   const settled = new Date(input.settledAtIso).toUTCString().replace(" GMT", " UTC");
   return `<!doctype html><html lang="en"><body style="background:#faf8f3;margin:0;padding:32px 16px">
@@ -118,7 +118,7 @@ export function receiptEmailText(input: ReceiptEmailInput) {
     lines.push("Simulated settlement on the test network — no on-chain transaction exists.");
   }
   if (input.mode === "sandbox") {
-    lines.push("", "Sandbox payments carry no real value.");
+    lines.push("", "This is a testnet payment.");
   }
   lines.push("", "Tab · https://runtab.xyz");
   return lines.join("\n");

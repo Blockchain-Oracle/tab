@@ -54,7 +54,7 @@ const result: NotificationResultView = {
       metadata: {
         network: "eip155:84532",
         testFunds: true,
-        testFundsLabel: "Sandbox funds — no real value",
+        testFundsLabel: "Testnet",
       },
       readAt: null,
       receiptId: "88888888-8888-4888-8888-888888888888",
@@ -83,7 +83,7 @@ describe("Agent notification center", () => {
     expect(html).toContain("Mark all read");
     expect(html).toContain("Load older");
     expect(html).toContain("Active &amp; resolved");
-    expect(html).toContain("Sandbox funds — no real value");
+    expect(html).toContain("Testnet");
   });
 
   it("uses an instructive empty state without seeded alerts", () => {

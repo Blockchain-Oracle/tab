@@ -139,7 +139,7 @@ export function FaucetClaim({
         </ul>
       ) : null}
 
-      <p className={styles.foot}>{`${"Sandbox funds — no real value"} · Base Sepolia only`}</p>
+      <p className={styles.foot}>Testnet · Base Sepolia only</p>
     </section>
   );
 }

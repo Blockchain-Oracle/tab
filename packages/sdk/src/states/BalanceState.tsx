@@ -41,7 +41,7 @@ export function BalanceState({ amount, balance, merchantName, mode, onConfirm }:
         }}
       >
         <BaseGlyph size={13} />
-        {mode === "test" ? "Sandbox funds — no real value" : "Live funds"}
+        {mode === "test" ? "Testnet" : "Live funds"}
       </div>
       <button onClick={onConfirm} style={{ ...primaryButton(tokens), marginTop: 16 }} type="button">
         {buyerFormat.pay(`$${amount}`)}

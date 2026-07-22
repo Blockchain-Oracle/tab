@@ -81,7 +81,7 @@ export function receiptView(receipt: ReceiptViewSource) {
       label: network.label,
       target,
       testFunds: network.testFunds,
-      ...(network.testFunds ? { testFundsLabel: "Sandbox funds — no real value" } : {}),
+      ...(network.testFunds ? { testFundsLabel: "Testnet" } : {}),
     },
     origin: originView(receipt.origin),
     payTo: receipt.payTo,

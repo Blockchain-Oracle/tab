@@ -25,4 +25,4 @@ export const GRANT_GAS_WEI = 1_000_000_000_000_000n;
 export const SKIP_USDC_AT_ATOMIC = 1_000_000n;
 export const SKIP_GAS_AT_WEI = 500_000_000_000_000n;
 
-export const TEST_FUNDS_LABEL = "Test funds — not real money";
+export const TEST_FUNDS_LABEL = "Testnet";

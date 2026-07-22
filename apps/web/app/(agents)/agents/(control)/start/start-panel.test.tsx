@@ -38,7 +38,7 @@ describe("agent get-started wizard", () => {
       />,
     );
     expect(html).toContain("Claim test funds");
-    expect(html).toContain("Sandbox funds — no real value");
+    expect(html).toContain("Testnet");
     expect(html).not.toContain("Mark done");
   });
 

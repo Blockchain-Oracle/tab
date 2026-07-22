@@ -70,7 +70,7 @@ export function DashboardShell({
       bannerSlot={
         mode === "test" ? (
           <div className={styles.testBanner} role="status">
-            Testnet — sandbox funds, no real value. Mainnet stays locked until go-live.
+            This is a testnet. Mainnet stays locked until go-live.
           </div>
         ) : null
       }

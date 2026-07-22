@@ -51,7 +51,7 @@ export const integrationLiveRead = {
   paymentProfile: "base_sepolia_integration",
   readAt: "2026-07-17T10:30:00.000Z",
   testFunds: true,
-  testFundsLabel: "Sandbox funds — no real value",
+  testFundsLabel: "Testnet",
 };
 
 export type RevocationHarness = { container: HTMLDivElement; root: Root };

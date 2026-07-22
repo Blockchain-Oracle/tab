@@ -139,6 +139,12 @@ export function startMagicEmailOtp(
 
 export type MagicNetwork = { chainId: number; rpcUrl: string };
 
+/** Test-mode network config: auth and signing share this one instance. */
+export const BASE_SEPOLIA_MAGIC_NETWORK: MagicNetwork = {
+  chainId: 84532,
+  rpcUrl: "https://sepolia.base.org",
+};
+
 const cachedClients = new Map<string, MagicBrowserClientPort>();
 
 /**

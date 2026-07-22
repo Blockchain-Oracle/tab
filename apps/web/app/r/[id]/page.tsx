@@ -37,7 +37,7 @@ export default async function SharePage({ params }: SharePageProps) {
     <main className={styles.canvas}>
       <article aria-label="Settled payment receipt" className={styles.receipt}>
         {receipt.testFunds ? (
-          <p className={styles.testBanner}>Sandbox funds — no real value · {receipt.networkName}</p>
+          <p className={styles.testBanner}>Testnet · {receipt.networkName}</p>
         ) : null}
 
         <header className={styles.head}>

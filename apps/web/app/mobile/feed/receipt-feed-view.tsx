@@ -12,7 +12,7 @@ const statusCopy: Record<ReceiptItem["status"], string> = {
   settled: "Settled",
 };
 
-const TEST_FUNDS_LABEL = "Sandbox funds — no real value";
+const TEST_FUNDS_LABEL = "Testnet";
 
 function formatTime(value: string) {
   return new Intl.DateTimeFormat("en-US", {

@@ -37,7 +37,7 @@ describe("Agent overview notifications", () => {
             metadata: {
               network: "eip155:84532",
               testFunds: true,
-              testFundsLabel: "Sandbox funds — no real value",
+              testFundsLabel: "Testnet",
             },
             resourceHost: null,
             tier: "2",
@@ -48,7 +48,7 @@ describe("Agent overview notifications", () => {
       />,
     );
 
-    expect(html).toContain("Sandbox funds — no real value");
+    expect(html).toContain("Testnet");
     expect(html).not.toContain("Cap policy event");
   });
 });

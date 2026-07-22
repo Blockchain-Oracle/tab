@@ -86,7 +86,7 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
                   fontSize: 26,
                 }}
               >
-                {receipt.testFunds ? "Sandbox funds — no real value" : "Verified on-chain"}
+                {receipt.testFunds ? "Testnet" : "Verified on-chain"}
               </div>
             </div>
           </div>

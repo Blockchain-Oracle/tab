@@ -103,14 +103,14 @@ describe("mobile receipt detail", () => {
             label: "Base Sepolia",
             target: false,
             testFunds: true,
-            testFundsLabel: "Sandbox funds — no real value",
+            testFundsLabel: "Testnet",
           },
         }}
       />,
     );
 
     expect(html).toContain("Base Sepolia");
-    expect(html).toContain("Sandbox funds — no real value");
+    expect(html).toContain("Testnet");
     expect(html).toContain("Awaiting settlement evidence");
   });
 

@@ -176,7 +176,7 @@ export async function handleProvisionRequest(
           name: agent.name,
           paymentProfile: agent.paymentProfile,
         },
-        ...(testFunds ? { label: "Sandbox funds — no real value" } : {}),
+        ...(testFunds ? { label: "Testnet" } : {}),
         testFunds,
       },
       { headers: LEASH_RESPONSE_HEADERS },

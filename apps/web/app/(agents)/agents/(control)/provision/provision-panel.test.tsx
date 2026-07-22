@@ -60,7 +60,7 @@ describe("Magic Express provisioning", () => {
             name: "Operations agent",
             paymentProfile: "base_sepolia_integration",
           },
-          label: "Sandbox funds — no real value",
+          label: "Testnet",
           testFunds: true,
         }),
         { headers: { "content-type": "application/json" }, status: 200 },
@@ -90,7 +90,7 @@ describe("Magic Express provisioning", () => {
       method: "POST",
     });
     expect(container.textContent).toContain(address);
-    expect(container.textContent).toContain("Sandbox funds — no real value");
+    expect(container.textContent).toContain("Testnet");
     expect(container.textContent).toContain("Wallet provisioned");
     await act(async () => root.unmount());
     container.remove();

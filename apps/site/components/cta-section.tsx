@@ -18,9 +18,7 @@ export function CtaSection() {
             Set up an agent
           </a>
         </Reveal>
-        <p className="cta-note mono">
-          Sandbox funds — no real value · Base Sepolia sandbox included
-        </p>
+        <p className="cta-note mono">Testnet included — free sandbox funds on Base Sepolia</p>
       </div>
     </section>
   );

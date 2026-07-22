@@ -148,7 +148,7 @@ describe("GET /api/agents/float-balances with real PostgreSQL ownership", () => 
       health: "healthy",
       paymentProfile: "base_sepolia_integration",
       testFunds: true,
-      testFundsLabel: "Sandbox funds — no real value",
+      testFundsLabel: "Testnet",
     });
   });
 

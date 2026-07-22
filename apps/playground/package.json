@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start --port 3003",
     "typecheck": "tsc --noEmit",
-    "lint": "biome check .",
-    "test": "vitest run --passWithNoTests"
+    "lint": "biome check ."
   },
   "dependencies": {
     "@runtab/sdk": "workspace:^",

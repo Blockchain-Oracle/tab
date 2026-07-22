@@ -55,7 +55,7 @@ export function MobileReceiptDetail({ receipt }: { receipt: MobileReceipt }) {
   const evidence = validTransactionEvidence(receipt);
   const resource = receipt.resourceUrl ?? receipt.resourceHost;
   const testFundsLabel = receipt.network.testFunds
-    ? (receipt.network.testFundsLabel ?? "Sandbox funds — no real value")
+    ? (receipt.network.testFundsLabel ?? "Testnet")
     : null;
 
   return (

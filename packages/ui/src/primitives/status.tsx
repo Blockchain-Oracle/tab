@@ -61,9 +61,7 @@ export function NetworkIdentity({ profileId, ...elementProps }: NetworkIdentityP
       <NetworkMark assetId={profile.officialAssetId} size={18} />
       <span data-tab-network-name="">{profile.displayName}</span>
       <code data-tab-network-id="">{profile.caip2}</code>
-      {profile.testFunds ? (
-        <StatusBadge tone="test">Sandbox funds — no real value</StatusBadge>
-      ) : null}
+      {profile.testFunds ? <StatusBadge tone="test">Testnet</StatusBadge> : null}
     </fieldset>
   );
 }

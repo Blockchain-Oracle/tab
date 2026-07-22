@@ -1,12 +1,12 @@
 import { createWalletClient, custom, erc20Abi, http, parseUnits, publicActions } from "viem";
 import { baseSepolia } from "viem/chains";
 
-import { getMagicClient } from "./magic";
+import { BASE_SEPOLIA_MAGIC_NETWORK, getMagicClient } from "./magic";
 import { TEST_TOKEN } from "./token-identity";
 
 /** Public Base Sepolia RPC for receipt reads; the transfer itself is signed
  * and broadcast by the buyer's Magic embedded wallet. */
-const DEFAULT_BASE_SEPOLIA_RPC = "https://sepolia.base.org";
+const DEFAULT_BASE_SEPOLIA_RPC = BASE_SEPOLIA_MAGIC_NETWORK.rpcUrl;
 
 export class TestPaymentExecutionError extends Error {
   constructor(message: string) {
@@ -32,10 +32,9 @@ export async function executeTestPayment(input: TestPaymentInput): Promise<{
   tokenChanges: object;
   transactionId: string;
 }> {
-  const magic = await getMagicClient(input.publishableKey, {
-    chainId: baseSepolia.id,
-    rpcUrl: DEFAULT_BASE_SEPOLIA_RPC,
-  });
+  // Same (key, network) cache entry as the auth client — one iframe, one
+  // session. A second instance would be logged out and hang on signing.
+  const magic = await getMagicClient(input.publishableKey, BASE_SEPOLIA_MAGIC_NETWORK);
 
   const wallet = createWalletClient({
     account: input.ownerAddress as `0x${string}`,

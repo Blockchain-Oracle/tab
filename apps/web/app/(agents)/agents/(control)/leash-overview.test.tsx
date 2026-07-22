@@ -268,7 +268,7 @@ describe("Agent overview cap evidence", () => {
       />,
     );
 
-    expect(html).toContain("Sandbox funds — no real value");
+    expect(html).toContain("Testnet");
     expect(html).toContain("Base Sepolia test funds");
     expect(html).toContain("Live Base Sepolia test-fund read returned zero.");
     expect(html).not.toContain("Live Base and Arbitrum reads both returned zero.");

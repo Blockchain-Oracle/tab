@@ -230,7 +230,7 @@ describe("Agent funds surface", () => {
       />,
     );
 
-    expect(html).toContain("Sandbox funds — no real value");
+    expect(html).toContain("Testnet");
     expect(html).toContain("Claim test funds");
     expect(html).toContain("Base Sepolia");
     expect(html).toContain("eip155:84532");

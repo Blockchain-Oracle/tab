@@ -47,7 +47,7 @@ export const BUYER_COPY = {
     claiming: "Sending your test funds…",
     cta: "Get free test funds",
     failed: "Test funds were not granted.",
-    label: "Sandbox funds — no real value",
+    label: "Testnet",
   },
   loading: "Loading payment…",
   merchant: "Merchant",
@@ -59,7 +59,7 @@ export const BUYER_COPY = {
     close: "Close — check receipts later",
     title: "Taking longer than expected",
   },
-  testMode: "Testnet — no real money moves",
+  testMode: "Testnet",
 } as const;
 
 export const buyerFormat = {

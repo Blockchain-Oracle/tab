@@ -46,7 +46,7 @@ async function provision(origin: string, token: string, name: string) {
   };
   expect(response.status, body.error?.code).toBe(200);
   expect(body.testFunds).toBe(true);
-  expect(body.label).toBe("Sandbox funds — no real value");
+  expect(body.label).toBe("Testnet");
   expect(body.agent?.paymentProfile).toBe("base_sepolia_integration");
   if (!body.agent?.address || !body.agent.id) {
     throw new Error("The deployed provision route returned incomplete agent evidence");

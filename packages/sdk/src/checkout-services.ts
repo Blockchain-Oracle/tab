@@ -13,6 +13,7 @@ import {
 } from "./checkout-api";
 import { executePayment, type PaymentSigner, type UniversalAccountPort } from "./execute";
 import {
+  BASE_SEPOLIA_MAGIC_NETWORK,
   type BuyerWalletSession,
   createMagicPaymentSigner,
   getMagicClient,
@@ -95,6 +96,18 @@ export type CheckoutServices = {
   ): Promise<BuyerAuthAttempt>;
 };
 
+/**
+ * Test mode runs the ENTIRE checkout on a Base Sepolia-configured Magic
+ * client: the login session and the transfer signer must share one iframe,
+ * or signing hangs against a logged-out instance.
+ */
+function magicClientForMode(context: CheckoutContext) {
+  return getMagicClient(
+    context.clientConfig.magicPublishableKey,
+    context.mode === "test" ? BASE_SEPOLIA_MAGIC_NETWORK : undefined,
+  );
+}
+
 async function withSigner(
   session: BuyerWalletSession,
   client: Awaited<ReturnType<typeof getMagicClient>>,
@@ -163,12 +176,12 @@ export const defaultCheckoutServices: CheckoutServices = {
   openPayment,
   reportPayment,
   async restoreBuyer(context) {
-    const client = await getMagicClient(context.clientConfig.magicPublishableKey);
+    const client = await magicClientForMode(context);
     const session = await restoreMagicSession(client);
     return session ? withSigner(session, client) : undefined;
   },
   async startBuyerAuth(context, email, callbacks) {
-    const client = await getMagicClient(context.clientConfig.magicPublishableKey);
+    const client = await magicClientForMode(context);
     const attempt = startMagicEmailOtp(client, email, callbacks);
     return {
       cancel: attempt.cancel,

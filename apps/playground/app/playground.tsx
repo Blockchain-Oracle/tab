@@ -147,7 +147,9 @@ export function Playground() {
               </p>
             ) : null}
           </div>
-          <p className="honesty">Sandbox funds — no real value. Every settlement is on-chain.</p>
+          <p className="honesty">
+            This is a testnet — every settlement is a real on-chain transaction.
+          </p>
         </div>
 
         <div className="code">

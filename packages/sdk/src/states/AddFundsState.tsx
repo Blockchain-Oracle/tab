@@ -20,9 +20,7 @@ export function AddFundsState({ address, mode, onCancel, onRecheck }: Props) {
     <div style={center}>
       <div style={{ fontSize: 17, fontWeight: 620 }}>{BUYER_COPY.addFunds.title}</div>
       <div style={{ color: tokens.muted, fontSize: 13, lineHeight: 1.5, marginTop: 7 }}>
-        {mode === "test"
-          ? "Send test USDC to this address. Sandbox funds — no real value."
-          : BUYER_COPY.addFunds.body}
+        {mode === "test" ? "Send test USDC to this address. Testnet." : BUYER_COPY.addFunds.body}
       </div>
       <div
         style={{

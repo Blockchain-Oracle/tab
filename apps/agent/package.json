@@ -1,6 +1,6 @@
 {
   "name": "@runtab/mcp",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
@@ -44,7 +44,7 @@
     "typescript": "^5.8",
     "vitest": "^4.1.10"
   },
-  "description": "Tab MCP proxy: lets an AI agent pay x402 (HTTP 402) charges in USDC under a server-enforced spending cap — the agent never holds a key.",
+  "description": "Tab MCP proxy: lets an AI agent pay x402 (HTTP 402) charges in USDC under a server-enforced spending cap \u2014 the agent never holds a key.",
   "license": "MIT",
   "repository": {
     "type": "git",

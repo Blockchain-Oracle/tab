@@ -28,6 +28,7 @@ export function ConnectAgent({
 }) {
   const connected = agent.connectionCount > 0;
   const [currentKey, setCurrentKey] = useState(initialKey);
+  const [agentSecret, setAgentSecret] = useState<string>();
 
   return (
     <main className={styles.page}>
@@ -63,9 +64,18 @@ export function ConnectAgent({
         </div>
       </section>
 
-      <KeyLifecycle agentId={agent.id} initialKey={initialKey} onKeyChange={setCurrentKey} />
+      <KeyLifecycle
+        agentId={agent.id}
+        initialKey={initialKey}
+        onKeyChange={setCurrentKey}
+        onSecret={setAgentSecret}
+      />
 
-      <ConnectConfigPanel apiBaseUrl={apiBaseUrl} configurationIssue={configurationIssue} />
+      <ConnectConfigPanel
+        agentKey={agentSecret ?? null}
+        apiBaseUrl={apiBaseUrl}
+        configurationIssue={configurationIssue}
+      />
 
       <section className={styles.connectionCard}>
         <span className={styles.eyebrow}>REAL CONNECTION STATE</span>

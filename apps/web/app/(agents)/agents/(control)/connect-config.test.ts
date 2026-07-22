@@ -11,7 +11,10 @@ const realKey = `agent_sk_${"a".repeat(43)}`;
 
 function parseRenderedConfiguration(configuration: ReturnType<typeof buildTabMcpConfiguration>) {
   const rendered = configuration.mcpServers.tab;
-  return parseLeashCliConfig(rendered.args ?? [], {
+  // npx consumes ["-y", "@runtab/mcp"]; the CLI parser sees what follows.
+  expect(rendered.command).toBe("npx");
+  expect(rendered.args.slice(0, 2)).toEqual(["-y", "@runtab/mcp"]);
+  return parseLeashCliConfig(rendered.args.slice(2), {
     ...rendered.env,
     TAB_AGENT_KEY:
       rendered.env.TAB_AGENT_KEY === LEASH_KEY_PLACEHOLDER ? realKey : rendered.env.TAB_AGENT_KEY,
@@ -23,10 +26,12 @@ describe("Connect MCP configuration", () => {
     const configuration = buildTabMcpConfiguration("https://tab.example.test");
 
     expect(configuration.mcpServers.tab).toEqual({
-      command: "tab-mcp",
+      args: ["-y", "@runtab/mcp"],
+      command: "npx",
       env: {
-        TAB_API_BASE_URL: "https://tab.example.test",
         TAB_AGENT_KEY: LEASH_KEY_PLACEHOLDER,
+        // Self-hosted origin differs from the default, so it is spelled out.
+        TAB_API_BASE_URL: "https://tab.example.test",
       },
     });
     expect(parseRenderedConfiguration(configuration)).toEqual({
@@ -44,6 +49,8 @@ describe("Connect MCP configuration", () => {
     );
 
     expect(configuration.mcpServers.tab.args).toEqual([
+      "-y",
+      "@runtab/mcp",
       "--upstream",
       "https://existing-mcp.example.test/rpc",
     ]);

@@ -1,14 +1,17 @@
 export const LEASH_KEY_PLACEHOLDER = "<YOUR_ONE_TIME_KEY>";
 export const LEASH_UPSTREAM_PLACEHOLDER = "<ABSOLUTE_STREAMABLE_HTTP_MCP_URL>";
 
+/** The CLI defaults to the hosted control plane; env only needs the key. */
+const HOSTED_API_BASE_URL = "https://app.runtab.xyz";
+
 type TabMcpConfiguration = {
   mcpServers: {
     tab: {
-      args?: ["--upstream", string];
-      command: "tab-mcp";
+      args: string[];
+      command: "npx";
       env: {
-        TAB_API_BASE_URL: string;
         TAB_AGENT_KEY: string;
+        TAB_API_BASE_URL?: string;
       };
     };
   };
@@ -17,15 +20,17 @@ type TabMcpConfiguration = {
 export function buildTabMcpConfiguration(
   apiBaseUrl: string,
   upstreamUrl?: string,
+  agentKey: string = LEASH_KEY_PLACEHOLDER,
 ): TabMcpConfiguration {
   return {
     mcpServers: {
       tab: {
-        ...(upstreamUrl ? { args: ["--upstream", upstreamUrl] as ["--upstream", string] } : {}),
-        command: "tab-mcp",
+        args: ["-y", "@runtab/mcp", ...(upstreamUrl ? ["--upstream", upstreamUrl] : [])],
+        command: "npx",
         env: {
-          TAB_API_BASE_URL: apiBaseUrl,
-          TAB_AGENT_KEY: LEASH_KEY_PLACEHOLDER,
+          TAB_AGENT_KEY: agentKey,
+          // Only self-hosted deployments need to say where Tab lives.
+          ...(apiBaseUrl === HOSTED_API_BASE_URL ? {} : { TAB_API_BASE_URL: apiBaseUrl }),
         },
       },
     },

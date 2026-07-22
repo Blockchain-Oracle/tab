@@ -55,8 +55,9 @@ describe("agent connection setup", () => {
     );
 
     expect(html).toContain("Generate agent key");
-    expect(html).toContain("Install the proxy");
-    expect(html).toContain("npm install -g @runtab/mcp");
+    expect(html).toContain("One command, no install");
+    expect(html).toContain("claude mcp add tab");
+    expect(html).toContain("Add to Cursor");
     expect(html).toContain("TAB_API_BASE_URL");
     expect(html).toContain("Standalone paid_fetch");
     expect(html).toContain("Proxy an existing MCP server");

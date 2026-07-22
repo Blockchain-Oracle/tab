@@ -27,9 +27,13 @@ function httpUrl(value: string, field: string, allowDevelopmentLoopback: boolean
   }
 }
 
-function apiBaseUrl(value: string | undefined) {
-  if (!value || value.trim() !== value) {
-    throw new CliConfigurationError("TAB_API_BASE_URL is required.");
+/** The hosted control plane — set TAB_API_BASE_URL only to self-host. */
+const DEFAULT_API_BASE_URL = "https://app.runtab.xyz";
+
+function apiBaseUrl(rawValue: string | undefined) {
+  const value = rawValue === undefined || rawValue === "" ? DEFAULT_API_BASE_URL : rawValue;
+  if (value.trim() !== value) {
+    throw new CliConfigurationError("TAB_API_BASE_URL must not have surrounding whitespace.");
   }
   try {
     return validateControlPlaneOrigin(value);

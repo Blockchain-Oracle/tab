@@ -38,23 +38,30 @@ grant automatically when funding is the next step.
 
 ### Connect your MCP client
 
-Install the proxy, then add it to your MCP client config:
+One command per client — no install, no base URL (the hosted Tab is the
+CLI default; set `TAB_API_BASE_URL` only when self-hosting):
 
 ```bash
-npm install -g @runtab/mcp   # provides the tab-mcp command
+# Claude Code
+claude mcp add tab -e TAB_AGENT_KEY=<YOUR_ONE_TIME_KEY> -- npx -y @runtab/mcp
+
+# Codex CLI
+codex mcp add tab --env TAB_AGENT_KEY=<YOUR_ONE_TIME_KEY> -- npx -y @runtab/mcp
+
+# Gemini CLI
+gemini mcp add tab -e TAB_AGENT_KEY=<YOUR_ONE_TIME_KEY> npx -y @runtab/mcp
 ```
 
-Add the proxy to your MCP client config:
+Cursor: the connect page has an **Add to Cursor** one-click button. Any
+other MCP client takes the JSON form:
 
 ```json
 {
   "mcpServers": {
     "tab": {
-      "command": "tab-mcp",
-      "env": {
-        "TAB_API_BASE_URL": "https://app.runtab.xyz",
-        "TAB_AGENT_KEY": "<YOUR_ONE_TIME_KEY>"
-      }
+      "command": "npx",
+      "args": ["-y", "@runtab/mcp"],
+      "env": { "TAB_AGENT_KEY": "<YOUR_ONE_TIME_KEY>" }
     }
   }
 }

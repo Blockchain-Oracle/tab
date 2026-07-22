@@ -9,16 +9,17 @@ At [app.runtab.xyz/agents/start](https://app.runtab.xyz/agents/start): provision
 the hosted signing wallet, set a per-cycle cap, fund it with sandbox USDC, and
 copy the one-time `agent_sk_…` key.
 
-## 2. Install the proxy
+## 2. Point your MCP client at Tab — one command
 
 ```bash
-npm install -g @runtab/mcp   # provides the tab-mcp command
+claude mcp add tab -e TAB_AGENT_KEY=<YOUR_ONE_TIME_KEY> -- npx -y @runtab/mcp
 ```
 
-## 3. Point your MCP client at Tab
-
-Copy `mcp.json` into your client's MCP config (for Claude Code:
-`.mcp.json` in your project root) and replace `<YOUR_ONE_TIME_KEY>`.
+(Codex: `codex mcp add tab --env … -- npx -y @runtab/mcp` · Gemini:
+`gemini mcp add tab -e … npx -y @runtab/mcp` · Cursor: one-click from the
+connect page.) Or copy `mcp.json` into any client's MCP config and replace
+`<YOUR_ONE_TIME_KEY>`. No install, no base URL — the hosted Tab is the
+CLI default.
 
 With no arguments `tab-mcp` exposes one `paid_fetch` tool for direct HTTP
 requests. To put an EXISTING MCP server behind the payment rail, add:

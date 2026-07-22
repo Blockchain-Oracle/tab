@@ -1,0 +1,86 @@
+.cards {
+  display: grid;
+  gap: 10px;
+}
+
+.card {
+  align-items: center;
+  background: var(--tab-surface);
+  border: 1px solid var(--tab-line);
+  border-radius: 10px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 132px minmax(0, 1fr);
+  padding: 10px 14px;
+}
+
+.client {
+  align-items: center;
+  display: inline-flex;
+  font-size: 13px;
+  gap: 8px;
+}
+
+.logo {
+  opacity: 0.85;
+}
+
+:global([data-tab-theme="dark"]) .logo {
+  filter: invert(1);
+}
+
+.commandButton {
+  align-items: center;
+  background: var(--tab-canvas);
+  border: 1px solid var(--tab-line);
+  border-radius: 8px;
+  color: var(--tab-text);
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 7px 10px;
+  text-align: left;
+}
+
+.commandButton code {
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copyBadge {
+  border: 1px solid var(--tab-line);
+  border-radius: 6px;
+  color: var(--tab-text-muted);
+  flex-shrink: 0;
+  font-size: 10.5px;
+  padding: 2px 8px;
+}
+
+.commandButton:hover .copyBadge {
+  color: var(--tab-text);
+}
+
+.deeplink {
+  border: 1px solid var(--tab-line);
+  border-radius: 8px;
+  color: var(--tab-text);
+  display: inline-block;
+  font-size: 12.5px;
+  justify-self: start;
+  padding: 7px 14px;
+  text-decoration: none;
+}
+
+.deeplink:hover {
+  border-color: var(--tab-text);
+}
+
+.keyNote {
+  color: var(--tab-text-muted);
+  font-size: 12px;
+  margin: 2px 0 0;
+}

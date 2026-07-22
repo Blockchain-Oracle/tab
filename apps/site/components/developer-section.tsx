@@ -34,19 +34,16 @@ const AGENT_LINES: Token[][] = [
   [{ t: "{" }],
   [{ t: '  "mcpServers"', c: "tok-prop" }, { t: ": {" }],
   [{ t: '    "tab"', c: "tok-prop" }, { t: ": {" }],
+  [{ t: '      "command"', c: "tok-prop" }, { t: ": " }, { t: '"npx"', c: "tok-str" }, { t: "," }],
   [
-    { t: '      "command"', c: "tok-prop" },
-    { t: ": " },
-    { t: '"tab-mcp"', c: "tok-str" },
-    { t: "," },
+    { t: '      "args"', c: "tok-prop" },
+    { t: ": [" },
+    { t: '"-y"', c: "tok-str" },
+    { t: ", " },
+    { t: '"@runtab/mcp"', c: "tok-str" },
+    { t: "]," },
   ],
   [{ t: '      "env"', c: "tok-prop" }, { t: ": {" }],
-  [
-    { t: '        "TAB_API_BASE_URL"', c: "tok-prop" },
-    { t: ": " },
-    { t: '"https://app.runtab.xyz"', c: "tok-str" },
-    { t: "," },
-  ],
   [
     { t: '        "TAB_AGENT_KEY"', c: "tok-prop" },
     { t: ": " },
@@ -126,7 +123,7 @@ export function DeveloperSection() {
             <p className="dev-panel-title mono">mcp.json</p>
             <CodeBlock lines={AGENT_CODE} />
             <p className="dev-panel-note">
-              <span className="mono">npm install -g @runtab/mcp</span> — point any MCP client at
+              No install — <span className="mono">npx</span> fetches it. Point any MCP client at
               Tab. The agent pays x402 bills within its cap.
             </p>
           </Reveal>

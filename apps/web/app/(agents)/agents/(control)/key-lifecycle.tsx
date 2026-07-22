@@ -15,10 +15,12 @@ export function KeyLifecycle({
   agentId,
   initialKey,
   onKeyChange,
+  onSecret,
 }: {
   agentId: string;
   initialKey: LeashKeyView | null;
   onKeyChange?: (key: LeashKeyView) => void;
+  onSecret?: (secret: string) => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [confirmingRotation, setConfirmingRotation] = useState(false);
@@ -45,6 +47,7 @@ export function KeyLifecycle({
       setKey(body.key);
       onKeyChange?.(body.key);
       setSecret(body.secret);
+      onSecret?.(body.secret);
       setConfirmingRotation(false);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "The agent key was not created.");

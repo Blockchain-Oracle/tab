@@ -107,7 +107,7 @@ function stepContent(
       description: "Your server signs the amount and Tab derives the receiving address and asset.",
     },
     add_pay_button: {
-      code: `<PayButton\n  apiBaseUrl="${appUrl}"\n  publishableKey="${state.publishableKey ?? "<YOUR_PUBLISHABLE_KEY>"}"\n  intentUrl="/api/demo/intent"\n  onSuccess={(transactionId, tokenChanges) =>\n    showOrderConfirmation(transactionId, tokenChanges)}\n/>`,
+      code: `<PayButton\n  apiBaseUrl="${appUrl}"\n  publishableKey="${state.publishableKey ?? "<YOUR_PUBLISHABLE_KEY>"}"\n  intentUrl="/api/payment-intent"\n  onSuccess={(transactionId, tokenChanges) =>\n    showOrderConfirmation(transactionId, tokenChanges)}\n/>`,
       lang: "ts",
       description: "The component handles identity, balance, confirmation, and completion.",
     },
@@ -121,8 +121,11 @@ function stepContent(
       href: "/dashboard/webhooks",
     },
     test_payment: {
-      description: "Open your tenant-specific demo and complete a clearly labeled test payment.",
-      href: "/demo",
+      description:
+        "Open the playground as your storefront — one click, your key is already in the URL — and complete a real sandbox payment.",
+      href: state.publishableKey
+        ? `https://try.runtab.xyz?pk=${state.publishableKey}`
+        : "https://try.runtab.xyz",
     },
     go_live: {
       description: "Review the real readiness checks before enabling Mainnet.",

@@ -159,3 +159,35 @@
   width: 12px;
   border-top: 2px solid var(--tab-text-muted);
 }
+
+.copyKey {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--tab-text);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  gap: 8px;
+  max-width: 100%;
+  padding: 0;
+}
+
+.copyKeyValue {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copyKeyBadge {
+  border: 1px solid var(--tab-line);
+  border-radius: 6px;
+  color: var(--tab-text-muted);
+  flex-shrink: 0;
+  font-size: 10.5px;
+  padding: 2px 8px;
+}
+
+.copyKey:hover .copyKeyBadge {
+  color: var(--tab-text);
+}

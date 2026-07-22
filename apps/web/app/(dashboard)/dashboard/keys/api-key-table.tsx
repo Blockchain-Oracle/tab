@@ -1,7 +1,30 @@
 "use client";
 
+import { useState } from "react";
 import type { DashboardApiKey } from "../../../../lib/dashboard/api-keys";
+
 import styles from "./api-key-table.module.css";
+
+/** Publishable keys are public by design: show them whole, one-tap copy. */
+function PublishableKeyValue({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      className={styles.copyKey}
+      onClick={() => {
+        void navigator.clipboard.writeText(value).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1400);
+        });
+      }}
+      title="Copy publishable key"
+      type="button"
+    >
+      <span className={styles.copyKeyValue}>{value}</span>
+      <span className={styles.copyKeyBadge}>{copied ? "Copied" : "Copy"}</span>
+    </button>
+  );
+}
 
 interface ApiKeysTableProps {
   busyKeyId: string | null;
@@ -72,7 +95,13 @@ export function ApiKeysTable({ busyKeyId, keys, onDelete, onRotate }: ApiKeysTab
                 <tr key={key.id}>
                   <td className={styles.nameCell}>{key.name}</td>
                   <td className={styles.tokenCell}>
-                    {key.prefix}••••••••{key.last4}
+                    {key.type === "publishable" && key.publicKey ? (
+                      <PublishableKeyValue value={key.publicKey} />
+                    ) : (
+                      <>
+                        {key.prefix}••••••••{key.last4}
+                      </>
+                    )}
                   </td>
                   <td>{key.type === "secret" ? "Secret" : "Publishable"}</td>
                   <td>{permissionLabel(key)}</td>

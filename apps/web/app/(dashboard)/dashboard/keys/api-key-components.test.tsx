@@ -41,6 +41,7 @@ function key(overrides: Partial<DashboardApiKey> = {}): DashboardApiKey {
     id: "11111111-1111-4111-8111-111111111111",
     last4: "a1B2",
     lastUsedAt: null,
+    publicKey: null,
     name: "Server deploy",
     permissions: "full",
     prefix: "sk_test_",

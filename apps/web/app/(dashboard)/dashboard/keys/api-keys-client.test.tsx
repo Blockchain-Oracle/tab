@@ -18,6 +18,7 @@ function key(env: ApiEnvironment, name: string): DashboardApiKey {
         : "22222222-2222-4222-8222-222222222222",
     last4: env === "test" ? "tE57" : "L1vE",
     lastUsedAt: null,
+    publicKey: null,
     name,
     permissions: "full",
     prefix: env === "test" ? "sk_test_" : "sk_live_",

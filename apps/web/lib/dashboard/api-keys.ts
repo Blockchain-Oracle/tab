@@ -29,6 +29,9 @@ export interface SecretApiKeyTarget extends ApiKeyScope {
 
 const keySummary = {
   createdAt: apiKeys.createdAt,
+  // Full value for PUBLISHABLE keys only (public by design); secret rows
+  // store null here — the hash is all we keep.
+  publicKey: apiKeys.publicKey,
   env: apiKeys.env,
   id: apiKeys.id,
   last4: apiKeys.last4,

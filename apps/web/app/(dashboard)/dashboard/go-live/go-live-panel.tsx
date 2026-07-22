@@ -20,7 +20,7 @@ const checks = [
     label: "Webhook configured and verified",
     href: "/dashboard/webhooks",
   },
-  { key: "testPayment", label: "Test payment completed", href: "/demo" },
+  { key: "testPayment", label: "Test payment completed", href: "https://try.runtab.xyz" },
 ] as const;
 
 export function GoLivePanel({

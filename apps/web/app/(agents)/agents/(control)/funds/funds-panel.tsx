@@ -68,8 +68,8 @@ export function FundsPanel({
             </>
           ) : (
             <>
-              <strong>Mainnet</strong> · This agent lives on Base + Arbitrum. Mainnet money
-              movement stays blocked until live verification (B-04).
+              <strong>Mainnet</strong> · This agent lives on Base + Arbitrum. Mainnet money movement
+              stays blocked until live verification (B-04).
             </>
           )}
         </p>

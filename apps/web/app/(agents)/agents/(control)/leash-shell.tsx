@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { WorkspaceSwitcher } from "../../../../components/workspace-switcher";
-
 import { ThemeToggle } from "../../../theme-toggle";
+import { AgentNetworkControl } from "./agent-network-control";
 import { LeashAccountMenu } from "./leash-account-menu";
 import styles from "./leash-chrome.module.css";
 
@@ -68,7 +68,7 @@ export function LeashShell({ children, email, unreadCount }: LeashShellProps) {
       brandHref="/agents"
       groups={groups}
       linkComponent={Link}
-      modeSlot={<p className={styles.productNote}>x402 payments, capped outside your agent.</p>}
+      modeSlot={<AgentNetworkControl />}
       navAriaLabel="Agent control plane"
       surfaceSlot={<WorkspaceSwitcher current="agents" />}
       surfaceTag="Agents"

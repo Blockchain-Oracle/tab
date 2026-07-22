@@ -3,6 +3,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 
 import { createPinnedPaymentFetch, type PaymentTargetLookup } from "./payment-target-network.js";
+import { TAB_MCP_VERSION } from "./version.js";
 
 export async function connectStreamableHttpUpstream(
   endpoint: string,
@@ -12,7 +13,7 @@ export async function connectStreamableHttpUpstream(
     lookup?: PaymentTargetLookup;
   } = {},
 ) {
-  const client = new Client({ name: "tab-mcp-upstream", version: "0.0.1" });
+  const client = new Client({ name: "tab-mcp-upstream", version: TAB_MCP_VERSION });
   const policy = createPinnedPaymentFetch({
     allowDevelopmentLoopback: options.allowDevelopmentLoopback === true,
     fetch: options.fetch ?? globalThis.fetch,

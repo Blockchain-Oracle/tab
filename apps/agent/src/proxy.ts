@@ -10,6 +10,7 @@ import { SignerNotConfiguredError } from "./errors.js";
 import { withPaymentOrigin, withPaymentResourceUrl } from "./origin-context.js";
 import { parsePaymentSettlementObservation } from "./payment-settlement-observation.js";
 import { withPaymentSignal } from "./payment-signal.js";
+import { TAB_MCP_VERSION } from "./version.js";
 
 interface LeashProxyOptions {
   payment?: DurableMcpPayment;
@@ -29,7 +30,10 @@ export function readMcpSettlementMetadata(
 }
 
 export function createLeashProxyServer(options: LeashProxyOptions) {
-  const server = new Server({ name: "tab-mcp", version: "0.0.1" }, { capabilities: { tools: {} } });
+  const server = new Server(
+    { name: "tab-mcp", version: TAB_MCP_VERSION },
+    { capabilities: { tools: {} } },
+  );
 
   server.setRequestHandler(ListToolsRequestSchema, (request, extra) =>
     options.upstream.listTools(request.params, { signal: extra.signal }),

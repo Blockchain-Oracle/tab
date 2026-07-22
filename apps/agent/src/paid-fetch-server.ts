@@ -14,6 +14,7 @@ import type { PaymentProfile } from "./payment-profile.js";
 import { withPaymentSignal } from "./payment-signal.js";
 import { createPinnedPaymentFetch, type PaymentTargetLookup } from "./payment-target-network.js";
 import type { TabRemoteSigner } from "./remote-signer.js";
+import { TAB_MCP_VERSION } from "./version.js";
 
 interface PaidFetchServerOptions {
   address: `0x${string}` | null;
@@ -45,7 +46,10 @@ function invalidRequest() {
 }
 
 export function createPaidFetchServer(options: PaidFetchServerOptions) {
-  const server = new Server({ name: "tab-mcp", version: "0.0.1" }, { capabilities: { tools: {} } });
+  const server = new Server(
+    { name: "tab-mcp", version: TAB_MCP_VERSION },
+    { capabilities: { tools: {} } },
+  );
   const allowDevelopmentLoopback = options.allowDevelopmentLoopback === true;
   const baseFetch = options.fetch ?? globalThis.fetch;
   const standalonePolicy = options.address

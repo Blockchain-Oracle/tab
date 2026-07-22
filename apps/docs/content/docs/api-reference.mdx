@@ -142,6 +142,18 @@ public HTTPS — loopback, private ranges, and raw IPs are rejected.
 lastDeliveredAt, verifiedAt, createdAt, updatedAt }`. See
 [Webhooks](/docs/webhooks) for events and verification.
 
+### Playground intent
+
+```http
+GET /api/v1/checkout/playground-intent?pk=pk_test_…&amount=1.00
+```
+
+Mints a capped, Testnet-only intent with just a publishable key (which is
+public by design) — this is what powers [try.runtab.xyz](https://try.runtab.xyz).
+Amounts: `0.50 | 1.00 | 2.00 | 5.00`. Live keys answer
+`403 PLAYGROUND_TESTNET_ONLY`. CORS-open GET, so a static page can be a
+complete storefront.
+
 ### Checkout endpoints (called by the SDK)
 
 You don't call these directly — `<PayButton>` does — but they define the

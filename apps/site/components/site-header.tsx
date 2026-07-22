@@ -14,6 +14,7 @@ export function SiteHeader() {
         </Link>
 
         <nav aria-label="Primary" className="site-nav">
+          <a href="https://try.runtab.xyz">Try it live</a>
           <a href="#rail">Product</a>
           <a href="#agents">Agents</a>
           <a href="#developers">Developers</a>

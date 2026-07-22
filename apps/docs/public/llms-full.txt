@@ -246,6 +246,18 @@ public HTTPS — loopback, private ranges, and raw IPs are rejected.
 lastDeliveredAt, verifiedAt, createdAt, updatedAt }`. See
 [Webhooks](/docs/webhooks) for events and verification.
 
+### Playground intent
+
+```http
+GET /api/v1/checkout/playground-intent?pk=pk_test_…&amount=1.00
+```
+
+Mints a capped, Testnet-only intent with just a publishable key (which is
+public by design) — this is what powers [try.runtab.xyz](https://try.runtab.xyz).
+Amounts: `0.50 | 1.00 | 2.00 | 5.00`. Live keys answer
+`403 PLAYGROUND_TESTNET_ONLY`. CORS-open GET, so a static page can be a
+complete storefront.
+
 ### Checkout endpoints (called by the SDK)
 
 You don't call these directly — `<PayButton>` does — but they define the
@@ -540,6 +552,13 @@ with `verification.code: "TEST_SETTLEMENT_PENDING"` and should be retried.
 | `TEST_BALANCE_UNAVAILABLE` / `TEST_FUNDS_UNAVAILABLE` | 503 | RPC or faucet funder unavailable |
 | `TEST_FUNDS_RATE_LIMITED` | 429 | Faucet limits hit (3/recipient/day, 25/merchant/day, 20/IP/hour). Honors `Retry-After` |
 
+## Playground — `/v1/checkout/playground-intent`
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `PLAYGROUND_TESTNET_ONLY` | 403 | Live keys are refused; Mainnet unlocks after live verification |
+| `INVALID_PLAYGROUND_AMOUNT` | 400 | Amount must be 0.50, 1.00, 2.00, or 5.00 |
+
 ## Webhook management — `/v1/webhook-endpoint`
 
 | Code | Status | Meaning |
@@ -666,6 +685,9 @@ money-mover spike is verified; Testnet is fully functional end to end.
 
 ## Where to start
 
+- Want to feel it first? [try.runtab.xyz](https://try.runtab.xyz) — a live
+  checkout anyone can pay with just an email (bring your own `pk_test` to
+  make it your storefront).
 - Selling something? Start with the [Quickstart](/docs/quickstart).
 - Wiring an agent? Start with [Agents & x402](/docs/agents).
 - Want free test funds? See [Test funds](/docs/test-funds).
@@ -883,7 +905,9 @@ from your endpoint — this is its own tracked step, and go-live requires it.
 
 ## 7. Make a test payment
 
-Open your storefront on Testnet and pay with any email. An empty wallet can
+One click from the dashboard's Quickstart opens the
+[playground](https://try.runtab.xyz) **as your storefront** — your
+publishable key rides in the URL. Pay with any email; an empty wallet can
 claim [test funds](/docs/test-funds) without leaving the checkout. The
 payment is a **real Base Sepolia USDC transfer**, verified on-chain before
 it settles. When it does you'll have: a transaction row with the real tx

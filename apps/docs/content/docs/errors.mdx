@@ -66,6 +66,13 @@ with `verification.code: "TEST_SETTLEMENT_PENDING"` and should be retried.
 | `TEST_BALANCE_UNAVAILABLE` / `TEST_FUNDS_UNAVAILABLE` | 503 | RPC or faucet funder unavailable |
 | `TEST_FUNDS_RATE_LIMITED` | 429 | Faucet limits hit (3/recipient/day, 25/merchant/day, 20/IP/hour). Honors `Retry-After` |
 
+## Playground — `/v1/checkout/playground-intent`
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `PLAYGROUND_TESTNET_ONLY` | 403 | Live keys are refused; Mainnet unlocks after live verification |
+| `INVALID_PLAYGROUND_AMOUNT` | 400 | Amount must be 0.50, 1.00, 2.00, or 5.00 |
+
 ## Webhook management — `/v1/webhook-endpoint`
 
 | Code | Status | Meaning |

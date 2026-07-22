@@ -31,9 +31,9 @@ const typedData = {
   message: {
     from: "0x0000000000000000000000000000000000000001",
     to: "0x0000000000000000000000000000000000000002",
-    validAfter: 0n,
-    validBefore: 4102444800n,
-    value: 1000000n,
+    validAfter: BigInt("0"),
+    validBefore: BigInt("4102444800"),
+    value: BigInt("1000000"),
     nonce: `0x${"11".repeat(32)}`,
   },
   primaryType: "TransferWithAuthorization",

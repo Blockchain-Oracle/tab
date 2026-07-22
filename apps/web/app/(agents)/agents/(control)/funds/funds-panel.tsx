@@ -62,7 +62,8 @@ export function FundsPanel({
         <p>Live balances for {agentName}. Reads never move money.</p>
         {testFunds ? (
           <p role="status">
-            <strong>{TEST_FUNDS_LABEL}</strong> · Base Sepolia integration profile
+            <strong>{TEST_FUNDS_LABEL}</strong> · This agent lives on Base Sepolia. There is no
+            network toggle — a Mainnet agent is a separate provision.
           </p>
         ) : null}
       </header>
@@ -90,9 +91,19 @@ export function FundsPanel({
               : terminal
                 ? "Do not deposit. This address is retained only for receipt and balance evidence."
                 : testFunds
-                  ? "Send Circle Base Sepolia USDC test funds to this address."
+                  ? "Send Base Sepolia USDC to this address."
                   : "Send native USDC on Base or Arbitrum to this address."}
           </p>
+          {snapshot.agentAddress && !terminal && testFunds ? (
+            <p>
+              Need sandbox USDC or gas?{" "}
+              <a href="https://faucet.circle.com/" rel="noreferrer" target="_blank">
+                Circle faucet ↗
+              </a>{" "}
+              (pick <strong>Base Sepolia</strong> — mainnet Base sends to the wrong network) or use
+              the one-tap grant below.
+            </p>
+          ) : null}
         </article>
       </section>
 

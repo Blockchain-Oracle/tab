@@ -234,7 +234,8 @@ describe("Agent funds surface", () => {
     expect(html).toContain("Claim test funds");
     expect(html).toContain("Base Sepolia");
     expect(html).toContain("eip155:84532");
-    expect(html).toContain("Send Circle Base Sepolia USDC test funds to this address.");
+    expect(html).toContain("Send Base Sepolia USDC to this address.");
+    expect(html).toContain("https://faucet.circle.com/");
     expect(html).toContain("Particle mainnet balance is separate from this testnet profile.");
     expect(html).not.toContain("Send native USDC on Base or Arbitrum");
   });

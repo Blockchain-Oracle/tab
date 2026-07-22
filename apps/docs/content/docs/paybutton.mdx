@@ -35,7 +35,7 @@ never load it at all.
       required: true,
     },
     appearance: {
-      description: "Brand overrides for the embedded checkout (accent color, radius, fonts). Values merge over Tab defaults.",
+      description: "Brand overrides: { actionColor?, accentColor? }. Values merge over Tab defaults.",
       type: "CheckoutAppearance",
     },
   }}
@@ -52,9 +52,13 @@ never load it at all.
   ship goods from the signed webhook, which retries with backoff.
 - **Executed money is never silently unreported.** If the settlement report
   fails transiently, the SDK retries (1s / 4s / 10s) before surfacing state.
-- **Testnet is labeled.** Every test surface carries
-  "Sandbox funds — no real value", and test balances are real Base Sepolia
-  USDC — see [Test funds](/docs/test-funds).
+- **Testnet is labeled — and real.** Every test surface carries
+  "Sandbox funds — no real value"; balances are real Base Sepolia USDC reads
+  and settlement is a real on-chain transfer verified by the server — see
+  [Test funds](/docs/test-funds) and [Checkout states](/docs/checkout-states).
+- **Client components only.** `PayButton` is interactive: render it inside a
+  `"use client"` component in Next.js App Router (see the
+  [storefront example](/docs/examples)).
 
 ## Theming
 

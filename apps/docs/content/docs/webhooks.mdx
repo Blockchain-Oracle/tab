@@ -39,10 +39,57 @@ export function verifyTabWebhook(rawBody: string, header: string, secret: string
 }
 ```
 
+## Event types
+
+| Type | When | Payload |
+| --- | --- | --- |
+| `payment.settled` | A payment settled (Testnet: after real on-chain verification) | see below |
+| `test` | You triggered a test delivery | `{"id":"<delivery UUID>","type":"test","livemode":false}` |
+
+`payment.settled` payload:
+
+```json
+{
+  "id": "<delivery UUID>",
+  "type": "payment.settled",
+  "livemode": false,
+  "transactionId": "0x<real transaction hash>",
+  "tokenChanges": [
+    {
+      "amountAtomic": "1000000",
+      "chainId": 84532,
+      "receiver": "0x<your receiving address>",
+      "tokenAddress": "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
+    }
+  ]
+}
+```
+
+## Idempotency
+
+The payload `id` is the **delivery UUID** — retries and manual resends
+preserve it. Build your idempotency key as `${event.type}:${event.id}`,
+insert it under a unique constraint, and fulfill in the same database
+transaction. Return `2xx` for an already-processed valid event.
+`transactionId` is settlement evidence, not the idempotency key.
+
+## Register from code
+
+```ts
+const { endpoint, signingSecret } = await tab.webhooks.configure({
+  url: "https://your-server.example/webhooks/tab",
+});
+await tab.webhooks.sendTest(); // real signed delivery, expects your 2xx
+```
+
+One endpoint per environment. `configure` creates or updates; the `whsec_`
+secret is returned only on first creation. Also available as raw HTTP:
+`GET/POST/PATCH/DELETE /api/v1/webhook-endpoint` with your secret key.
+
 ## Delivery semantics
 
 - Deliveries are per-mode: test endpoints receive test events only.
-- Failed deliveries retry with backoff; the dashboard shows every attempt
+- Failed deliveries make exactly 3 total attempts — immediately, after 1 minute, then after 4 minutes; the dashboard shows every attempt
   with its response code and timing, and surfaces failed deliveries as an
   alert badge.
 - A `2xx` response marks the delivery successful. Anything else (including

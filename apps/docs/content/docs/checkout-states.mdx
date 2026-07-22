@@ -1,54 +1,60 @@
 ---
 title: Checkout states
-description: Every state the embedded checkout can show, and the real event that drives each transition.
+description: All 17 states the embedded checkout can show, and the real event that drives each transition.
 ---
 
-The checkout is a 16-stage state machine (`checkout-state.ts` in the SDK).
+The checkout is a 17-stage state machine (`checkout-state.ts` in the SDK).
 Transitions fire on real events — API responses, on-chain reads, settlement
 reports — never on timers pretending to be progress.
 
-## The happy path
+## Every stage
 
-<Steps>
+| Stage | The buyer sees | Entered when | Leaves when |
+| --- | --- | --- | --- |
+| `intent-loading` | Skeleton button | Component mounts (or retry after `error`) | Signed intent loaded → `idle` |
+| `idle` | Your Pay button with the amount | Intent + context ready | Buyer clicks Pay → `opening` |
+| `opening` | Opening sheet | Pay clicked | Payment opened; live session found → `balance-loading`, else → `email` |
+| `email` | Email field | Auth required | Email submitted → `email-sending` |
+| `email-sending` | Sending indicator | Email submitted | Code sent → `otp` |
+| `otp` | 6-digit code input | Code sent (auto-submits on 6th digit) | Submitted → `otp-verifying`; wrong code returns here |
+| `otp-verifying` | Verifying indicator | Code submitted | Verified → `balance-loading`; rejected → `otp` |
+| `device-approval` | "Approve from your email" notice | Magic flags a new device | Approved (automatic) → `balance-loading`; restart → `email` |
+| `balance-loading` | Balance skeleton | Auth done | Real on-chain balance read → `balance-ready` or `insufficient` |
+| `balance-ready` | Balance + Confirm button | Balance covers amount **and gas** | Confirm → `confirming` |
+| `insufficient` | Exact shortfall + fix path | Balance below amount, or USDC without gas | Testnet: claim sandbox funds → `add-funds`; Mainnet: manual deposit |
+| `add-funds` | Funding progress (real faucet legs) | Claim started | Balance re-read → `balance-ready` / `insufficient` |
+| `confirming` | Paying indicator | Confirm clicked. **Testnet: the buyer's wallet signs a real Base Sepolia USDC transfer**; the server re-verifies it on-chain before settling | Settled → `success`; slow (>20s) → `stuck`; failure → `error` |
+| `stuck` | "Still working" honesty notice | Confirmation exceeded the delay notice window | Resolves like `confirming` |
+| `success` | Receipt: amount, ref code, real tx hash | Server confirmed settlement (verification `rpc`) | Buyer closes → done |
+| `error` | What failed + retry | Any failure event | Retry → `opening` / `intent-loading` |
+| *(cancelled)* | Sheet closes | Buyer dismisses at any point | Payment stays honest: `pending` rows never fake settlement |
 
-### Idle → intent loading
+## What "settled" means here
 
-The trigger button shows your amount. Clicking it loads the signed intent
-from your server and opens the payment.
+On Testnet the transfer is **real**: sandbox USDC moves from the buyer's
+wallet to your receiving address on Base Sepolia. The SDK reports the
+transaction hash; the server independently verifies the receipt via RPC
+(success status, matching `Transfer` log for payer → receiver at the exact
+intent amount) before marking the payment settled with
+`verification.method: "rpc"` and the real `txHash`. If the transaction is
+not yet indexed the report returns `202 TEST_SETTLEMENT_PENDING` and the SDK
+retries on backoff.
 
-### Email → one-time code
+Mainnet execution stays blocked until live verification lands — a reported
+live payment stays honestly `pending`, never fake-settled.
 
-The buyer enters an email and receives a 6-digit code. Codes auto-submit on
-the 6th digit. Returning buyers with a live session skip this entirely
-(silent resume).
+## Design guarantees
 
-### Device approval (conditional)
-
-A new device may require an email approval link. The checkout waits and
-continues automatically — this is a real state, not a failure.
-
-### Balance
-
-The buyer's balance is read for real — Base Sepolia USDC on Testnet, the
-Universal Account total on Mainnet — and compared to the amount.
-
-### Confirming → success
-
-On confirmation the payment executes (test: simulated settlement on the test
-tenant; live: gated until the money-mover spike is verified). Success shows
-a receipt with a reference code and a stamped **402 → 200**.
-
-</Steps>
-
-## The honest edges
-
-| State | When | What the buyer sees |
-| --- | --- | --- |
-| `insufficient` | Balance below amount | Exact shortfall; on Testnet, an in-flow [test funds grant](/docs/test-funds) |
-| `add-funds` | Buyer opts to top up | Their real deposit address + balance recheck |
-| `device-approval` | New device | "Approve from your inbox" — continues automatically |
-| `stuck` | Confirming exceeded 20s | "Still working — money may be in flight." Never claims failure while a transaction may exist |
-| `error` | Known pre-broadcast failure | "Nothing has been charged" — only promised when provably true |
+- Codes auto-submit on the 6th digit; wrong codes return to `otp` with the
+  field cleared, never a dead end.
+- Returning buyers with a live Magic session skip auth entirely (silent
+  resume) — `opening` goes straight to `balance-loading`.
+- `device-approval` is a real state with a real exit, not an error.
+- The insufficiency check includes **gas**: a wallet holding USDC it cannot
+  move routes to the [test funds grant](/docs/test-funds), which repairs
+  both legs independently.
+- Every terminal screen shows evidence: ref code, transaction hash, and a
+  Basescan link on Testnet.
 
 <Callout type="warn">
   The checkout only says "Nothing has been charged" for failures known to

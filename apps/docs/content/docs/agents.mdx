@@ -64,6 +64,13 @@ The `TAB_AGENT_KEY` (`agent_sk_…`) is shown once at provisioning. The
 connect step completes when the proxy first sees your agent — a real
 connection event, not a checkbox.
 
+With no arguments `tab-mcp` exposes one MCP tool, **`paid_fetch`** — direct
+HTTP requests whose x402 charges are paid within your cap. To put an
+existing MCP server behind the payment rail instead, pass
+`"args": ["--upstream", "<ABSOLUTE_STREAMABLE_HTTP_MCP_URL>"]` — every tool
+of the upstream server is proxied, and any 402 it hits is paid the same way.
+A runnable config lives in [Examples](/docs/examples).
+
 ### First paid call
 
 Point the agent at any x402 resource. The proxy pays the `402`, retries the

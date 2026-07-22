@@ -72,9 +72,10 @@ signing code path at all**, by construction.
 | SDK on npm | <https://www.npmjs.com/package/@runtab/sdk> |
 | MCP proxy on npm | <https://www.npmjs.com/package/@runtab/mcp> |
 
-> ⚠️ **Honest test mode.** Tab's test mode runs on **Base Sepolia with real
-> on-chain test funds** — never simulated balances under a real-money label.
-> Live money movement stays visibly **blocked** until the production
+> ⚠️ **Honest Testnet.** Tab's Testnet runs on **Base Sepolia with real
+> on-chain money movement** — real faucet funding, real balance reads, and
+> real USDC settlement verified via RPC (the receipt carries the tx hash).
+> Mainnet money movement stays visibly **blocked** until the production
 > money-mover verification completes; no client-side flag can unblock it.
 
 ## How you take payments (merchant)
@@ -132,11 +133,12 @@ import { PayButton } from "@runtab/sdk";
 dashboard sends a real signed test delivery, and go-live requires a `2xx`
 from your endpoint.
 
-**6. Pay yourself in test mode** — any email works; an empty wallet claims
-test funds without leaving the checkout. You end up with a transaction row, a
-signed webhook delivery, and a receipt. The **Go Live** page then runs real
-readiness checks (live key, verified webhook, receiving address) before
-enabling live mode.
+**6. Pay yourself on Testnet** — any email works; an empty wallet claims
+sandbox funds without leaving the checkout, and the payment settles as a
+real Base Sepolia USDC transfer. You end up with a transaction row (real tx
+hash), a signed webhook delivery, and a receipt. The **Go Live** page then
+runs real readiness checks (live key, verified webhook, receiving address)
+before enabling Mainnet.
 
 Full walkthrough: [docs.runtab.xyz/docs/quickstart](https://docs.runtab.xyz/docs/quickstart).
 
@@ -253,10 +255,11 @@ apps/
   agent/             @runtab/mcp — tab-mcp proxy, x402 wrapper, cap engine,
                      durable payment envelopes
 packages/
-  sdk/               @runtab/sdk — PayButton + Tab client
+  sdk/               @runtab/sdk — PayButton + Tab client (payments, intents, webhooks)
   ui/                brand system: TabMark, official partner marks, tokens
   faucet/            Base Sepolia test-funds engine (real on-chain transfers)
   networks/          chain registry (Base, Arbitrum — no Polygon)
+examples/            runnable starters: storefront-next, webhook-node, agent-mcp
 assets/              README brand assets (logo, banner, intro video)
 ```
 

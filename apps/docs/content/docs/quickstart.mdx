@@ -42,7 +42,9 @@ export async function GET(request: Request) {
 ```
 
 The response is `{ intent, intentToken }` — a short-lived signed token the
-checkout presents back to Tab.
+checkout presents back to Tab. With the SDK this is
+`tab.paymentIntents.create({ amount, intentUrl })` — see the
+[SDK reference](/docs/sdk).
 
 ## 4. Add the pay button
 
@@ -65,8 +67,15 @@ it can show.
 ## 5. Configure your webhook
 
 Webhooks are the trusted fulfillment signal — `onSuccess` is for UX only.
-Add an endpoint in the dashboard and verify the signature on every delivery.
-See [Webhooks](/docs/webhooks).
+Register your endpoint from code (or in the dashboard) and verify the
+signature on every delivery. See [Webhooks](/docs/webhooks).
+
+```ts
+const { endpoint, signingSecret } = await tab.webhooks.configure({
+  url: "https://your-server.example/webhooks/tab",
+});
+// signingSecret (whsec_…) is returned ONLY on first creation — store it now.
+```
 
 ## 6. Verify webhook delivery
 
@@ -76,9 +85,10 @@ from your endpoint — this is its own tracked step, and go-live requires it.
 ## 7. Make a test payment
 
 Open your storefront on Testnet and pay with any email. An empty wallet can
-claim [test funds](/docs/test-funds) without leaving the checkout. When the
-payment settles you'll have: a transaction row, a signed webhook delivery,
-and a receipt.
+claim [test funds](/docs/test-funds) without leaving the checkout. The
+payment is a **real Base Sepolia USDC transfer**, verified on-chain before
+it settles. When it does you'll have: a transaction row with the real tx
+hash, a signed webhook delivery, and a receipt.
 
 ## 8. Go live
 

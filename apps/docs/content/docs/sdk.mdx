@@ -1,0 +1,107 @@
+---
+title: SDK reference (server)
+description: The Tab server client — payments, signed payment intents, and webhook management with your secret key.
+---
+
+Install once for both sides of the integration — `<PayButton>` in the
+browser, `Tab` on your server:
+
+```bash
+npm install @runtab/sdk
+```
+
+## `new Tab(secretKey, options?)`
+
+```ts
+import { Tab } from "@runtab/sdk";
+
+const tab = new Tab(process.env.TAB_SECRET_KEY!, {
+  apiBaseUrl: "https://app.runtab.xyz", // or set TAB_API_BASE_URL
+});
+```
+
+| Option | Type | Default |
+| --- | --- | --- |
+| `apiBaseUrl` | `string` | `TAB_API_BASE_URL` env var |
+| `request` | `typeof fetch` | global `fetch` |
+
+The key must be a `sk_test_…` or `sk_live_…` secret key. Keys never leave
+your server; the client sends them only as `Authorization: Bearer`.
+
+## Payments
+
+```ts
+const payments = await tab.payments.list({ limit: 20 }); // 1–100
+const payment = await tab.payments.retrieve(paymentId);   // UUID
+```
+
+Both return validated [`TabPayment`](/docs/api-reference) objects — the SDK
+rejects responses whose token identity, status invariants, or evidence
+fields don't hold, so a compromised network path can't hand you a payment
+shape your code didn't expect.
+
+## Payment intents
+
+Your intent endpoint signs the amount server-side. With the SDK it is two
+lines:
+
+```ts
+// app/api/payment-intent/route.ts
+export async function GET(request: Request) {
+  const { intent, intentToken } = await tab.paymentIntents.create({
+    amount: "1.00",
+    intentUrl: request.url,
+  });
+  return Response.json({ intent, intentToken });
+}
+```
+
+Requires a key with `manage` permission. The returned `intentToken` is a
+short-lived signed JWT the checkout presents back to Tab — the browser can
+never change the price.
+
+## Webhooks
+
+One endpoint per environment, managed entirely from code:
+
+```ts
+const { endpoint, signingSecret } = await tab.webhooks.configure({
+  url: "https://your-server.example/webhooks/tab",
+});
+if (signingSecret) {
+  // whsec_… — shown ONLY on first creation. Store it now.
+}
+
+await tab.webhooks.get();      // TabWebhookEndpoint | null
+await tab.webhooks.sendTest(); // fires a real signed test delivery
+await tab.webhooks.remove();
+```
+
+`configure` is idempotent: it creates the endpoint or updates the URL of the
+existing one. Rotating the secret is deliberately a dashboard action.
+
+## Errors
+
+Every failure throws `TabApiError` with a stable `code`, `message`, and the
+HTTP `status` (0 for network failures):
+
+```ts
+import { TabApiError } from "@runtab/sdk";
+
+try {
+  await tab.payments.retrieve(id);
+} catch (error) {
+  if (error instanceof TabApiError && error.code === "PAYMENT_NOT_FOUND") {
+    // 404 — not this tenant's payment
+  }
+}
+```
+
+See the [errors reference](/docs/errors) for the full catalog.
+
+## Subpaths
+
+- `@runtab/sdk` — `PayButton`, `Tab`, error types. No Particle SDK in the
+  bundle: Universal Account code loads only after a live-mode buyer
+  authenticates.
+- `@runtab/sdk/ua` — Particle Universal Account helpers (advanced).

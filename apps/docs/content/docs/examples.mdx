@@ -1,0 +1,49 @@
+---
+title: Examples
+description: Runnable starter examples — a storefront, a webhook receiver, and an agent that pays its own way.
+---
+
+Three complete, env-var-driven examples live in the repo's
+[`examples/`](https://github.com/Blockchain-Oracle/tab/tree/master/examples)
+directory. Each is a workspace you can run directly, or copy out and
+`npm install @runtab/sdk`.
+
+## Storefront (Next.js)
+
+[`examples/storefront-next`](https://github.com/Blockchain-Oracle/tab/tree/master/examples/storefront-next)
+— a one-product store taking a $1.00 Testnet payment. Three files matter:
+
+- `app/page.tsx` — the `<PayButton>` (browser, publishable key)
+- `app/api/payment-intent/route.ts` — `tab.paymentIntents.create(...)`
+  (server, secret key)
+- `.env.example` — the whole configuration contract
+
+```bash
+cd examples/storefront-next
+cp .env.example .env.local   # keys from app.runtab.xyz/dashboard/keys
+pnpm install && pnpm dev     # http://localhost:4000
+```
+
+Pay with any email — an empty wallet claims sandbox funds inside the
+checkout, and the settlement is a real Base Sepolia transfer.
+
+## Webhook receiver (Node, zero framework)
+
+[`examples/webhook-node`](https://github.com/Blockchain-Oracle/tab/tree/master/examples/webhook-node)
+— verify-then-fulfill in one file, plus one-command endpoint registration:
+
+```bash
+TAB_SECRET_KEY=sk_test_… WEBHOOK_URL=https://your-tunnel/webhooks pnpm setup-webhook
+TAB_WEBHOOK_SECRET=whsec_… pnpm start
+```
+
+It demonstrates the two invariants every consumer needs: verify the
+signature on **raw bytes** before parsing, and fulfill idempotently on
+`${event.type}:${event.id}`.
+
+## Agent (MCP)
+
+[`examples/agent-mcp`](https://github.com/Blockchain-Oracle/tab/tree/master/examples/agent-mcp)
+— the `mcp.json` and walkthrough for giving any MCP client a `paid_fetch`
+tool that pays x402 charges under your cap. Pairs with the
+[Agents & x402](/docs/agents) guide.

@@ -1,16 +1,23 @@
 {
   "title": "Tab",
   "pages": [
+    "---Get started---",
     "index",
-    "architecture",
     "quickstart",
+    "examples",
+    "---Integrate---",
     "paybutton",
     "checkout-states",
-    "showcase",
-    "api-reference",
     "webhooks",
-    "agents",
     "test-funds",
+    "showcase",
+    "---Agents---",
+    "agents",
+    "---Reference---",
+    "api-reference",
+    "errors",
+    "sdk",
+    "architecture",
     "networks",
     "security"
   ]

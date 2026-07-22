@@ -63,6 +63,13 @@ The `TAB_AGENT_KEY` (`agent_sk_…`) is shown once at provisioning. The
 connect step completes when the proxy first sees your agent — a real
 connection event, not a checkbox.
 
+With no arguments `tab-mcp` exposes one MCP tool, **`paid_fetch`** — direct
+HTTP requests whose x402 charges are paid within your cap. To put an
+existing MCP server behind the payment rail instead, pass
+`"args": ["--upstream", "<ABSOLUTE_STREAMABLE_HTTP_MCP_URL>"]` — every tool
+of the upstream server is proxied, and any 402 it hits is paid the same way.
+A runnable config lives in [Examples](/docs/examples).
+
 ### First paid call
 
 Point the agent at any x402 resource. The proxy pays the `402`, retries the
@@ -207,7 +214,7 @@ trust boundary:
 
 ## The test/live boundary
 
-- Test keys operate on Base Sepolia and simulated settlement against your
+- Test keys operate on Base Sepolia with REAL sandbox settlement against your
   test tenant. Live keys operate on mainnet rails.
 - `livemode` is explicit on payment objects and always consistent with the
   key that created them.
@@ -288,7 +295,7 @@ Three trust boundaries, three keys:
   end
   B->>S: Confirm
   S->>T: PATCH /v1/payments/:id (report)
-  T-->>S: settled (test simulation)
+  T->>C: verify Transfer receipt via RPC\n  T-->>S: settled (rpc, real tx hash)
   T->>M: signed webhook (x-tab-signature)
   T-->>B: receipt email (Resend)`}
 />
@@ -323,60 +330,117 @@ never holds the pen.
 
 # Checkout states
 URL: http://localhost:3002/docs/checkout-states
-Every state the embedded checkout can show, and the real event that drives each transition.
+All 17 states the embedded checkout can show, and the real event that drives each transition.
 
-The checkout is a 16-stage state machine (`checkout-state.ts` in the SDK).
+The checkout is a 17-stage state machine (`checkout-state.ts` in the SDK).
 Transitions fire on real events — API responses, on-chain reads, settlement
 reports — never on timers pretending to be progress.
 
-## The happy path
+## Every stage
 
-<Steps>
+| Stage | The buyer sees | Entered when | Leaves when |
+| --- | --- | --- | --- |
+| `intent-loading` | Skeleton button | Component mounts (or retry after `error`) | Signed intent loaded → `idle` |
+| `idle` | Your Pay button with the amount | Intent + context ready | Buyer clicks Pay → `opening` |
+| `opening` | Opening sheet | Pay clicked | Payment opened; live session found → `balance-loading`, else → `email` |
+| `email` | Email field | Auth required | Email submitted → `email-sending` |
+| `email-sending` | Sending indicator | Email submitted | Code sent → `otp` |
+| `otp` | 6-digit code input | Code sent (auto-submits on 6th digit) | Submitted → `otp-verifying`; wrong code returns here |
+| `otp-verifying` | Verifying indicator | Code submitted | Verified → `balance-loading`; rejected → `otp` |
+| `device-approval` | "Approve from your email" notice | Magic flags a new device | Approved (automatic) → `balance-loading`; restart → `email` |
+| `balance-loading` | Balance skeleton | Auth done | Real on-chain balance read → `balance-ready` or `insufficient` |
+| `balance-ready` | Balance + Confirm button | Balance covers amount **and gas** | Confirm → `confirming` |
+| `insufficient` | Exact shortfall + fix path | Balance below amount, or USDC without gas | Testnet: claim sandbox funds → `add-funds`; Mainnet: manual deposit |
+| `add-funds` | Funding progress (real faucet legs) | Claim started | Balance re-read → `balance-ready` / `insufficient` |
+| `confirming` | Paying indicator | Confirm clicked. **Testnet: the buyer's wallet signs a real Base Sepolia USDC transfer**; the server re-verifies it on-chain before settling | Settled → `success`; slow (>20s) → `stuck`; failure → `error` |
+| `stuck` | "Still working" honesty notice | Confirmation exceeded the delay notice window | Resolves like `confirming` |
+| `success` | Receipt: amount, ref code, real tx hash | Server confirmed settlement (verification `rpc`) | Buyer closes → done |
+| `error` | What failed + retry | Any failure event | Retry → `opening` / `intent-loading` |
+| *(cancelled)* | Sheet closes | Buyer dismisses at any point | Payment stays honest: `pending` rows never fake settlement |
 
-### Idle → intent loading
+## What "settled" means here
 
-The trigger button shows your amount. Clicking it loads the signed intent
-from your server and opens the payment.
+On Testnet the transfer is **real**: sandbox USDC moves from the buyer's
+wallet to your receiving address on Base Sepolia. The SDK reports the
+transaction hash; the server independently verifies the receipt via RPC
+(success status, matching `Transfer` log for payer → receiver at the exact
+intent amount) before marking the payment settled with
+`verification.method: "rpc"` and the real `txHash`. If the transaction is
+not yet indexed the report returns `202 TEST_SETTLEMENT_PENDING` and the SDK
+retries on backoff.
 
-### Email → one-time code
+Mainnet execution stays blocked until live verification lands — a reported
+live payment stays honestly `pending`, never fake-settled.
 
-The buyer enters an email and receives a 6-digit code. Codes auto-submit on
-the 6th digit. Returning buyers with a live session skip this entirely
-(silent resume).
+## Design guarantees
 
-### Device approval (conditional)
-
-A new device may require an email approval link. The checkout waits and
-continues automatically — this is a real state, not a failure.
-
-### Balance
-
-The buyer's balance is read for real — Base Sepolia USDC on Testnet, the
-Universal Account total on Mainnet — and compared to the amount.
-
-### Confirming → success
-
-On confirmation the payment executes (test: simulated settlement on the test
-tenant; live: gated until the money-mover spike is verified). Success shows
-a receipt with a reference code and a stamped **402 → 200**.
-
-</Steps>
-
-## The honest edges
-
-| State | When | What the buyer sees |
-| --- | --- | --- |
-| `insufficient` | Balance below amount | Exact shortfall; on Testnet, an in-flow [test funds grant](/docs/test-funds) |
-| `add-funds` | Buyer opts to top up | Their real deposit address + balance recheck |
-| `device-approval` | New device | "Approve from your inbox" — continues automatically |
-| `stuck` | Confirming exceeded 20s | "Still working — money may be in flight." Never claims failure while a transaction may exist |
-| `error` | Known pre-broadcast failure | "Nothing has been charged" — only promised when provably true |
+- Codes auto-submit on the 6th digit; wrong codes return to `otp` with the
+  field cleared, never a dead end.
+- Returning buyers with a live Magic session skip auth entirely (silent
+  resume) — `opening` goes straight to `balance-loading`.
+- `device-approval` is a real state with a real exit, not an error.
+- The insufficiency check includes **gas**: a wallet holding USDC it cannot
+  move routes to the [test funds grant](/docs/test-funds), which repairs
+  both legs independently.
+- Every terminal screen shows evidence: ref code, transaction hash, and a
+  Basescan link on Testnet.
 
 <Callout type="warn">
   The checkout only says "Nothing has been charged" for failures known to
   happen before broadcast. After broadcast, it says what it knows and keeps
   reconciling — an honest "in flight" beats a comforting lie.
 </Callout>
+
+---
+
+# Examples
+URL: http://localhost:3002/docs/examples
+Runnable starter examples — a storefront, a webhook receiver, and an agent that pays its own way.
+
+Three complete, env-var-driven examples live in the repo's
+[`examples/`](https://github.com/Blockchain-Oracle/tab/tree/master/examples)
+directory. Each is a workspace you can run directly, or copy out and
+`npm install @runtab/sdk`.
+
+## Storefront (Next.js)
+
+[`examples/storefront-next`](https://github.com/Blockchain-Oracle/tab/tree/master/examples/storefront-next)
+— a one-product store taking a $1.00 Testnet payment. Three files matter:
+
+- `app/page.tsx` — the `<PayButton>` (browser, publishable key)
+- `app/api/payment-intent/route.ts` — `tab.paymentIntents.create(...)`
+  (server, secret key)
+- `.env.example` — the whole configuration contract
+
+```bash
+cd examples/storefront-next
+cp .env.example .env.local   # keys from app.runtab.xyz/dashboard/keys
+pnpm install && pnpm dev     # http://localhost:4000
+```
+
+Pay with any email — an empty wallet claims sandbox funds inside the
+checkout, and the settlement is a real Base Sepolia transfer.
+
+## Webhook receiver (Node, zero framework)
+
+[`examples/webhook-node`](https://github.com/Blockchain-Oracle/tab/tree/master/examples/webhook-node)
+— verify-then-fulfill in one file, plus one-command endpoint registration:
+
+```bash
+TAB_SECRET_KEY=sk_test_… WEBHOOK_URL=https://your-tunnel/webhooks pnpm setup-webhook
+TAB_WEBHOOK_SECRET=whsec_… pnpm start
+```
+
+It demonstrates the two invariants every consumer needs: verify the
+signature on **raw bytes** before parsing, and fulfill idempotently on
+`${event.type}:${event.id}`.
+
+## Agent (MCP)
+
+[`examples/agent-mcp`](https://github.com/Blockchain-Oracle/tab/tree/master/examples/agent-mcp)
+— the `mcp.json` and walkthrough for giving any MCP client a `paid_fetch`
+tool that pays x402 charges under your cap. Pairs with the
+[Agents & x402](/docs/agents) guide.
 
 ---
 
@@ -406,11 +470,12 @@ with an amount, a network, and a transaction hash.
 
 ## Testnet is honest
 
-Tab's Testnet runs on **Base Sepolia** with real on-chain test funds —
-never simulated balances under a real-money label. Everything labeled
-"Sandbox funds — no real value" is exactly that. Live execution is gated
-until the production money-mover spike is verified; Testnet is fully
-functional end to end.
+Tab's Testnet runs on **Base Sepolia** with real on-chain money movement —
+funding is a real faucet transfer, balances are real on-chain reads, and
+**settlement is a real USDC transfer verified via RPC** with the transaction
+hash on the receipt. Everything labeled "Sandbox funds — no real value" is
+exactly that. Live (Mainnet) execution is gated until the production
+money-mover spike is verified; Testnet is fully functional end to end.
 
 ## Where to start
 
@@ -499,7 +564,7 @@ never load it at all.
       required: true,
     },
     appearance: {
-      description: "Brand overrides for the embedded checkout (accent color, radius, fonts). Values merge over Tab defaults.",
+      description: "Brand overrides: { actionColor?, accentColor? }. Values merge over Tab defaults.",
       type: "CheckoutAppearance",
     },
   }}
@@ -516,9 +581,13 @@ never load it at all.
   ship goods from the signed webhook, which retries with backoff.
 - **Executed money is never silently unreported.** If the settlement report
   fails transiently, the SDK retries (1s / 4s / 10s) before surfacing state.
-- **Testnet is labeled.** Every test surface carries
-  "Sandbox funds — no real value", and test balances are real Base Sepolia
-  USDC — see [Test funds](/docs/test-funds).
+- **Testnet is labeled — and real.** Every test surface carries
+  "Sandbox funds — no real value"; balances are real Base Sepolia USDC reads
+  and settlement is a real on-chain transfer verified by the server — see
+  [Test funds](/docs/test-funds) and [Checkout states](/docs/checkout-states).
+- **Client components only.** `PayButton` is interactive: render it inside a
+  `"use client"` component in Next.js App Router (see the
+  [storefront example](/docs/examples)).
 
 ## Theming
 
@@ -585,7 +654,9 @@ export async function GET(request: Request) {
 ```
 
 The response is `{ intent, intentToken }` — a short-lived signed token the
-checkout presents back to Tab.
+checkout presents back to Tab. With the SDK this is
+`tab.paymentIntents.create({ amount, intentUrl })` — see the
+[SDK reference](/docs/sdk).
 
 ## 4. Add the pay button
 
@@ -608,8 +679,15 @@ it can show.
 ## 5. Configure your webhook
 
 Webhooks are the trusted fulfillment signal — `onSuccess` is for UX only.
-Add an endpoint in the dashboard and verify the signature on every delivery.
-See [Webhooks](/docs/webhooks).
+Register your endpoint from code (or in the dashboard) and verify the
+signature on every delivery. See [Webhooks](/docs/webhooks).
+
+```ts
+const { endpoint, signingSecret } = await tab.webhooks.configure({
+  url: "https://your-server.example/webhooks/tab",
+});
+// signingSecret (whsec_…) is returned ONLY on first creation — store it now.
+```
 
 ## 6. Verify webhook delivery
 
@@ -619,14 +697,124 @@ from your endpoint — this is its own tracked step, and go-live requires it.
 ## 7. Make a test payment
 
 Open your storefront on Testnet and pay with any email. An empty wallet can
-claim [test funds](/docs/test-funds) without leaving the checkout. When the
-payment settles you'll have: a transaction row, a signed webhook delivery,
-and a receipt.
+claim [test funds](/docs/test-funds) without leaving the checkout. The
+payment is a **real Base Sepolia USDC transfer**, verified on-chain before
+it settles. When it does you'll have: a transaction row with the real tx
+hash, a signed webhook delivery, and a receipt.
 
 ## 8. Go live
 
 The Go Live page runs real readiness checks (live key, verified webhook,
 receiving address) before enabling Mainnet. Test keys never move real funds.
+
+---
+
+# SDK reference (server)
+URL: http://localhost:3002/docs/sdk
+The Tab server client — payments, signed payment intents, and webhook management with your secret key.
+
+Install once for both sides of the integration — `<PayButton>` in the
+browser, `Tab` on your server:
+
+```bash
+npm install @runtab/sdk
+```
+
+## `new Tab(secretKey, options?)`
+
+```ts
+import { Tab } from "@runtab/sdk";
+
+const tab = new Tab(process.env.TAB_SECRET_KEY!, {
+  apiBaseUrl: "https://app.runtab.xyz", // or set TAB_API_BASE_URL
+});
+```
+
+| Option | Type | Default |
+| --- | --- | --- |
+| `apiBaseUrl` | `string` | `TAB_API_BASE_URL` env var |
+| `request` | `typeof fetch` | global `fetch` |
+
+The key must be a `sk_test_…` or `sk_live_…` secret key. Keys never leave
+your server; the client sends them only as `Authorization: Bearer`.
+
+## Payments
+
+```ts
+const payments = await tab.payments.list({ limit: 20 }); // 1–100
+const payment = await tab.payments.retrieve(paymentId);   // UUID
+```
+
+Both return validated [`TabPayment`](/docs/api-reference) objects — the SDK
+rejects responses whose token identity, status invariants, or evidence
+fields don't hold, so a compromised network path can't hand you a payment
+shape your code didn't expect.
+
+## Payment intents
+
+Your intent endpoint signs the amount server-side. With the SDK it is two
+lines:
+
+```ts
+// app/api/payment-intent/route.ts
+export async function GET(request: Request) {
+  const { intent, intentToken } = await tab.paymentIntents.create({
+    amount: "1.00",
+    intentUrl: request.url,
+  });
+  return Response.json({ intent, intentToken });
+}
+```
+
+Requires a key with `manage` permission. The returned `intentToken` is a
+short-lived signed JWT the checkout presents back to Tab — the browser can
+never change the price.
+
+## Webhooks
+
+One endpoint per environment, managed entirely from code:
+
+```ts
+const { endpoint, signingSecret } = await tab.webhooks.configure({
+  url: "https://your-server.example/webhooks/tab",
+});
+if (signingSecret) {
+  // whsec_… — shown ONLY on first creation. Store it now.
+}
+
+await tab.webhooks.get();      // TabWebhookEndpoint | null
+await tab.webhooks.sendTest(); // fires a real signed test delivery
+await tab.webhooks.remove();
+```
+
+`configure` is idempotent: it creates the endpoint or updates the URL of the
+existing one. Rotating the secret is deliberately a dashboard action.
+
+## Errors
+
+Every failure throws `TabApiError` with a stable `code`, `message`, and the
+HTTP `status` (0 for network failures):
+
+```ts
+import { TabApiError } from "@runtab/sdk";
+
+try {
+  await tab.payments.retrieve(id);
+} catch (error) {
+  if (error instanceof TabApiError && error.code === "PAYMENT_NOT_FOUND") {
+    // 404 — not this tenant's payment
+  }
+}
+```
+
+See the [errors reference](/docs/errors) for the full catalog.
+
+## Subpaths
+
+- `@runtab/sdk` — `PayButton`, `Tab`, error types. No Particle SDK in the
+  bundle: Universal Account code loads only after a live-mode buyer
+  authenticates.
+- `@runtab/sdk/ua` — Particle Universal Account helpers (advanced).
 
 ---
 
@@ -810,10 +998,57 @@ export function verifyTabWebhook(rawBody: string, header: string, secret: string
 }
 ```
 
+## Event types
+
+| Type | When | Payload |
+| --- | --- | --- |
+| `payment.settled` | A payment settled (Testnet: after real on-chain verification) | see below |
+| `test` | You triggered a test delivery | `{"id":"<delivery UUID>","type":"test","livemode":false}` |
+
+`payment.settled` payload:
+
+```json
+{
+  "id": "<delivery UUID>",
+  "type": "payment.settled",
+  "livemode": false,
+  "transactionId": "0x<real transaction hash>",
+  "tokenChanges": [
+    {
+      "amountAtomic": "1000000",
+      "chainId": 84532,
+      "receiver": "0x<your receiving address>",
+      "tokenAddress": "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
+    }
+  ]
+}
+```
+
+## Idempotency
+
+The payload `id` is the **delivery UUID** — retries and manual resends
+preserve it. Build your idempotency key as `${event.type}:${event.id}`,
+insert it under a unique constraint, and fulfill in the same database
+transaction. Return `2xx` for an already-processed valid event.
+`transactionId` is settlement evidence, not the idempotency key.
+
+## Register from code
+
+```ts
+const { endpoint, signingSecret } = await tab.webhooks.configure({
+  url: "https://your-server.example/webhooks/tab",
+});
+await tab.webhooks.sendTest(); // real signed delivery, expects your 2xx
+```
+
+One endpoint per environment. `configure` creates or updates; the `whsec_`
+secret is returned only on first creation. Also available as raw HTTP:
+`GET/POST/PATCH/DELETE /api/v1/webhook-endpoint` with your secret key.
+
 ## Delivery semantics
 
 - Deliveries are per-mode: test endpoints receive test events only.
-- Failed deliveries retry with backoff; the dashboard shows every attempt
+- Failed deliveries make exactly 3 total attempts — immediately, after 1 minute, then after 4 minutes; the dashboard shows every attempt
   with its response code and timing, and surfaces failed deliveries as an
   alert badge.
 - A `2xx` response marks the delivery successful. Anything else (including

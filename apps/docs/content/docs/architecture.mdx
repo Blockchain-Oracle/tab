@@ -71,7 +71,7 @@ Three trust boundaries, three keys:
   end
   B->>S: Confirm
   S->>T: PATCH /v1/payments/:id (report)
-  T-->>S: settled (test simulation)
+  T->>C: verify Transfer receipt via RPC\n  T-->>S: settled (rpc, real tx hash)
   T->>M: signed webhook (x-tab-signature)
   T-->>B: receipt email (Resend)`}
 />

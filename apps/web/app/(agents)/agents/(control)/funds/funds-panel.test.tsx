@@ -50,7 +50,7 @@ describe("Agent funds surface", () => {
     expect(html).toContain(address);
     expect(html).toContain("Agent signing address");
     expect(html).toContain("Send native USDC on Base or Arbitrum to this address.");
-    expect(html).toContain("BLOCKED · B-04");
+    expect(html).toContain("LOCKED · MAINNET");
     expect(html.match(/disabled=""/g)).toHaveLength(3);
     expect(html).not.toContain("Polygon");
     expect(html).not.toContain("Topping up");

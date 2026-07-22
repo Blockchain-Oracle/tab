@@ -146,12 +146,15 @@ export function FundsPanel({
       <section aria-describedby="money-blocker" aria-labelledby="money-actions-title">
         <div className={styles.sectionHeading}>
           <div>
-            <h2 id="money-actions-title">Money movement</h2>
+            <h2 id="money-actions-title">Mainnet treasury (locked)</h2>
             <p id="money-blocker">
-              These actions stay off until the funded Particle + Magic spike passes.
+              Cross-chain treasury moves are Mainnet features. They unlock after Tab's live money
+              path passes its one-time real-funds verification — until then these buttons stay
+              honestly dead. Your Testnet agent doesn't need them: it spends its Base Sepolia
+              USDC directly.
             </p>
           </div>
-          <span className={styles.blockedChip}>BLOCKED · B-04</span>
+          <span className={styles.blockedChip}>LOCKED · MAINNET</span>
         </div>
         <div className={styles.actionGrid}>
           {blockedActions.map((action) => (

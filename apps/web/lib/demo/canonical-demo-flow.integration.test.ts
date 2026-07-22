@@ -6,6 +6,8 @@ import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeTxHash, startReceiptStub } from "../payments/verify-test-support";
+
 const magicBoundary = vi.hoisted(() => ({ verifyBuyerDidToken: vi.fn() }));
 
 vi.mock("../auth/magic-admin", async (importOriginal) => {
@@ -174,12 +176,21 @@ describe("canonical per-merchant demo flow", () => {
     expect(opened.payment).toMatchObject({ env: "test", livemode: false, status: "pending" });
 
     const didToken = "browser-issued-did-token-boundary";
-    const transactionId = `test_${randomUUID()}`;
+    const transactionId = fakeTxHash();
     const evidence = {
       buyerDidToken: didToken,
-      tokenChanges: [{ amount: "1.000000", simulation: "simulated_test" }],
+      tokenChanges: [{ amount: "1.000000" }],
       transactionId,
     };
+    // Real-settlement rail: serve the matching Base Sepolia receipt locally.
+    const stub = await startReceiptStub({
+      from: "0x9999999999999999999999999999999999999999",
+      to: "0x1111111111111111111111111111111111111111",
+      token: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      value: BigInt("1000000"),
+    });
+    const originalRpcUrl = process.env.BASE_SEPOLIA_RPC_URL;
+    process.env.BASE_SEPOLIA_RPC_URL = stub.url;
     magicBoundary.verifyBuyerDidToken.mockRejectedValueOnce(new InvalidMagicTokenError());
     const rejected = await reportPayment(
       checkoutRequest(
@@ -210,9 +221,12 @@ describe("canonical per-merchant demo flow", () => {
     );
     expect(settled.status).toBe(200);
     await expect(settled.json()).resolves.toMatchObject({
-      payment: { status: "settled", verification: { method: "simulated_test" } },
-      testMode: { simulated: true },
+      payment: { status: "settled", verification: { method: "rpc" } },
+      testMode: { network: "eip155:84532" },
     });
+    if (originalRpcUrl === undefined) delete process.env.BASE_SEPOLIA_RPC_URL;
+    else process.env.BASE_SEPOLIA_RPC_URL = originalRpcUrl;
+    await stub.close();
     expect(magicBoundary.verifyBuyerDidToken).toHaveBeenLastCalledWith(didToken);
 
     const [storedPayment] = await connection.db
@@ -225,14 +239,21 @@ describe("canonical per-merchant demo flow", () => {
     expect(storedSettlement).toMatchObject({
       livemode: false,
       particleTransactionId: transactionId,
-      verificationMethod: "simulated_test",
+      verificationMethod: "rpc",
     });
     expect(storedDelivery).toMatchObject({ result: "delivered", trigger: "auto", type: "payment" });
     expect(received).toHaveLength(1);
     const webhook = JSON.parse(received[0]?.body ?? "{}");
     expect(webhook).toMatchObject({
       livemode: false,
-      tokenChanges: [{ simulation: "simulated_test" }],
+      tokenChanges: [
+        {
+          amountAtomic: "1000000",
+          chainId: 84532,
+          receiver: "0x1111111111111111111111111111111111111111",
+          tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+        },
+      ],
       transactionId,
       type: "payment.settled",
     });

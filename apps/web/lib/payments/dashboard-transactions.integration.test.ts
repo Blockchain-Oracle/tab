@@ -1,7 +1,5 @@
 import { randomUUID } from "node:crypto";
-
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-
 import { createDatabase } from "../db/client";
 import { provisionMerchant } from "../db/provision-merchant";
 import { payments, webhookEndpoints } from "../db/schema";
@@ -9,6 +7,7 @@ import { claimWebhookDelivery, finalizeWebhookDelivery } from "../webhooks/deliv
 import { promoteDueWebhookRetry } from "../webhooks/retry-ledger";
 import { listDashboardTransactions } from "./dashboard-transactions";
 import { reportPayment } from "./payment-report";
+import { fakeTxHash, verifiedTestTransfer } from "./verify-test-support";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required for dashboard transaction tests");
@@ -66,6 +65,7 @@ async function report(merchantId: string, paymentId: string, transactionId: stri
     paymentId,
     { tokenChanges: [{ source: "dashboard-test" }], transactionId },
     { payerAddress, payerEmail: "buyer@example.test" },
+    verifiedTestTransfer,
   );
 }
 
@@ -115,7 +115,7 @@ describe("merchant dashboard transaction reads with real PostgreSQL", () => {
     const identity = await merchant("dashboard-settled");
     await endpoint(identity.merchantId);
     const row = await payment(identity.merchantId, "test");
-    const result = await report(identity.merchantId, row.id, `test_${randomUUID()}`);
+    const result = await report(identity.merchantId, row.id, fakeTxHash());
     if (!result.webhookDeliveryId) throw new Error("Expected an automatic delivery");
 
     const pending = await listDashboardTransactions(connection.db, {
@@ -123,7 +123,7 @@ describe("merchant dashboard transaction reads with real PostgreSQL", () => {
       merchantId: identity.merchantId,
     });
     expect(pending.rows[0]).toMatchObject({
-      settlement: { verificationMethod: "simulated_test" },
+      settlement: { verificationMethod: "rpc" },
       status: "settled",
       webhook: { attempt: 1, result: "pending" },
     });
@@ -150,7 +150,7 @@ describe("merchant dashboard transaction reads with real PostgreSQL", () => {
     const identity = await merchant("dashboard-retry");
     await endpoint(identity.merchantId);
     const row = await payment(identity.merchantId, "test");
-    const result = await report(identity.merchantId, row.id, `test_${randomUUID()}`);
+    const result = await report(identity.merchantId, row.id, fakeTxHash());
     if (!result.webhookDeliveryId) throw new Error("Expected an automatic delivery");
     const claim = await claimWebhookDelivery(connection.db, result.webhookDeliveryId);
     if (!claim?.leaseToken) throw new Error("Expected a delivery lease");

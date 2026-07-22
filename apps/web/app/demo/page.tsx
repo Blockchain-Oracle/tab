@@ -49,7 +49,8 @@ export default async function DemoPage() {
             <h2>{DEMO_TEST_ITEM_NAME}</h2>
             <p>
               This page uses your account, publishable key, signed intent, checkout component, and
-              webhook configuration. Test payments are simulated and do not move real funds.
+              webhook configuration. Sandbox funds move for real on Base Sepolia — no real-world
+              value.
             </p>
             <div className={styles.price}>${Number(DEMO_TEST_AMOUNT_USD).toFixed(2)}</div>
             <DemoCheckout apiBaseUrl={appUrl} publishableKey={merchant.publishableKey} />

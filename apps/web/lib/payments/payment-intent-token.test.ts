@@ -33,8 +33,8 @@ describe("signed payment intents", () => {
       ...input,
       currency: "USD",
       expiresAt: new Date("2026-07-15T12:05:00.000Z"),
-      tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-      tokenChainId: 42161,
+      tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      tokenChainId: 84532,
     });
   });
 
@@ -82,8 +82,8 @@ describe("signed payment intents", () => {
       env: input.env,
       intentUrl: input.intentUrl,
       receiver: input.receiver,
-      tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-      tokenChainId: 42161,
+      tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      tokenChainId: 84532,
     })
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
       .setIssuer("tab")

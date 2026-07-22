@@ -12,6 +12,7 @@ import { dispatchWebhookDeliveryById } from "../webhooks/deliver";
 import { createWebhookSecret, encryptWebhookSecret } from "../webhooks/secret-crypto";
 import { reportPayment } from "./payment-report";
 import { paymentReportResponseBody } from "./payment-report-response";
+import { fakeTxHash, verifiedTestTransfer } from "./verify-test-support";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required for callback parity tests");
@@ -102,12 +103,12 @@ describe("test callback and webhook settlement parity", () => {
         merchantId: identity.merchantId,
         refCode: `TAB-${randomUUID().slice(0, 8).toUpperCase()}`,
         receiver: merchantReceiver,
-        tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-        tokenChainId: 42161,
+        tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+        tokenChainId: 84532,
       })
       .returning({ id: payments.id });
     if (!payment) throw new Error("Expected payment");
-    const transactionId = `test_${randomUUID()}`;
+    const transactionId = fakeTxHash();
 
     const result = await reportPayment(
       connection.db,
@@ -118,9 +119,10 @@ describe("test callback and webhook settlement parity", () => {
         payerAddress: "0x9999999999999999999999999999999999999999",
         payerEmail: "buyer@example.test",
       },
+      verifiedTestTransfer,
     );
     if (result.status !== "settled") throw new Error("Expected test settlement");
-    const responseBody = paymentReportResponseBody(payment.id, result);
+    const responseBody = paymentReportResponseBody(payment.id, result, "test");
     if (responseBody.payment.status !== "settled") throw new Error("Expected settled response");
 
     const [storedSettlement] = await connection.db

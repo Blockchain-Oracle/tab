@@ -1,14 +1,13 @@
 import { randomUUID } from "node:crypto";
-
 import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-
 import { createSessionToken, SESSION_COOKIE_NAME } from "../../../../lib/auth/session";
 import { createDatabase } from "../../../../lib/db/client";
 import { provisionMerchant } from "../../../../lib/db/provision-merchant";
 import { merchants, payments, settlements } from "../../../../lib/db/schema";
 import { closeServerDatabase } from "../../../../lib/db/server";
+import { fakeTxHash } from "../../../../lib/payments/verify-test-support";
 import { POST } from "./route";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -33,7 +32,7 @@ async function merchant() {
 }
 
 async function settlement(merchantId: string) {
-  const transactionId = `test_${randomUUID()}`;
+  const transactionId = fakeTxHash();
   const [payment] = await connection.db
     .insert(payments)
     .values({

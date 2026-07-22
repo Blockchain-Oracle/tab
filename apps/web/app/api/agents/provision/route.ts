@@ -56,7 +56,15 @@ function magicError(error: MagicExpressError) {
           error.code === "SIGNER_PROVIDER_UNAVAILABLE"
         ? 503
         : 502;
-  return leashError(error.code, "The wallet provider request could not be completed.", status);
+  // Self-explaining failures: include the provider's stage/status so the
+  // owner (and the next debugging session) sees WHERE Magic rejected it.
+  const stage = error.providerStage ? ` Provider stage: ${error.providerStage}.` : "";
+  const providerStatus = error.providerStatus ? ` Provider HTTP ${error.providerStatus}.` : "";
+  return leashError(
+    error.code,
+    `The wallet provider request could not be completed.${stage}${providerStatus}`,
+    status,
+  );
 }
 
 function bestEffortCancel(cancel: () => Promise<unknown>) {

@@ -93,8 +93,8 @@ describe("POST /api/v1/payments create-at-open with real PostgreSQL", () => {
         receiver,
         status: "pending",
         token: {
-          address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-          chainId: 42161,
+          address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+          chainId: 84532,
         },
       },
       paymentId: expect.any(String),

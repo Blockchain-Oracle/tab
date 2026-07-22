@@ -89,24 +89,34 @@ export function useCheckoutPayment(options: Options) {
     }, CONFIRMING_DELAY_NOTICE_MS);
     try {
       if (context.mode === "test") {
-        const result = options.services.createTestPayment({
+        const result = await options.services.executeTestPayment({
+          buyer,
           intent: intentResponse.intent,
-          paymentId: opened.paymentId,
-        });
-        const report = await options.services.reportPayment({
-          apiBaseUrl: options.apiBaseUrl,
-          buyerDidToken: buyer.didToken,
-          intent: intentResponse.intent,
-          paymentId: opened.paymentId,
           publishableKey: options.publishableKey,
-          tokenChanges: result.tokenChanges,
-          transactionId: result.transactionId,
         });
+        // The transfer is real; the server re-verifies it via RPC. A 202
+        // (receipt not yet indexed) is retried on the same backoff the live
+        // rail uses — sent money must never go unreported.
+        let report: Awaited<ReturnType<typeof options.services.reportPayment>> | undefined;
+        for (let attempt = 0; attempt <= REPORT_RETRY_DELAYS_MS.length; attempt += 1) {
+          report = await options.services.reportPayment({
+            apiBaseUrl: options.apiBaseUrl,
+            buyerDidToken: buyer.didToken,
+            intent: intentResponse.intent,
+            paymentId: opened.paymentId,
+            publishableKey: options.publishableKey,
+            tokenChanges: result.tokenChanges,
+            transactionId: result.transactionId,
+          });
+          if (report.payment.status === "settled") break;
+          const delay = REPORT_RETRY_DELAYS_MS[attempt];
+          if (delay === undefined) break;
+          await wait(delay);
+        }
         if (
           activeRun !== runtime.run.current ||
-          report.payment.status !== "settled" ||
-          !("testMode" in report) ||
-          report.testMode.simulated !== true
+          report?.payment.status !== "settled" ||
+          !("testMode" in report)
         ) {
           throw new Error("Test settlement was not committed");
         }

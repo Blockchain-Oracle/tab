@@ -16,6 +16,7 @@ import { getServerDatabase } from "../../../../../lib/db/server";
 import {
   PaymentNotFoundError,
   PaymentReportConflictError,
+  PaymentVerificationFailedError,
   reportPayment,
 } from "../../../../../lib/payments/payment-report";
 import { processPaymentReportAfterCommit } from "../../../../../lib/payments/payment-report-post-commit";
@@ -27,6 +28,7 @@ import {
 import { paymentReportResponseBody } from "../../../../../lib/payments/payment-report-response";
 import { paymentResponse } from "../../../../../lib/payments/payment-response";
 import { retrievePayment } from "../../../../../lib/payments/read-payments";
+import { TestVerificationUnavailableError } from "../../../../../lib/payments/verify-test";
 
 type RouteContext = { params: Promise<{ id: string }> };
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -131,7 +133,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     await processPaymentReportAfterCommit(database, id, result);
 
     return withReportCors(
-      NextResponse.json(paymentReportResponseBody(id, result), {
+      NextResponse.json(paymentReportResponseBody(id, result, principal.env), {
         headers: NO_STORE_HEADERS,
         status: result.status === "settled" ? 200 : 202,
       }),
@@ -161,6 +163,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
     if (error instanceof PaymentReportConflictError) {
       return reportError(error.code, error.message, 409);
+    }
+    if (error instanceof PaymentVerificationFailedError) {
+      return reportError(error.code, error.message, 422);
+    }
+    if (error instanceof TestVerificationUnavailableError) {
+      return reportError(error.code, error.message, 503);
     }
     return withReportCors(apiKeyError(error));
   }

@@ -7,6 +7,7 @@ import { createDatabase } from "../db/client";
 import { provisionMerchant } from "../db/provision-merchant";
 import { payments, settlements } from "../db/schema";
 import { PaymentReportConflictError, reportPayment } from "./payment-report";
+import { fakeTxHash, verifiedTestTransfer } from "./verify-test-support";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required for payment-report tests");
@@ -34,15 +35,18 @@ async function payment(merchantId: string, env: "live" | "test") {
       merchantId,
       refCode: `TAB-${randomUUID().slice(0, 8).toUpperCase()}`,
       receiver: "0x1111111111111111111111111111111111111111",
-      tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-      tokenChainId: 42161,
+      tokenAddress:
+        env === "live"
+          ? "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+          : "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      tokenChainId: env === "live" ? 42161 : 84532,
     })
     .returning({ id: payments.id });
   if (!row) throw new Error("Expected a payment row");
   return row.id;
 }
 
-function evidence(transactionId = `test_${randomUUID()}`) {
+function evidence(transactionId = fakeTxHash()) {
   return {
     tokenChanges: [{ from: payerAddress, source: "tab_normalized_candidate" }],
     transactionId,
@@ -65,18 +69,26 @@ describe("payment reporting with real PostgreSQL", () => {
     const principal = { env: "test" as const, merchantId: identity.merchantId };
 
     const results = await Promise.all([
-      reportPayment(connection.db, principal, paymentId, report, {
-        payerAddress,
-        payerEmail: "buyer@example.test",
-      }),
-      reportPayment(connection.db, principal, paymentId, report, {
-        payerAddress,
-        payerEmail: "buyer@example.test",
-      }),
+      reportPayment(
+        connection.db,
+        principal,
+        paymentId,
+        report,
+        { payerAddress, payerEmail: "buyer@example.test" },
+        verifiedTestTransfer,
+      ),
+      reportPayment(
+        connection.db,
+        principal,
+        paymentId,
+        report,
+        { payerAddress, payerEmail: "buyer@example.test" },
+        verifiedTestTransfer,
+      ),
     ]);
     expect(results).toEqual([
-      expect.objectContaining({ status: "settled", verificationMethod: "simulated_test" }),
-      expect.objectContaining({ status: "settled", verificationMethod: "simulated_test" }),
+      expect.objectContaining({ status: "settled", verificationMethod: "rpc" }),
+      expect.objectContaining({ status: "settled", verificationMethod: "rpc" }),
     ]);
 
     const [storedPayment] = await connection.db
@@ -103,13 +115,12 @@ describe("payment reporting with real PostgreSQL", () => {
       tokenChangesJson: [
         {
           amountAtomic: "7250000",
-          chainId: 42161,
+          chainId: 84532,
           receiver: "0x1111111111111111111111111111111111111111",
-          simulation: "simulated_test",
-          tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+          tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
         },
       ],
-      verificationMethod: "simulated_test",
+      verificationMethod: "rpc",
       verificationTrigger: "inline",
     });
   });
@@ -126,6 +137,7 @@ describe("payment reporting with real PostgreSQL", () => {
         paymentId,
         report,
         { payerAddress, payerEmail: "buyer@example.test" },
+        verifiedTestTransfer,
       ),
     ).resolves.toMatchObject({ status: "pending", verificationMethod: null });
 
@@ -154,21 +166,30 @@ describe("payment reporting with real PostgreSQL", () => {
         paymentId,
         candidates[0],
         { payerAddress, payerEmail: "buyer@example.test" },
+        verifiedTestTransfer,
       ),
     ).rejects.toMatchObject({ code: "PAYMENT_NOT_FOUND" });
     await expect(
-      reportPayment(connection.db, principal, livePaymentId, candidates[0], {
-        payerAddress,
-        payerEmail: "buyer@example.test",
-      }),
+      reportPayment(
+        connection.db,
+        principal,
+        livePaymentId,
+        candidates[0],
+        { payerAddress, payerEmail: "buyer@example.test" },
+        verifiedTestTransfer,
+      ),
     ).rejects.toMatchObject({ code: "PAYMENT_NOT_FOUND" });
 
     const results = await Promise.allSettled(
       candidates.map((candidate) =>
-        reportPayment(connection.db, principal, paymentId, candidate, {
-          payerAddress,
-          payerEmail: "buyer@example.test",
-        }),
+        reportPayment(
+          connection.db,
+          principal,
+          paymentId,
+          candidate,
+          { payerAddress, payerEmail: "buyer@example.test" },
+          verifiedTestTransfer,
+        ),
       ),
     );
     const fulfilled = results.filter((result) => result.status === "fulfilled");

@@ -78,7 +78,9 @@ describe("v1 webhook endpoint API (secret key)", () => {
     const owner = await merchant();
     const key = await secretKey(owner.merchantId);
 
-    const created = await POST(request("POST", key, { url: "https://merchant.example.test/hooks" }));
+    const created = await POST(
+      request("POST", key, { url: "https://merchant.example.test/hooks" }),
+    );
     expect(created.status).toBe(201);
     const createdBody = (await created.json()) as {
       endpoint: { url: string };
@@ -94,7 +96,9 @@ describe("v1 webhook endpoint API (secret key)", () => {
     // The signing secret is never re-shown after creation.
     expect(JSON.stringify(readBody)).not.toContain(createdBody.secret);
 
-    const updated = await PATCH(request("PATCH", key, { url: "https://merchant.example.test/hooks2" }));
+    const updated = await PATCH(
+      request("PATCH", key, { url: "https://merchant.example.test/hooks2" }),
+    );
     expect(updated.status).toBe(200);
 
     const removed = await DELETE(request("DELETE", key));
@@ -108,7 +112,9 @@ describe("v1 webhook endpoint API (secret key)", () => {
     const owner = await merchant();
     const key = await secretKey(owner.merchantId, "read_only");
 
-    const created = await POST(request("POST", key, { url: "https://merchant.example.test/hooks" }));
+    const created = await POST(
+      request("POST", key, { url: "https://merchant.example.test/hooks" }),
+    );
     expect(created.status).toBe(403);
 
     const read = await GET(request("GET", key));

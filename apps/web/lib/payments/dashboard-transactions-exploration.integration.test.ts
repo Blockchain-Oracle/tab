@@ -1,8 +1,6 @@
 import { randomUUID } from "node:crypto";
-
 import { eq } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-
 import { createDatabase } from "../db/client";
 import { provisionMerchant } from "../db/provision-merchant";
 import { payments, webhookDeliveries, webhookEndpoints } from "../db/schema";
@@ -10,6 +8,7 @@ import { claimWebhookDelivery, finalizeWebhookDelivery } from "../webhooks/deliv
 import { promoteDueWebhookRetry } from "../webhooks/retry-ledger";
 import { getDashboardTransaction, listDashboardTransactions } from "./dashboard-transactions";
 import { reportPayment } from "./payment-report";
+import { fakeTxHash, verifiedTestTransfer } from "./verify-test-support";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required for dashboard transaction tests");
@@ -57,8 +56,9 @@ async function report(merchantId: string, paymentId: string) {
     connection.db,
     { env: "test", merchantId },
     paymentId,
-    { tokenChanges: [{ source: "dashboard-test" }], transactionId: `test_${randomUUID()}` },
+    { tokenChanges: [{ source: "dashboard-test" }], transactionId: fakeTxHash() },
     { payerAddress, payerEmail: "buyer@example.test" },
+    verifiedTestTransfer,
   );
 }
 
@@ -269,7 +269,7 @@ describe("merchant transaction exploration with real PostgreSQL", () => {
       payerAddress,
       paymentId: row.id,
       reportedTokenChanges: [{ source: "dashboard-test" }],
-      settlement: { verificationMethod: "simulated_test" },
+      settlement: { verificationMethod: "rpc" },
     });
     expect(detail).not.toHaveProperty("payerEmail");
     await expect(

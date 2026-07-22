@@ -14,7 +14,9 @@ export class DemoPaymentNotFoundError extends Error {
 }
 
 export async function completeDemoOrder(db: Database, merchantId: string, transactionId: string) {
-  if (!transactionId.startsWith("test_") || transactionId.length > 256) {
+  // Test settlements are real Base Sepolia transactions now — the id is the
+  // on-chain transaction hash.
+  if (!/^0x[0-9a-f]{64}$/i.test(transactionId)) {
     throw new DemoPaymentNotFoundError();
   }
 

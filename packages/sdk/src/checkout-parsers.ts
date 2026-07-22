@@ -1,5 +1,4 @@
 import { getAddress, isAddress } from "viem";
-
 import {
   CheckoutApiError,
   type CheckoutContext,
@@ -8,6 +7,7 @@ import {
   type PaymentIntent,
   type PaymentReportResponse,
 } from "./checkout-types";
+import { matchesTokenIdentity, tokenForMode } from "./token-identity";
 
 const AMOUNT = /^(?:0\.\d{1,6}|[1-9]\d{0,13}(?:\.\d{1,6})?)$/;
 const UUID = /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i;
@@ -42,8 +42,8 @@ function paymentIntent(value: unknown): PaymentIntent {
     input.currency !== "USD" ||
     (input.mode !== "test" && input.mode !== "live") ||
     !receiver ||
-    token?.chainId !== 42161 ||
-    !tokenAddress
+    !tokenAddress ||
+    !matchesTokenIdentity(input.mode, token?.chainId, tokenAddress)
   ) {
     throw new CheckoutApiError("INVALID_PAYMENT_INTENT", "The payment details are invalid.");
   }
@@ -52,7 +52,7 @@ function paymentIntent(value: unknown): PaymentIntent {
     currency: "USD",
     mode: input.mode,
     receiver,
-    token: { address: tokenAddress, chainId: 42161 },
+    token: { address: tokenAddress, chainId: tokenForMode(input.mode).chainId },
   };
 }
 
@@ -114,8 +114,8 @@ export function parseOpenedPayment(value: unknown): OpenedPayment {
     payment.livemode !== (env === "live") ||
     !receiver ||
     payment.status !== "pending" ||
-    token?.chainId !== 42161 ||
     !tokenAddress ||
+    !matchesTokenIdentity(env, token?.chainId, tokenAddress) ||
     !paymentId ||
     !UUID.test(paymentId) ||
     !refCode ||
@@ -131,7 +131,7 @@ export function parseOpenedPayment(value: unknown): OpenedPayment {
       livemode: payment.livemode,
       receiver,
       status: "pending",
-      token: { address: tokenAddress, chainId: 42161 },
+      token: { address: tokenAddress, chainId: tokenForMode(env).chainId },
     },
     paymentId,
     refCode,
@@ -182,8 +182,11 @@ export function parsePaymentReport(
 
   if (payment.status === "pending") {
     const pending = record(body?.verification);
+    const pendingCode =
+      expectedIntent.mode === "live"
+        ? "LIVE_SETTLEMENT_VERIFICATION_BLOCKED"
+        : "TEST_SETTLEMENT_PENDING";
     if (
-      expectedIntent.mode !== "live" ||
       !exactKeys(body, ["payment", "verification"]) ||
       !exactKeys(payment, ["id", "reportedTransactionId", "status", "verification"]) ||
       !exactKeys(verification, ["method", "verifiedAt"]) ||
@@ -191,7 +194,7 @@ export function parsePaymentReport(
       verification.verifiedAt !== null ||
       !pending ||
       !exactKeys(pending, ["code", "message"]) ||
-      pending.code !== "LIVE_SETTLEMENT_VERIFICATION_BLOCKED" ||
+      pending.code !== pendingCode ||
       !requiredString(pending.message)
     ) {
       throw new CheckoutApiError(
@@ -219,19 +222,18 @@ export function parsePaymentReport(
       "verification",
     ]) ||
     !exactKeys(verification, ["method", "verifiedAt"]) ||
-    verification.method !== "simulated_test" ||
+    verification.method !== "rpc" ||
     typeof verifiedAt !== "string" ||
     Number.isNaN(Date.parse(verifiedAt)) ||
     new Date(verifiedAt).toISOString() !== verifiedAt ||
     !testMode ||
-    !exactKeys(testMode, ["message", "simulated"]) ||
-    testMode.simulated !== true ||
+    !exactKeys(testMode, ["message", "network"]) ||
+    testMode.network !== "eip155:84532" ||
     !requiredString(testMode.message) ||
     !change ||
-    !exactKeys(change, ["amountAtomic", "chainId", "receiver", "simulation", "tokenAddress"]) ||
+    !exactKeys(change, ["amountAtomic", "chainId", "receiver", "tokenAddress"]) ||
     change.amountAtomic !== amountUnits(expectedIntent.amount).toString() ||
     change.chainId !== expectedIntent.token.chainId ||
-    change.simulation !== "simulated_test" ||
     !receiver ||
     getAddress(receiver) !== getAddress(expectedIntent.receiver) ||
     !tokenAddress ||

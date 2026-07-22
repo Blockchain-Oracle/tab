@@ -4,15 +4,15 @@ import { parsePaymentReport } from "./checkout-parsers";
 import type { PaymentIntent } from "./checkout-types";
 
 const paymentId = "1d15cc1f-30a7-4f28-9d33-b93f4fd806aa";
-const transactionId = "test_server_authority";
+const transactionId = `0x${"cd".repeat(32)}`;
 const intent: PaymentIntent = {
   amount: "12.00",
   currency: "USD",
   mode: "test",
   receiver: "0x1111111111111111111111111111111111111111",
   token: {
-    address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-    chainId: 42161,
+    address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    chainId: 84532,
   },
 };
 
@@ -25,17 +25,16 @@ function settledResponse() {
       tokenChanges: [
         {
           amountAtomic: "12000000",
-          chainId: 42161,
+          chainId: 84532,
           receiver: intent.receiver,
-          simulation: "simulated_test",
           tokenAddress: intent.token.address,
         },
       ],
-      verification: { method: "simulated_test", verifiedAt: "2026-07-16T12:00:00.000Z" },
+      verification: { method: "rpc", verifiedAt: "2026-07-16T12:00:00.000Z" },
     },
     testMode: {
-      message: "Test payments are simulated and do not move real funds.",
-      simulated: true,
+      message: "Sandbox settlement — real USDC on Base Sepolia.",
+      network: "eip155:84532",
     },
   };
 }
@@ -51,7 +50,6 @@ describe("payment report parser", () => {
     ["amount", { amountAtomic: "11999999" }],
     ["chain", { chainId: 8453 }],
     ["receiver", { receiver: "0x2222222222222222222222222222222222222222" }],
-    ["simulation label", { simulation: "chain_verified" }],
     ["token", { tokenAddress: "0x3333333333333333333333333333333333333333" }],
   ])("rejects a server settlement with mismatched %s authority", (_label, change) => {
     const response = settledResponse();

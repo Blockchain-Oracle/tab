@@ -1,5 +1,6 @@
 import { TabApiError } from "./tab-errors";
 import { TabPaymentIntents, TabWebhooks } from "./tab-resources";
+import { matchesTokenIdentity } from "./token-identity";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -81,7 +82,6 @@ const AMOUNT = /^(?:0\.\d{1,6}|[1-9]\d{0,13}(?:\.\d{1,6})?)$/;
 const ADDRESS = /^0x[0-9a-f]{40}$/i;
 const REF_CODE = /^TAB-[0-9A-HJKMNP-TV-Z]{8}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const ARBITRUM_USDC = "0xaf88d065e77c8cc2239327c5edb3a432268e5831";
 
 function isoDate(value: unknown): value is string {
   if (typeof value !== "string") return false;
@@ -156,9 +156,7 @@ function parsePayment(value: unknown): TabPayment {
         payment.reportedAt === null ||
         payment.reportedTransactionId === null ||
         payment.payerAddress === null)) ||
-    token.chainId !== 42161 ||
-    typeof token.address !== "string" ||
-    token.address.toLowerCase() !== ARBITRUM_USDC
+    !matchesTokenIdentity(env, token.chainId, token.address)
   ) {
     throw new TabApiError("INVALID_RESPONSE", "Tab returned an invalid response.");
   }

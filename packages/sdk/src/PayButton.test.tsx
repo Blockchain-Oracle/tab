@@ -74,7 +74,7 @@ describe("PayButton", () => {
     expect(restoredButton).toHaveFocus();
   });
 
-  it("runs headless OTP and commits an explicitly simulated test payment without broadcasting", async () => {
+  it("runs headless OTP and settles a real sandbox transfer through the report path", async () => {
     const user = userEvent.setup();
     const services = baseServices();
     services.restoreBuyer.mockResolvedValue(undefined);
@@ -83,30 +83,31 @@ describe("PayButton", () => {
       depositAddress: buyer.ownerAddress,
       universalAccount,
     });
-    services.createTestPayment.mockReturnValue({
-      tokenChanges: { simulation: "simulated_test" },
-      transactionId: "test_checkout_transaction",
+    const realTxHash = `0x${"ab".repeat(32)}`;
+    services.executeTestPayment.mockResolvedValue({
+      tokenChanges: { amountAtomic: "12000000", chainId: 84532 },
+      transactionId: realTxHash,
     });
     const canonicalTokenChanges = [
       {
         amountAtomic: "12000000",
-        chainId: 42161,
+        chainId: 84532,
         receiver: "0x1111111111111111111111111111111111111111",
-        simulation: "simulated_test",
-        tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
       },
     ] satisfies [CanonicalTestTokenChange];
     services.reportPayment.mockResolvedValue({
       payment: {
         id: openedPayment.paymentId,
-        reportedTransactionId: "test_checkout_transaction",
+        reportedTransactionId: realTxHash,
         status: "settled",
         tokenChanges: canonicalTokenChanges,
-        verification: { method: "simulated_test", verifiedAt: new Date().toISOString() },
+        verification: { method: "rpc", verifiedAt: new Date().toISOString() },
       },
       testMode: {
-        message: "Test payments are simulated and do not move real funds.",
-        simulated: true,
+        message:
+          "Sandbox settlement — real USDC moved on Base Sepolia testnet; no real-world value.",
+        network: "eip155:84532",
       },
     });
     let resolveBuyer!: (value: typeof buyer) => void;
@@ -154,9 +155,9 @@ describe("PayButton", () => {
       intent: expect.objectContaining({ amount: "12.00", mode: "test" }),
       paymentId: openedPayment.paymentId,
       publishableKey: "pk_test_browser_key",
-      tokenChanges: { simulation: "simulated_test" },
-      transactionId: "test_checkout_transaction",
+      tokenChanges: { amountAtomic: "12000000", chainId: 84532 },
+      transactionId: realTxHash,
     });
-    expect(onSuccess).toHaveBeenCalledWith("test_checkout_transaction", canonicalTokenChanges);
+    expect(onSuccess).toHaveBeenCalledWith(realTxHash, canonicalTokenChanges);
   });
 });

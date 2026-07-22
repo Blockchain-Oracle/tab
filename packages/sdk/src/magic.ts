@@ -137,17 +137,25 @@ export function startMagicEmailOtp(
   };
 }
 
-let cachedClient: { client: MagicBrowserClientPort; publishableKey: string } | undefined;
+export type MagicNetwork = { chainId: number; rpcUrl: string };
 
-export async function getMagicClient(publishableKey: string) {
+const cachedClients = new Map<string, MagicBrowserClientPort>();
+
+/**
+ * Without a network, `new Magic(key)` targets Ethereum mainnet — fine for
+ * auth, WRONG for test-mode transactions. Callers that sign on Base Sepolia
+ * must pass the network; instances are cached per (key, chain).
+ */
+export async function getMagicClient(publishableKey: string, network?: MagicNetwork) {
   const key = publishableKey.trim();
   if (typeof window === "undefined" || !key) throw new InvalidMagicSessionError();
-  if (!cachedClient || cachedClient.publishableKey !== key) {
-    const { Magic } = await import("magic-sdk");
-    cachedClient = {
-      client: new Magic(key) as unknown as MagicBrowserClientPort,
-      publishableKey: key,
-    };
-  }
-  return cachedClient.client;
+  const cacheKey = `${key}:${network?.chainId ?? "auth"}`;
+  const cached = cachedClients.get(cacheKey);
+  if (cached) return cached;
+  const { Magic } = await import("magic-sdk");
+  const client = (network
+    ? new Magic(key, { network })
+    : new Magic(key)) as unknown as MagicBrowserClientPort;
+  cachedClients.set(cacheKey, client);
+  return client;
 }

@@ -87,8 +87,8 @@ describe("published Tab client against the real secret-key API and PostgreSQL", 
         merchantId: identity.merchantId,
         refCode: `TAB-${randomUUID().slice(0, 8).toUpperCase()}`,
         receiver: "0x1111111111111111111111111111111111111111",
-        tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-        tokenChainId: 42161,
+        tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+        tokenChainId: 84532,
       })
       .returning({ id: payments.id });
     if (!payment) throw new Error("Expected a payment row");

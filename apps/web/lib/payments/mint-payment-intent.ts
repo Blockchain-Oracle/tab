@@ -6,11 +6,10 @@ import { InvalidApiKeyError, type SecretApiKeyPrincipal } from "../auth/api-key"
 import type { Database } from "../db/client";
 import { merchants } from "../db/schema";
 import {
-  ARBITRUM_CHAIN_ID,
-  ARBITRUM_USDC_ADDRESS,
   parseIntentAuditUrl,
   parsePaymentAddress,
   parseUsdAmount,
+  paymentTokenForEnv,
 } from "./payment-intent";
 import { signPaymentIntentToken } from "./payment-intent-token";
 
@@ -79,8 +78,8 @@ export async function mintPaymentIntent(
       mode: principal.env,
       receiver,
       token: {
-        address: ARBITRUM_USDC_ADDRESS,
-        chainId: ARBITRUM_CHAIN_ID,
+        address: paymentTokenForEnv(principal.env).tokenAddress,
+        chainId: paymentTokenForEnv(principal.env).tokenChainId,
       },
     },
     intentToken,

@@ -2,9 +2,14 @@ import type { reportPayment } from "./payment-report";
 
 type PaymentReportResult = Awaited<ReturnType<typeof reportPayment>>;
 
-const TEST_MODE_MESSAGE = "Test payments are simulated and do not move real funds.";
+const TEST_MODE_MESSAGE =
+  "Sandbox settlement — real USDC moved on Base Sepolia testnet; no real-world value.";
 
-export function paymentReportResponseBody(paymentId: string, result: PaymentReportResult) {
+export function paymentReportResponseBody(
+  paymentId: string,
+  result: PaymentReportResult,
+  env: "live" | "test",
+) {
   if (result.status === "settled") {
     return {
       payment: {
@@ -17,7 +22,7 @@ export function paymentReportResponseBody(paymentId: string, result: PaymentRepo
           verifiedAt: result.verifiedAt?.toISOString() ?? null,
         },
       },
-      testMode: { message: TEST_MODE_MESSAGE, simulated: true as const },
+      testMode: { message: TEST_MODE_MESSAGE, network: "eip155:84532" as const },
     };
   }
 
@@ -28,10 +33,16 @@ export function paymentReportResponseBody(paymentId: string, result: PaymentRepo
       status: result.status,
       verification: { method: null, verifiedAt: null },
     },
-    verification: {
-      code: "LIVE_SETTLEMENT_VERIFICATION_BLOCKED" as const,
-      message:
-        "Live payment evidence was recorded, but settlement remains pending until live verification is available.",
-    },
+    verification:
+      env === "test"
+        ? {
+            code: "TEST_SETTLEMENT_PENDING" as const,
+            message: "The Base Sepolia transaction is not yet indexed. Report again shortly.",
+          }
+        : {
+            code: "LIVE_SETTLEMENT_VERIFICATION_BLOCKED" as const,
+            message:
+              "Live payment evidence was recorded, but settlement remains pending until live verification is available.",
+          },
   };
 }

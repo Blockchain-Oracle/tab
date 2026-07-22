@@ -15,8 +15,8 @@ const intentResponse = {
     mode: "test" as const,
     receiver: "0x1111111111111111111111111111111111111111",
     token: {
-      address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-      chainId: 42161 as const,
+      address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      chainId: 84532 as const,
     },
   },
   intentToken: "signed.intent.token",
@@ -201,10 +201,9 @@ describe("checkout API client", () => {
     const tokenChanges = [
       {
         amountAtomic: "12000000",
-        chainId: 42161,
+        chainId: 84532,
         receiver: "0x1111111111111111111111111111111111111111",
-        simulation: "simulated_test",
-        tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        tokenAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
       },
     ];
     const responseBody = {
@@ -213,11 +212,11 @@ describe("checkout API client", () => {
         reportedTransactionId: "test_server_authority",
         status: "settled",
         tokenChanges,
-        verification: { method: "simulated_test", verifiedAt: "2026-07-16T12:00:00.000Z" },
+        verification: { method: "rpc", verifiedAt: "2026-07-16T12:00:00.000Z" },
       },
       testMode: {
-        message: "Test payments are simulated and do not move real funds.",
-        simulated: true,
+        message: "Sandbox settlement — real USDC on Base Sepolia.",
+        network: "eip155:84532",
       },
     };
     const request = vi.fn().mockResolvedValue(jsonResponse(responseBody));
@@ -246,11 +245,11 @@ describe("checkout API client", () => {
           id: paymentId,
           reportedTransactionId: "test_missing_authority",
           status: "settled",
-          verification: { method: "simulated_test", verifiedAt: "2026-07-16T12:00:00.000Z" },
+          verification: { method: "rpc", verifiedAt: "2026-07-16T12:00:00.000Z" },
         },
         testMode: {
-          message: "Test payments are simulated and do not move real funds.",
-          simulated: true,
+          message: "Sandbox settlement — real USDC on Base Sepolia.",
+          network: "eip155:84532",
         },
       }),
     );

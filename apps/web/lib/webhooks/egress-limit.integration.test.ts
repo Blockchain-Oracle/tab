@@ -12,6 +12,7 @@ import { provisionMerchant } from "../db/provision-merchant";
 import { payments, settlements, webhookDeliveries, webhookEndpoints } from "../db/schema";
 import { reportPayment } from "../payments/payment-report";
 import { processPaymentReportAfterCommit } from "../payments/payment-report-post-commit";
+import { fakeTxHash, verifiedTestTransfer } from "../payments/verify-test-support";
 import { enqueuePaymentSettledWebhook } from "./enqueue";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -98,8 +99,9 @@ async function reportTestPayment(principal: Awaited<ReturnType<typeof scope>>) {
     connection.db,
     { env: "test", merchantId: principal.merchantId },
     paymentId,
-    { tokenChanges: [], transactionId: `test_${randomUUID()}` },
+    { tokenChanges: [], transactionId: fakeTxHash() },
     { payerAddress: payer, payerEmail: "buyer@example.test" },
+    verifiedTestTransfer,
   );
   return { paymentId, result };
 }

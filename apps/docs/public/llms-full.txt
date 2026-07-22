@@ -263,7 +263,7 @@ Three trust boundaries, three keys:
 - **`agent_sk_…`** lives only in the `tab-mcp` proxy environment — the AI
   agent itself never sees a key, and the cap is enforced outside the model.
 
-## Human checkout (test mode)
+## Human checkout (Testnet)
 
 <Mermaid
   chart={`sequenceDiagram
@@ -351,8 +351,8 @@ continues automatically — this is a real state, not a failure.
 
 ### Balance
 
-The buyer's balance is read for real — Base Sepolia USDC in test mode, the
-Universal Account total in live mode — and compared to the amount.
+The buyer's balance is read for real — Base Sepolia USDC on Testnet, the
+Universal Account total on Mainnet — and compared to the amount.
 
 ### Confirming → success
 
@@ -366,7 +366,7 @@ a receipt with a reference code and a stamped **402 → 200**.
 
 | State | When | What the buyer sees |
 | --- | --- | --- |
-| `insufficient` | Balance below amount | Exact shortfall; in test mode, an in-flow [test funds grant](/docs/test-funds) |
+| `insufficient` | Balance below amount | Exact shortfall; on Testnet, an in-flow [test funds grant](/docs/test-funds) |
 | `add-funds` | Buyer opts to top up | Their real deposit address + balance recheck |
 | `device-approval` | New device | "Approve from your inbox" — continues automatically |
 | `stuck` | Confirming exceeded 20s | "Still working — money may be in flight." Never claims failure while a transaction may exist |
@@ -404,12 +404,12 @@ with an amount, a network, and a transaction hash.
 | **Merchant dashboard** | You | Keys, webhooks, transactions, go-live |
 | **Agent dashboard** | Agent owners | Provision, cap, fund, connect, revoke |
 
-## Test mode is honest
+## Testnet is honest
 
-Tab's test mode runs on **Base Sepolia** with real on-chain test funds —
+Tab's Testnet runs on **Base Sepolia** with real on-chain test funds —
 never simulated balances under a real-money label. Everything labeled
 "Sandbox funds — no real value" is exactly that. Live execution is gated
-until the production money-mover spike is verified; test mode is fully
+until the production money-mover spike is verified; Testnet is fully
 functional end to end.
 
 ## Where to start
@@ -516,7 +516,7 @@ never load it at all.
   ship goods from the signed webhook, which retries with backoff.
 - **Executed money is never silently unreported.** If the settlement report
   fails transiently, the SDK retries (1s / 4s / 10s) before surfacing state.
-- **Test mode is labeled.** Every test surface carries
+- **Testnet is labeled.** Every test surface carries
   "Sandbox funds — no real value", and test balances are real Base Sepolia
   USDC — see [Test funds](/docs/test-funds).
 
@@ -618,7 +618,7 @@ from your endpoint — this is its own tracked step, and go-live requires it.
 
 ## 7. Make a test payment
 
-Open your storefront in test mode and pay with any email. An empty wallet can
+Open your storefront on Testnet and pay with any email. An empty wallet can
 claim [test funds](/docs/test-funds) without leaving the checkout. When the
 payment settles you'll have: a transaction row, a signed webhook delivery,
 and a receipt.
@@ -626,7 +626,7 @@ and a receipt.
 ## 8. Go live
 
 The Go Live page runs real readiness checks (live key, verified webhook,
-receiving address) before enabling live mode. Test keys never move real funds.
+receiving address) before enabling Mainnet. Test keys never move real funds.
 
 ---
 

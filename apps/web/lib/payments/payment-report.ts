@@ -4,11 +4,12 @@ import type { ApiEnvironment } from "../auth/api-key";
 import type { Database } from "../db/client";
 import { payments, settlements } from "../db/schema";
 import { enqueuePaymentSettledWebhook, findPaymentWebhookDeliveryId } from "../webhooks/enqueue";
+import { samePaymentReportEvidence, usdcAtomicAmount } from "./payment-report-values";
 import {
-  samePaymentReportEvidence,
-  simulatedSettlementTokenChanges,
-  usdcAtomicAmount,
-} from "./payment-report-values";
+  type TestTransferVerdict,
+  type TestTransferVerifier,
+  verifyTestTransfer,
+} from "./verify-test";
 
 export interface PaymentReportEvidence {
   tokenChanges: unknown[];
@@ -38,6 +39,17 @@ export class PaymentReportConflictError extends Error {
   }
 }
 
+export class PaymentVerificationFailedError extends Error {
+  readonly code = "PAYMENT_VERIFICATION_FAILED";
+
+  constructor(reason: string) {
+    super(`The reported transaction could not be verified on-chain: ${reason}`);
+    this.name = "PaymentVerificationFailedError";
+  }
+}
+
+const TX_HASH = /^0x[0-9a-f]{64}$/i;
+
 class PaymentReportStateError extends Error {
   constructor() {
     super("Payment report state is inconsistent");
@@ -62,7 +74,38 @@ export async function reportPayment(
   paymentId: string,
   evidence: PaymentReportEvidence,
   buyer: ValidatedBuyerIdentity,
+  verifier: TestTransferVerifier = verifyTestTransfer,
 ) {
+  // Test settlement is REAL: verify the Base Sepolia transfer before taking
+  // any row lock. A retryable verdict is returned without persisting
+  // evidence, so a bad hash can never dead-end the payment.
+  let verdict: TestTransferVerdict | undefined;
+  if (principal.env === "test") {
+    if (!TX_HASH.test(evidence.transactionId)) {
+      throw new PaymentVerificationFailedError("The transaction id is not a transaction hash.");
+    }
+    const preview = await loadReportablePayment(db, principal, paymentId);
+    if (preview?.status === "pending") {
+      verdict = await verifier({
+        amountAtomic: usdcAtomicAmount(preview.amountUsd),
+        payerAddress: buyer.payerAddress,
+        receiver: preview.receiver,
+        tokenAddress: preview.tokenAddress,
+        transactionId: evidence.transactionId,
+      });
+      if (verdict.outcome === "invalid") throw new PaymentVerificationFailedError(verdict.reason);
+      if (verdict.outcome === "retryable") {
+        return {
+          reportedTransactionId: evidence.transactionId,
+          status: "pending" as const,
+          verificationMethod: null,
+          verifiedAt: null,
+          webhookDeliveryId: null,
+        };
+      }
+    }
+  }
+
   try {
     return await db.transaction(async (transaction) => {
       const [payment] = await transaction
@@ -131,6 +174,9 @@ export async function reportPayment(
         .returning();
       if (!settledPayment?.settledAt) throw new PaymentReportStateError();
 
+      // The pre-lock verdict must exist and be verified for a fresh test
+      // settlement; a settled replay returns earlier and never reaches here.
+      if (verdict?.outcome !== "verified") throw new PaymentReportStateError();
       const amountAtomic = usdcAtomicAmount(settledPayment.amountUsd);
       const [settlement] = await transaction
         .insert(settlements)
@@ -139,8 +185,9 @@ export async function reportPayment(
           livemode: false,
           particleTransactionId: evidence.transactionId,
           paymentId: payment.id,
-          tokenChangesJson: simulatedSettlementTokenChanges(settledPayment, amountAtomic),
-          verificationMethod: "simulated_test",
+          tokenChangesJson: verdict.tokenChanges,
+          txHash: verdict.txHash,
+          verificationMethod: "rpc",
           verificationTrigger: "inline",
           verifiedAt: settledPayment.settledAt,
         })
@@ -165,4 +212,28 @@ export async function reportPayment(
     if (uniqueConstraint(error)) throw new PaymentReportConflictError();
     throw error;
   }
+}
+
+async function loadReportablePayment(
+  db: Database,
+  principal: { env: ApiEnvironment; merchantId: string },
+  paymentId: string,
+) {
+  const [payment] = await db
+    .select({
+      amountUsd: payments.amountUsd,
+      receiver: payments.receiver,
+      status: payments.status,
+      tokenAddress: payments.tokenAddress,
+    })
+    .from(payments)
+    .where(
+      and(
+        eq(payments.id, paymentId),
+        eq(payments.merchantId, principal.merchantId),
+        eq(payments.env, principal.env),
+      ),
+    )
+    .limit(1);
+  return payment;
 }

@@ -80,7 +80,11 @@ class MagicExpressClient {
   }
 
   async #request(path: string, subject: string, body: Record<string, unknown>) {
-    const secretKey = configuredValue(this.#environment, "MAGIC_SECRET_KEY");
+    // Server Wallets may live in a separate Magic app from embedded auth:
+    // prefer its dedicated secret, fall back to the shared one.
+    const secretKey = this.#environment.MAGIC_TEE_SECRET_KEY?.trim()
+      ? configuredValue(this.#environment, "MAGIC_TEE_SECRET_KEY")
+      : configuredValue(this.#environment, "MAGIC_SECRET_KEY");
     const providerId = configuredValue(this.#environment, "MAGIC_OIDC_PROVIDER_ID");
     let token: string;
     try {
@@ -196,7 +200,11 @@ export function createMagicExpressClient(options: MagicExpressClientOptions = {}
 
 export function isMagicExpressConfigured(environment: Environment = process.env) {
   try {
-    configuredValue(environment, "MAGIC_SECRET_KEY");
+    if (environment.MAGIC_TEE_SECRET_KEY?.trim()) {
+      configuredValue(environment, "MAGIC_TEE_SECRET_KEY");
+    } else {
+      configuredValue(environment, "MAGIC_SECRET_KEY");
+    }
     configuredValue(environment, "MAGIC_OIDC_PROVIDER_ID");
     magicOidcJwks(environment);
     return true;

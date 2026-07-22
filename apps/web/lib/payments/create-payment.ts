@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import type { ApiKeyPrincipal } from "../auth/api-key";
 import type { Database } from "../db/client";
 import { merchants, payments } from "../db/schema";
-import { ARBITRUM_CHAIN_ID, ARBITRUM_USDC_ADDRESS, parsePaymentAddress } from "./payment-intent";
+import { parsePaymentAddress, paymentTokenForEnv } from "./payment-intent";
 import { InvalidPaymentIntentTokenError, verifyPaymentIntentToken } from "./payment-intent-token";
 import { mintPaymentRefCode } from "./ref-code";
 
@@ -145,8 +145,7 @@ export async function createPayment(db: Database, principal: ApiKeyPrincipal, va
           merchantId: intent.merchantId,
           receiver: intent.receiver,
           refCode: mintPaymentRefCode(),
-          tokenAddress: ARBITRUM_USDC_ADDRESS,
-          tokenChainId: ARBITRUM_CHAIN_ID,
+          ...paymentTokenForEnv(intent.env),
         })
         .onConflictDoNothing()
         .returning();

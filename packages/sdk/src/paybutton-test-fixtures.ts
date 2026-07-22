@@ -14,8 +14,8 @@ export const intent = {
   mode: "test" as const,
   receiver: "0x2222222222222222222222222222222222222222",
   token: {
-    address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-    chainId: 42161 as const,
+    address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    chainId: 84532 as const,
   },
 };
 
@@ -59,7 +59,7 @@ export const openedPayment: OpenedPayment = {
 export function baseServices(): MockedCheckoutServices {
   return {
     claimTestFunds: vi.fn(),
-    createTestPayment: vi.fn(),
+    executeTestPayment: vi.fn(),
     executePayment: vi.fn(),
     loadAccount: vi.fn(),
     loadCheckoutContext: vi.fn().mockResolvedValue(context),

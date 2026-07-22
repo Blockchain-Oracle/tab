@@ -6,6 +6,7 @@ import { createDatabase } from "../db/client";
 import { provisionMerchant } from "../db/provision-merchant";
 import { payments, webhookDeliveries, webhookEndpoints } from "../db/schema";
 import { reportPayment } from "../payments/payment-report";
+import { fakeTxHash, verifiedTestTransfer } from "../payments/verify-test-support";
 import { createWebhookSecret, encryptWebhookSecret } from "./secret-crypto";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -76,11 +77,12 @@ export async function createPendingWebhookDelivery(endpointUrl: string) {
     deliveryTestConnection.db,
     { env: "test", merchantId: identity.merchantId },
     paymentId,
-    { tokenChanges: [], transactionId: `test_${randomUUID()}` },
+    { tokenChanges: [], transactionId: fakeTxHash() },
     {
       payerAddress: "0x9999999999999999999999999999999999999999",
       payerEmail: "buyer@example.test",
     },
+    verifiedTestTransfer,
   );
   if (!result.webhookDeliveryId) throw new Error("Expected a delivery id");
   const [delivery] = await deliveryTestConnection.db

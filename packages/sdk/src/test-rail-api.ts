@@ -36,12 +36,19 @@ function optionalString(value: unknown) {
   return typeof value === "string" ? value : undefined;
 }
 
-export function parseTestBalance(value: unknown): { usdcAtomic: bigint } {
+export function parseTestBalance(value: unknown): { gasWei: bigint; usdcAtomic: bigint } {
   const balance = record(record(value)?.balance);
   const usdcAtomic = balance?.usdcAtomic;
+  const gasWei = balance?.gasWei;
   if (typeof usdcAtomic !== "string" || !/^\d+$/.test(usdcAtomic)) invalid();
-  return { usdcAtomic: BigInt(usdcAtomic) };
+  // Older servers may omit gasWei; treat it as unknown-but-positive so the
+  // sufficiency check falls back to USDC-only.
+  const parsedGas = typeof gasWei === "string" && /^\d+$/.test(gasWei) ? BigInt(gasWei) : null;
+  return { gasWei: parsedGas ?? MIN_GAS_WEI, usdcAtomic: BigInt(usdcAtomic) };
 }
+
+/** Roughly one ERC-20 transfer at Base Sepolia gas prices, with headroom. */
+export const MIN_GAS_WEI = 10_000_000_000_000n;
 
 export function parseTestFundsGrant(value: unknown): TestFundsGrant {
   const grant = record(record(value)?.grant);

@@ -11,6 +11,7 @@ import {
 describe("test balance parsing", () => {
   it("accepts only an atomic digit string", () => {
     expect(parseTestBalance({ balance: { gasWei: "1", usdcAtomic: "2000000" } })).toEqual({
+      gasWei: 1n,
       usdcAtomic: 2_000_000n,
     });
     for (const bad of [

@@ -91,10 +91,13 @@ export const payments = pgTable(
         and scale(${table.amountUsd}) <= 6`,
     ),
     check("payments_currency_check", sql`${table.currency} = 'USD'`),
-    check("payments_chain_check", sql`${table.tokenChainId} = 42161`),
+    // Token identity must be a known (chain, USDC) pair: Arbitrum One for
+    // live, Base Sepolia for test. Env pairing is enforced in app code so
+    // pre-existing test rows minted with the Arbitrum identity stay valid.
     check(
-      "payments_token_check",
-      sql`lower(${table.tokenAddress}) = '0xaf88d065e77c8cc2239327c5edb3a432268e5831'`,
+      "payments_chain_check",
+      sql`(${table.tokenChainId} = 42161 and lower(${table.tokenAddress}) = '0xaf88d065e77c8cc2239327c5edb3a432268e5831')
+        or (${table.tokenChainId} = 84532 and lower(${table.tokenAddress}) = '0x036cbd53842c5426634e7929541ec2318f3dcf7e')`,
     ),
     check(
       "payments_receiver_check",
@@ -180,9 +183,12 @@ export const settlements = pgTable(
       "settlements_tx_hash_check",
       sql`${table.txHash} is null or ${table.txHash} ~ '^0x[0-9a-fA-F]{64}$'`,
     ),
+    // simulated_test stays testnet-only; rpc verification is honest on both
+    // networks (real Base Sepolia settlement in test, Arbitrum One in live).
     check(
       "settlements_simulation_check",
       sql`(${table.verificationMethod} = 'simulated_test' and not ${table.livemode})
+        or ${table.verificationMethod} = 'rpc'
         or (${table.verificationMethod} <> 'simulated_test' and ${table.livemode})`,
     ),
   ],

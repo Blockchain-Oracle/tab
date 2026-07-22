@@ -1,3 +1,5 @@
+import type { TokenChainId } from "./token-identity";
+
 export type CheckoutMode = "live" | "test";
 
 export type PaymentIntent = {
@@ -5,7 +7,7 @@ export type PaymentIntent = {
   currency: "USD";
   mode: CheckoutMode;
   receiver: string;
-  token: { address: string; chainId: 42161 };
+  token: { address: string; chainId: TokenChainId };
 };
 
 export type MerchantIntentResponse = {
@@ -35,7 +37,7 @@ export type OpenedPayment = {
     livemode: boolean;
     receiver: string;
     status: "pending";
-    token: { address: string; chainId: 42161 };
+    token: { address: string; chainId: TokenChainId };
   };
   paymentId: string;
   refCode: string;
@@ -43,9 +45,8 @@ export type OpenedPayment = {
 
 export type CanonicalTestTokenChange = {
   amountAtomic: string;
-  chainId: 42161;
+  chainId: TokenChainId;
   receiver: string;
-  simulation: "simulated_test";
   tokenAddress: string;
 };
 
@@ -59,16 +60,19 @@ export type PaymentReportResponse =
       payment: PaymentReportBase & {
         status: "settled";
         tokenChanges: [CanonicalTestTokenChange];
-        verification: { method: "simulated_test"; verifiedAt: string };
+        verification: { method: "rpc"; verifiedAt: string };
       };
-      testMode: { message: string; simulated: true };
+      testMode: { message: string; network: "eip155:84532" };
     }
   | {
       payment: PaymentReportBase & {
         status: "pending";
         verification: { method: null; verifiedAt: null };
       };
-      verification: { code: "LIVE_SETTLEMENT_VERIFICATION_BLOCKED"; message: string };
+      verification: {
+        code: "LIVE_SETTLEMENT_VERIFICATION_BLOCKED" | "TEST_SETTLEMENT_PENDING";
+        message: string;
+      };
     };
 
 export class CheckoutApiError extends Error {

@@ -23,6 +23,7 @@ import {
 import {
   claimTestFunds,
   loadTestBalance,
+  MIN_GAS_WEI,
   type TestFundsGrant,
   testUsdBalance,
 } from "./test-rail-api";
@@ -45,10 +46,14 @@ export type BuyerAuthAttempt = {
 type SignalOptions = { signal?: AbortSignal };
 
 export type CheckoutServices = {
-  createTestPayment(input: { intent: PaymentIntent; paymentId: string }): {
+  executeTestPayment(input: {
+    buyer: BuyerRuntime;
+    intent: PaymentIntent;
+    publishableKey: string;
+  }): Promise<{
     tokenChanges: object;
     transactionId: string;
-  };
+  }>;
   claimTestFunds(input: {
     apiBaseUrl: string;
     buyerDidToken: string;
@@ -101,22 +106,21 @@ async function withSigner(
 }
 
 export const defaultCheckoutServices: CheckoutServices = {
-  createTestPayment(input) {
-    const id = globalThis.crypto.randomUUID();
-    return {
-      tokenChanges: {
-        amount: input.intent.amount,
-        paymentId: input.paymentId,
-        simulation: "simulated_test",
-      },
-      transactionId: `test_${id}`,
-    };
+  async executeTestPayment(input) {
+    // Real sandbox settlement: the buyer's Magic EOA moves Base Sepolia USDC.
+    const { executeTestPayment } = await import("./test-payment");
+    return executeTestPayment({
+      amount: input.intent.amount,
+      ownerAddress: input.buyer.ownerAddress,
+      publishableKey: input.publishableKey,
+      receiver: input.intent.receiver,
+    });
   },
   claimTestFunds,
   async executePayment(input) {
     if (!input.account.universalAccount) {
-      // Test-rail accounts never execute: test settlements are simulated
-      // upstream, so reaching here is an invariant violation, not a payment.
+      // Test-rail accounts never reach live execution: test settlements go
+      // through executeTestPayment, so reaching here is an invariant violation.
       throw new Error("Live execution requires a Universal Account.");
     }
     return executePayment({
@@ -133,9 +137,13 @@ export const defaultCheckoutServices: CheckoutServices = {
       // Test rail: the balance is the buyer's REAL Base Sepolia USDC, read
       // on-chain by the Tab API. No mainnet figure under a testnet label,
       // and the Particle SDK never loads for a test checkout.
-      const { usdcAtomic } = await loadTestBalance({ address: buyer.ownerAddress, ...api });
+      const { gasWei, usdcAtomic } = await loadTestBalance({ address: buyer.ownerAddress, ...api });
+      // A wallet with USDC but no gas cannot move it: surface it as spendable
+      // zero so the existing insufficient -> faucet claim path (which grants
+      // gas AND USDC, legs skipping independently) repairs both.
+      const spendable = gasWei >= MIN_GAS_WEI ? testUsdBalance(usdcAtomic) : 0;
       return {
-        balanceUsd: testUsdBalance(usdcAtomic),
+        balanceUsd: spendable,
         depositAddress: buyer.ownerAddress,
         universalAccount: null,
       };

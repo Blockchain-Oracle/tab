@@ -6,6 +6,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createDatabase } from "../db/client";
 import { provisionMerchant } from "../db/provision-merchant";
 import { merchants, orders, payments, settlements } from "../db/schema";
+import { fakeTxHash } from "../payments/verify-test-support";
 import { completeDemoOrder, DemoPaymentNotFoundError } from "./complete-order";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -26,7 +27,7 @@ async function merchant(name: string) {
 }
 
 async function settledPayment(merchantId: string) {
-  const transactionId = `test_${randomUUID()}`;
+  const transactionId = fakeTxHash();
   const [payment] = await connection.db
     .insert(payments)
     .values({

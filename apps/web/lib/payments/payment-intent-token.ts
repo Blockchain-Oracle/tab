@@ -5,6 +5,7 @@ import {
   parseIntentAuditUrl,
   parsePaymentAddress,
   parseUsdAmount,
+  paymentTokenForEnv,
 } from "./payment-intent";
 
 const AUDIENCE = "tab-checkout";
@@ -27,8 +28,8 @@ export interface PaymentIntentTokenClaims {
 export interface VerifiedPaymentIntentToken extends PaymentIntentTokenClaims {
   currency: "USD";
   expiresAt: Date;
-  tokenAddress: typeof ARBITRUM_USDC_ADDRESS;
-  tokenChainId: typeof ARBITRUM_CHAIN_ID;
+  tokenAddress: string;
+  tokenChainId: number;
 }
 
 interface PaymentIntentTokenOptions {
@@ -95,8 +96,7 @@ export async function signPaymentIntentToken(
     env: claims.env,
     intentUrl,
     receiver,
-    tokenAddress: ARBITRUM_USDC_ADDRESS,
-    tokenChainId: ARBITRUM_CHAIN_ID,
+    ...paymentTokenForEnv(claims.env),
   })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setIssuer(ISSUER)
@@ -131,8 +131,8 @@ export async function verifyPaymentIntentToken(
       !validUuid(payload.sub) ||
       (env !== "test" && env !== "live") ||
       payload.currency !== "USD" ||
-      payload.tokenChainId !== ARBITRUM_CHAIN_ID ||
-      payload.tokenAddress !== ARBITRUM_USDC_ADDRESS ||
+      payload.tokenChainId !== paymentTokenForEnv(env).tokenChainId ||
+      payload.tokenAddress !== paymentTokenForEnv(env).tokenAddress ||
       typeof payload.exp !== "number" ||
       typeof payload.iat !== "number" ||
       !Number.isFinite(payload.exp) ||
@@ -159,8 +159,7 @@ export async function verifyPaymentIntentToken(
       jti: payload.jti,
       merchantId: payload.sub,
       receiver,
-      tokenAddress: ARBITRUM_USDC_ADDRESS,
-      tokenChainId: ARBITRUM_CHAIN_ID,
+      ...paymentTokenForEnv(env),
     };
   } catch {
     throw new InvalidPaymentIntentTokenError();

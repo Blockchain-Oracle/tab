@@ -1,7 +1,23 @@
+import { getNetworkProfileByChainId } from "@tab/networks";
 import { getAddress, isAddress, zeroAddress } from "viem";
 
 export const ARBITRUM_CHAIN_ID = 42161;
 export const ARBITRUM_USDC_ADDRESS = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
+export const BASE_SEPOLIA_CHAIN_ID = 84532;
+export const BASE_SEPOLIA_USDC_ADDRESS =
+  getNetworkProfileByChainId(BASE_SEPOLIA_CHAIN_ID).circleUsdc.address;
+
+/**
+ * The settlement token identity for an environment: live settles USDC on
+ * Arbitrum One; test settles REAL sandbox USDC on Base Sepolia (the same
+ * rail the faucet funds). Env pairing is enforced here — the DB check only
+ * requires a known (chain, USDC) pair.
+ */
+export function paymentTokenForEnv(env: "live" | "test") {
+  return env === "live"
+    ? { tokenAddress: ARBITRUM_USDC_ADDRESS, tokenChainId: ARBITRUM_CHAIN_ID }
+    : { tokenAddress: BASE_SEPOLIA_USDC_ADDRESS, tokenChainId: BASE_SEPOLIA_CHAIN_ID };
+}
 
 const INTENT_KEYS = ["amount", "currency", "receiver", "token"];
 const TOKEN_KEYS = ["address", "chainId"];
